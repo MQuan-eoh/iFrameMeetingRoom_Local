@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+    <script src="https://alcdn.msauth.net/browser/2.39.0/js/msal-browser.min.js"></script>
+
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="assets/styles.css" />
+  </head>
+  <body>
+    <div class="meeting-page">
+      <div
+        class="dynamic-page-container"
+        id="dynamicPageContent"
+        style="display: none"
+      ></div>
+      <div class="meeting-screen">
+        <div class="meeting-container">
+          <div class="content-wrapper">
+            <div class="left-column">
+              <div class="header-section">
+                <div class="date-wrapper">
+                  <div class="logo">Time</div>
+                  <div class="current-date">
+                    <span>Thứ Hai</span>
+                    <span>10/11/2024</span>
+                  </div>
+                </div>
+
+                <div class="welcome-text">
+                  <div class="welcome-message">CHÀO MỪNG ĐẾN VỚI OTS</div>
+                </div>
+                <div class="room-tabs">
+                  <div class="rooms-container">
+                    <div class="room-section">
+                      <div class="room-number">PHÒNG HỌP LẦU 3</div>
+                      <div class="room-details">
+                        <div class="meeting-info">
+                          <div class="meeting-header">
+                            <div class="meeting-title">
+                              <span>Thông tin cuộc họp: Trống</span>
+                            </div>
+                            <div class="meeting-time">
+                              <div class="time-spacer"></div>
+                              <div class="start-time">
+                                <span>Thời gian bắt đầu:</span>
+                                7:00
+                              </div>
+                              <div class="end-time">
+                                <span>Thời gian kết thúc:</span>
+                                9:00
+                              </div>
+                            </div>
+                          </div>
+                          <div class="meeting-stats">
+                            <div class="stats-row">
+                              <div class="temperature">
+                                Nhiệt độ: <span id="temperature-eRa"></span> °C
+                              </div>
+                              <div class="humidity">
+                                Độ ẩm: <span id="humidity-eRa"></span> %
+                              </div>
+                            </div>
+                            <div class="stats-row">
+                              <div class="currentLotus">
+                                PM2.5: <span id="current-eRa"></span> µg/m³
+                              </div>
+                              <div class="voltage">
+                                PM10: <span id="voltage-eRa"></span> µg/m³
+                              </div>
+                            </div>
+                            <div class="stats-row indicators-container">
+                              <div class="status-group">
+                                <div class="status-indicator">
+                                  <div class="indicator-dot busy"></div>
+                                  <div class="status-text">Đang họp</div>
+                                </div>
+                                <div class="people-indicator">
+                                  <div class="people-dot"></div>
+                                  <div class="people-status-text">
+                                    Đang kiểm tra...
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="room-section">
+                      <div class="room-number">PHÒNG HỌP LẦU 4</div>
+                      <div class="room-details">
+                        <div class="meeting-info">
+                          <div class="meeting-header">
+                            <div class="meeting-title">
+                              <span>Thông tin cuộc họp:</span>
+                              Trống
+                            </div>
+                            <div class="meeting-time">
+                              <div class="time-spacer"></div>
+                              <div class="start-time">
+                                <span>Thời gian bắt đầu:</span>
+                                --:--
+                              </div>
+                              <div class="end-time">
+                                <span>Thời gian kết thúc:</span>
+                                --:--
+                              </div>
+                            </div>
+                          </div>
+                          <div class="meeting-stats">
+                            <div class="stats-row">
+                              <div class="temperature">
+                                Nhiệt độ: <span id="temperature-eRa2"></span>°C
+                              </div>
+                              <div class="humidity">
+                                Độ ẩm: <span id="humidity-eRa2"></span>%
+                              </div>
+                            </div>
+                            <div class="stats-row indicators-container">
+                              <div class="status-group">
+                                <div class="status-indicator">
+                                  <div class="indicator-dot available"></div>
+                                  <div class="status-text">Trống</div>
+                                </div>
+                                <div class="people-indicator">
+                                  <div class="people-dot"></div>
+                                  <div class="people-status-text">
+                                    Đang kiểm tra...
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="background-management">
+                      <div class="settings-icon">
+                        <i class="fas fa-cog"></i>
+                      </div>
+                      <div class="settings-content hidden">
+                        <div class="change-name-container">
+                          <button class="change-name-button">
+                            <div class="button-icon-wrapper">
+                              <i class="fas fa-edit"></i>
+                            </div>
+                            <span>Change Name</span>
+                          </button>
+                        </div>
+                        <div
+                          class="background-upload-container main-bg-container"
+                        >
+                          <input
+                            type="file"
+                            id="mainBackgroundUpload"
+                            accept="image/*"
+                            hidden
+                          />
+                          <button
+                            class="background-upload-button main-background-btn"
+                          >
+                            <div class="button-icon-wrapper">
+                              <i class="fas fa-desktop"></i>
+                            </div>
+                            <span>Background Chính</span>
+                          </button>
+                        </div>
+
+                        <div
+                          class="background-upload-container schedule-bg-container"
+                        >
+                          <input
+                            type="file"
+                            id="scheduleBackgroundUpload"
+                            accept="image/*"
+                            hidden
+                          />
+                          <button
+                            class="background-upload-button schedule-background-btn"
+                          >
+                            <div class="button-icon-wrapper">
+                              <i class="fas fa-table"></i>
+                            </div>
+                            <span>Background Lịch</span>
+                          </button>
+                        </div>
+
+                        <button class="reset-background-button">
+                          <div class="button-icon-wrapper">
+                            <i class="fas fa-undo"></i>
+                          </div>
+                          <span>Đặt Lại</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="right-column">
+              <div class="schedule-section">
+                <div class="schedule-content">
+                  <h1 class="schedule-title">THÔNG TIN LỊCH HỌP</h1>
+                  <div class="schedule-actions">
+                    <button class="upload-button">
+                      Upload Meeting From
+                      <img
+                        class="upload-icon"
+                        src="https://cdn.builder.io/api/v1/image/assets/TEMP/63b8f295cfd8166b173b26ae08d375f7f940976a41ab185ea145bd917523e537"
+                        alt="Upload icon"
+                      />
+                    </button>
+                    <input type="date" id="meetingDate" class="date-picker" />
+                  </div>
+                  <div
+                    class="schedule-table"
+                    role="table"
+                    aria-label="Meeting Schedule"
+                  >
+                    <div class="table-header" role="row">
+                      <div role="columnheader">TT</div>
+                      <div role="columnheader">Ngày</div>
+                      <div role="columnheader">Thứ</div>
+                      <div role="columnheader">Phòng</div>
+                      <div role="columnheader">Giờ bắt đầu</div>
+                      <div role="columnheader">Giờ kết thúc</div>
+                      <div role="columnheader">Thời gian sử dụng</div>
+                      <div role="columnheader">Mục đích sử dụng</div>
+                      <div role="columnheader">Nội dung</div>
+                    </div>
+                    <div class="table-row" role="row">
+                      <div role="cell">1</div>
+                      <div role="cell">12/11/2024</div>
+                      <div role="cell">Thứ 3</div>
+                      <div role="cell">P. 1</div>
+                      <div role="cell">7:30</div>
+                      <div role="cell">9:30</div>
+                      <div role="cell">2:00</div>
+                      <div role="cell">Họp</div>
+                      <div role="cell">Họp nội bộ</div>
+                    </div>
+                    <div class="table-row" role="row">
+                      <div role="cell">2</div>
+                      <div role="cell">14/11/2024</div>
+                      <div role="cell">Thứ 5</div>
+                      <div role="cell">P. 2</div>
+                      <div role="cell">7:30</div>
+                      <div role="cell">17:00</div>
+                      <div role="cell">9:30</div>
+                      <div role="cell">Đào tạo</div>
+                      <div role="cell">Đào tạo</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="fullscreen-toggle">
+                  <button
+                    id="fullscreenBtn"
+                    class="fullscreen-button"
+                    aria-label="Toggle Fullscreen"
+                  >
+                    <i class="fas fa-expand"></i>
+                  </button>
+                </div>
+                <div class="room-buttons">
+                  <button class="room-button" aria-label="Select Room 1">
+                    <div class="button-content">
+                      <div class="button-text">P.HỌP LẦU 3</div>
+                    </div>
+                  </button>
+                  <button class="room-button" aria-label="Select Room 2">
+                    <div class="button-content">
+                      <div class="button-text">P.HỌP LẦU 4</div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-container"></div>
+    </div>
+
+    <div class="window">
+      <div class="title-bar">
+        <div class="buttons">
+          <div class="close"></div>
+          <div class="minimize"></div>
+          <div class="maximize"></div>
+        </div>
+        <div class="title">Progress Extracting</div>
+      </div>
+      <div class="content">
+        <p id="progressText">Processing Extract Data...</p>
+        <p id="progressStatus">Processing . . .</p>
+        <div id="progressContainer" class="progress-bar">
+          <div id="progressFill" class="progress"></div>
+        </div>
+        <div class="button-container">
+          <button id="stopUploadBtn">Cancel</button>
+        </div>
+      </div>
+    </div>
+    <!-- External Scripts -->
+    <script src="@eohjsc/era-widget/src/index.js"></script>
+    <script src="https://alcdn.msauth.net/browser/2.30.0/js/msal-browser.min.js"></script>
+
+    <!-- New Modular Application Structure -->
+    <script type="module" src="script/index.js"></script>
+
+    <!-- Legacy Support (can be removed once migration is complete) -->
+    <!-- <script src="script/index.js"></script> -->
+  </body>
+</html>

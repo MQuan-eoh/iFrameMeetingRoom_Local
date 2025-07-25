@@ -1,0 +1,3853 @@
+.meeting-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.meeting-screen {
+  background-image: url(imgs/background.jpg);
+  background-size: cover;
+  flex: 1;
+  padding: 20px;
+}
+
+.meeting-container {
+  max-width: 1200px;
+  /* margin: 0 auto;
+  padding: 20px 40px; */
+  padding: 20px;
+}
+
+.content-wrapper {
+  gap: 20px;
+  display: flex;
+}
+
+.left-column {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  width: clamp(25%, 30%, 35%);
+  height: fit-content;
+  padding-right: clamp(15px, 2vw, 40px);
+}
+@media (min-width: 1600px) {
+  .left-column {
+    width: 30%;
+  }
+}
+@media (max-width: 1599px) {
+  .left-column {
+    width: 28%;
+    padding-right: 30px;
+  }
+}
+@media (max-width: 1199px) {
+  .content-wrapper {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .left-column {
+    width: 100%;
+    padding-right: 20px;
+    padding-left: 20px;
+  }
+}
+
+.header-section {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  overflow: hidden;
+  justify-content: start;
+  padding: 0 16px 7px;
+  margin-top: -30px;
+}
+.date-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  top: 10px;
+  left: 40px;
+}
+.logo {
+  display: flex;
+  justify-content: flex-start; /* Căn logo sang bên trái */
+  align-items: center; /* Căn giữa theo chiều dọc */
+  margin: 20px 20px 20px 0; /* Khoảng cách với phần còn lại */
+}
+
+.current-date {
+  font-size: 0.8rem; /* Nhỏ hơn và sử dụng đơn vị rem */
+  color: #ffffff;
+  white-space: nowrap;
+  opacity: 0.85; /* Làm mờ đi một chút để nhấn mạnh clock */
+  letter-spacing: 0.5px; /* Tăng khoảng cách chữ để dễ đọc */
+  margin-left: 40px;
+  margin-top: 10%;
+  flex-direction: column;
+  display: flex;
+  white-space: pre-wrap;
+}
+
+.welcome-message {
+  /* Layout properties */
+  align-self: stretch;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  /* Spacing */
+  gap: 10px;
+  margin: 40px 0 auto 0;
+  padding: 15px;
+  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: clamp(2rem, 5vw, 3.5rem); /* Responsive font size */
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+  text-align: center;
+  text-transform: uppercase;
+  color: #ffffff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: all 0.3s ease;
+
+  /* Optimize font rendering */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Media query cho thiết bị di động */
+@media screen and (max-width: 768px) {
+  .welcome-message {
+    font-size: 1.8rem;
+    padding: 10px;
+    margin-top: 20px;
+  }
+}
+
+@media (min-width: 1366px) {
+  .welcome-message {
+    margin-top: 6px;
+  }
+}
+.welcome-text {
+  max-width: 400px;
+  font-size: 18px;
+  font-weight: 500;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  color: #fff;
+  text-align: left;
+  line-height: 1.5;
+  letter-spacing: 0.5px;
+  margin-left: 50px;
+}
+
+.meeting-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+/* Column widths */
+.meeting-table th:nth-child(1) {
+  width: 5%;
+} /* TT */
+.meeting-table th:nth-child(2) {
+  width: 12%;
+} /* Ngày */
+.meeting-table th:nth-child(3) {
+  width: 8%;
+} /* Thứ */
+.meeting-table th:nth-child(4) {
+  width: 8%;
+} /* Phòng */
+.meeting-table th:nth-child(5) {
+  width: 10%;
+} /* Giờ bắt đầu */
+.meeting-table th:nth-child(6) {
+  width: 10%;
+} /* Giờ kết thúc */
+.meeting-table th:nth-child(7) {
+  width: 12%;
+} /* Thời gian sử dụng */
+.meeting-table th:nth-child(8) {
+  width: 15%;
+} /* Mục đích */
+.meeting-table th:nth-child(9) {
+  width: 20%;
+} /* Nội dung */
+
+.meeting-table th,
+.meeting-table td {
+  padding: 0.5rem;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Header styles */
+.table-header {
+  font-size: 1rem; /* Giảm từ 1.2rem xuống 1rem */
+  margin-bottom: 1rem;
+}
+
+/* Thêm media query cho iPad */
+@media screen and (max-width: 1024px) {
+  .table-header {
+    font-size: 0.9rem;
+    margin-bottom: 0.8rem;
+  }
+}
+@media (max-width: 676px) {
+  .table-header {
+    margin-bottom: 0.3rem;
+  }
+  .table-row {
+    margin-bottom: 0.3rem;
+  }
+}
+/* Button styles */
+.upload-button,
+.date-picker {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  border-radius: 20px;
+}
+
+@media screen and (min-width: 1400px) {
+  .room-number {
+    width: 100%;
+    font-size: 0.9rem;
+    padding: 4px;
+    min-width: 90px;
+  }
+}
+@media screen and (max-width: 1366px) {
+  .meeting-info-container {
+    padding: 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  .meeting-table th,
+  .meeting-table td {
+    padding: 0.4rem;
+  }
+}
+
+.room-number {
+  width: 100%;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+  padding: 6px;
+  background: linear-gradient(
+    135deg,
+    rgba(69, 255, 218, 0.2),
+    rgba(69, 255, 218, 0.1)
+  );
+  border-radius: 8px;
+  border: 1px solid rgba(69, 255, 218, 0.3);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  min-width: 100px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+@media screen and (max-width: 1366px) {
+  .room-number {
+    width: 100%;
+    font-size: 0.9rem;
+    padding: 4px;
+    min-width: 90px;
+  }
+}
+.room-number:hover {
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15); /* Tăng shadow khi hover */
+  background: linear-gradient(
+    135deg,
+    rgba(69, 255, 218, 0.3),
+    rgba(69, 255, 218, 0.2)
+  );
+}
+.room-details {
+  display: flex;
+  align-items: center;
+  gap: 39px;
+  /* overflow: hidden; */
+  font-family: Inter, sans-serif;
+  color: #000;
+  font-weight: 400;
+  font-size: 1.5rem;
+  justify-content: start;
+  border-radius: 16px; /* Thêm border-radius */
+  margin-bottom: 20px;
+}
+
+.meeting-info {
+  margin: 15px 0;
+  margin-left: 0;
+  width: 100%;
+  border-radius: 16px;
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0.85);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1;
+  min-width: 0;
+  max-height: 700px; /* Thêm chiều cao tối đa để phần tử có thể cuộn khi nội dung quá dài */
+  overflow-y: auto; /* Cho phép cuộn dọc khi nội dung vượt quá chiều cao tối đa */
+}
+
+.room-card {
+  margin-bottom: 15px;
+  width: 100%;
+  min-height: fit-content;
+}
+.room-tabs {
+  flex-shrink: 0; /* Prevent tabs from shrinking */
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.meeting-time {
+  display: flex;
+  font-size: 0.7rem;
+  align-items: center;
+  letter-spacing: -0.1px;
+  line-height: 1;
+  justify-content: start;
+  flex-wrap: wrap;
+  font-family: "Roboto", sans-serif;
+}
+
+/* Thêm icon đồng hồ trước thời gian */
+.start-time::before,
+.end-time::before {
+  content: "⌚";
+  /* margin-right: 4px; */
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .meeting-time {
+    flex-direction: row;
+    gap: 10px;
+  }
+
+  .start-time,
+  .end-time {
+    min-width: 90px;
+    padding: 3px 8px;
+    font-size: 13px;
+  }
+
+  .time-separator {
+    font-size: 14px;
+  }
+}
+
+.meeting-stats {
+  width: 100%;
+  flex-direction: row;
+  font-size: 12px; /* Giảm kích thước font */
+  letter-spacing: -0.1px;
+  line-height: 1;
+  justify-content: space-between; /* Sử dụng space-between để phân bố đều */
+  flex-wrap: wrap; /* Cho phép các phần tử xuống dòng nếu không đủ chỗ */
+  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.stats-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 2 cột bằng nhau */
+  gap: 15px; /* Khoảng cách giữa các cột */
+  align-items: center;
+}
+
+.people-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.people-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #ff0000;
+  transition: background-color 0.3s ease;
+}
+
+.meeting-info {
+  margin: 15px 0;
+  margin-left: 0;
+  width: 100%;
+  border-radius: 16px;
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0.85);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1;
+  min-width: 0;
+  max-height: 600px; /* Chiều cao tối đa có thể điều chỉnh thêm */
+  overflow-y: auto; /* Cho phép cuộn dọc khi nội dung vượt quá chiều cao tối đa */
+}
+
+/* Time slots styling */
+.start-time,
+.end-time {
+  display: flex;
+  font-size: 0.78rem;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: 700;
+  min-width: 100px;
+  justify-content: center;
+  flex-shrink: 0; /* Prevent compression */
+  font-family: "Roboto", sans-serif;
+}
+.rooms-container {
+  height: calc(
+    100vh - 140px
+  ); /* Thêm không gian cho header và các phần tử trên */
+  overflow-y: auto;
+  padding-bottom: 20px;
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling trên iOS */
+}
+/* Điều chỉnh khi màn hình nhỏ hoặc các thiết bị di động */
+@media (max-width: 767px) {
+  .meeting-info {
+    max-height: 250px; /* Giảm chiều cao tối đa cho các màn hình nhỏ */
+  }
+
+  .rooms-container {
+    height: calc(100vh - 160px); /* Điều chỉnh cho phù hợp với không gian */
+  }
+  .schedule-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .upload-button,
+  .date-picker {
+    width: 100%;
+  }
+}
+
+/* Media queries for iPad */
+@media screen and (min-width: 768px) and (max-width: 1024px) {
+  .meeting-info {
+    padding: 12px;
+    margin: 12px 0;
+  }
+
+  .meeting-time {
+    gap: 10px;
+  }
+
+  .start-time,
+  .end-time {
+    min-width: 120px; /* Slightly wider on iPad */
+  }
+}
+@media screen and (min-width: 1025px) {
+}
+/* Handle smaller iPad screens in portrait */
+@media screen and (max-width: 767px) {
+  .meeting-info {
+    padding: 8px;
+    margin: 10px 0;
+  }
+
+  .meeting-title {
+    font-size: 14px;
+  }
+
+  .meeting-time {
+    font-size: 13px;
+  }
+
+  .start-time,
+  .end-time {
+    min-width: 90px;
+    padding: 4px 8px;
+  }
+}
+.clock-container {
+  display: flex;
+  color: #ffffff;
+  font-size: clamp(5rem, 5vw, 5.5rem);
+  margin: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+@media (max-width: 1366px) {
+  .clock-container {
+    font-size: 3.75rem;
+    top: 8px;
+    padding-left: 10px;
+  }
+  .date-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .current-date {
+    font-size: clamp(0.5rem, 1.8vw, 0.7rem);
+    margin-left: 5px;
+  }
+  .welcome-text {
+    margin-top: 20px; /* Điều chỉnh khoảng cách trên */
+  }
+}
+@media (max-width: 768px) {
+  .clock-container {
+    font-size: 2.5rem;
+    top: 5px;
+    left: 40px;
+  }
+  .welcome-text {
+    margin-top: 30px;
+  }
+}
+.meeting-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-x: hidden;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+  gap: 20px;
+}
+.currentLotus {
+  font-size: 1rem;
+  font-weight: 540;
+  padding: 3px 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+.temperature,
+.humidity,
+.voltage {
+  font-size: 1rem;
+  font-weight: 540;
+  padding: 3px 0;
+  display: flex;
+  align-items: center;
+}
+
+.humidity {
+  padding-left: 0;
+  justify-content: flex-end;
+}
+
+.temperature > span,
+.humidity > span,
+.currentLotus > span,
+.voltage > span {
+  min-width: 40px;
+  display: inline-block;
+  text-align: center;
+}
+
+.temperature {
+  justify-content: flex-start;
+  padding-right: 60px;
+}
+
+.humidity {
+  justify-content: flex-end;
+}
+
+.currentLotus {
+  justify-content: flex-start;
+}
+
+.voltage {
+  justify-content: flex-end;
+}
+
+.power {
+  align-self: stretch;
+  padding-left: 30px;
+  margin-left: 60px;
+  padding: 3px 0;
+  font-size: 1rem;
+  font-weight: 540;
+}
+
+.room-content {
+  padding: 20px;
+}
+
+.status-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.status-group {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+.indicator-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1366px) and (min-width: 992px) {
+  .left-column {
+    width: 26%;
+    padding-right: 15px;
+  }
+}
+
+@media (max-width: 991px) {
+  .left-column {
+    width: 100%;
+    padding: 15px;
+  }
+  .meeting-title {
+    font-size: 16px;
+  }
+
+  .meeting-time,
+  .meeting-stats {
+    font-size: 13px;
+  }
+  .schedule-section {
+    position: relative; /* Tạo context cho phần tử con absolute */
+    padding-bottom: 80px; /* Dành không gian cho background-management */
+  }
+
+  .background-management {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 15px 20px;
+    z-index: 10; /* Đảm bảo nằm trên các phần tử khác */
+    margin-bottom: -100px;
+  }
+
+  .background-management > * {
+    margin: 0 10px; /* Khoảng cách giữa các phần tử */
+  }
+}
+
+@media (max-width: 480px) {
+  .meeting-info {
+    min-height: 150px; /* Giảm từ 180px */
+    padding: 10px;
+  }
+
+  .schedule-content {
+    max-height: 60vh; /* Giới hạn chiều cao */
+    overflow-y: auto; /* Cho phép cuộn dọc */
+    padding-right: 10px; /* Thêm padding để tránh che thanh cuộn */
+  }
+
+  /* Tùy chỉnh thanh cuộn cho mobile */
+  .schedule-content::-webkit-scrollbar {
+    width: 6px; /* Chiều rộng thanh cuộn mỏng */
+  }
+
+  .schedule-content::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1); /* Màu nền track */
+    border-radius: 10px;
+  }
+
+  .schedule-content::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.3); /* Màu của thanh cuộn */
+    border-radius: 10px;
+  }
+
+  .schedule-content::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+
+  /* Responsive cho các cột */
+  .table-header > div,
+  .table-row > div {
+    flex: 1;
+    min-width: 100px; /* Đảm bảo các cột không bị ép quá nhỏ */
+    overflow: hidden;
+    text-overflow: ellipsis; /* Hiển thị ... nếu nội dung quá dài */
+    white-space: nowrap; /* Ngăn văn bản xuống dòng */
+  }
+  .upload-button {
+    font-size: 14px; /* Giảm kích thước chữ */
+    padding: 0 12px;
+  }
+
+  .date-picker {
+    font-size: 14px;
+  }
+}
+
+/* Giữ nguyên các media query cho màn hình nhỏ */
+.indicator-dot.busy {
+  background-color: #ff0000;
+}
+
+.indicator-dot.available {
+  background-color: #228522;
+}
+
+.right-column {
+  display: flex;
+  flex-direction: column;
+  line-height: normal;
+  width: 70%; /* Tăng từ 70% lên 67% */
+  margin-right: 0;
+  height: fit-content;
+}
+@media (max-width: 1230px) {
+  .right-column {
+    height: auto;
+    width: auto;
+  }
+}
+/* Cập nhật media queries để duy trì tỷ lệ mới trên các màn hình lớn */
+@media (max-width: 1200px) {
+  .content-wrapper {
+    flex-direction: column; /* Đặt lại hướng cột cho màn hình nhỏ */
+    gap: 15px; /* Giảm khoảng cách giữa các phần tử */
+  }
+
+  .left-column,
+  .right-column {
+    width: 100%; /* Đặt lại chiều rộng cho các cột */
+  }
+  .date-wrapper {
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .current-date {
+    margin-left: 60px;
+    text-align: left;
+    margin-top: 5px;
+  }
+}
+@media (min-width: 1024px) and (max-width: 1190px) {
+  .schedule-content {
+    max-height: 50%;
+  }
+}
+/* Giữ nguyên layout dọc trên màn hình nhỏ */
+@media (max-width: 991px) {
+  .left-column,
+  .right-column {
+    width: 100%;
+  }
+}
+
+.schedule-section {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling cho iOS */
+  padding-bottom: 20px;
+  position: relative;
+}
+@media screen and (min-width: 768px) and (max-width: 1024px) {
+  body,
+  html {
+    height: 100%;
+    overflow: hidden; /* Ngăn scroll của body */
+  }
+
+  .schedule-section {
+    height: 100vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 100px; /* Thêm padding để tránh content bị che bởi room-buttons */
+  }
+
+  .schedule-content {
+    flex: 1;
+    min-height: min-content; /* Cho phép content co giãn theo nội dung */
+    overflow: visible;
+    margin-bottom: 20px;
+  }
+
+  .schedule-table {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+.schedule-content {
+  width: 100%;
+  flex: 1;
+  padding: 20px;
+  border-radius: 16px;
+  background-color: rgba(255, 255, 255, 0.85);
+  display: flex;
+  flex-direction: column;
+  font-weight: 400;
+  font-size: 0.9rem;
+  text-align: center;
+  overflow: auto;
+  height: auto;
+  min-height: 200px;
+  flex: 1;
+}
+
+@media screen and (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+  .schedule-section {
+    min-height: 100vh;
+    height: auto;
+    position: relative;
+    padding-bottom: 100px; /* Để tránh content bị che bởi room-buttons */
+  }
+
+  .schedule-content {
+    max-height: 50vh;
+    margin-bottom: 20px;
+    padding: 15px;
+  }
+
+  .schedule-table {
+    min-width: 800px;
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .room-buttons {
+    position: relative;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 10px;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* Thêm styles cho bảng để đảm bảo có thể scroll */
+.schedule-table {
+  /* overflow-x: auto; */
+  -webkit-overflow-scrolling: touch; /* Để smooth scroll trên iOS */
+  width: 100%;
+}
+.schedule-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  width: 100%;
+  max-width: 100%;
+}
+
+.upload-button {
+  background-color: rgba(130, 132, 255, 0.86);
+  color: white;
+  border-radius: 23px;
+  min-width: 200px;
+  max-width: 300px;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 16px;
+  white-space: nowrap;
+}
+
+.upload-icon {
+  aspect-ratio: 1;
+  object-fit: contain;
+  object-position: center;
+  width: 30px;
+  margin-left: 60px;
+  align-self: stretch;
+  margin: auto 0;
+}
+upload-icon-date {
+  object-fit: contain;
+  object-position: center;
+  width: 70px;
+  margin-left: 60px;
+  align-self: stretch;
+  margin: auto 0;
+}
+
+schedule-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  font-size: 14px;
+}
+@media screen and (max-width: 1230px) {
+  .schedule-table {
+    display: block;
+    /* overflow-x: auto; */
+    white-space: nowrap;
+  }
+
+  .schedule-table th,
+  .schedule-table td {
+    min-width: 100px;
+  }
+
+  .content-container {
+    padding: 15px;
+  }
+
+  .upload-section {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .upload-button {
+    width: 100%;
+    max-width: 250px;
+  }
+}
+.schedule-table th,
+.schedule-table td {
+  padding: 6px 8px;
+  text-align: left;
+  font-size: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.schedule-table th {
+  background-color: rgba(255, 255, 255, 0.05);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.schedule-table td {
+  vertical-align: middle;
+}
+
+/* Cột số thứ tự */
+.schedule-table td:first-child {
+  width: 30px;
+  text-align: center;
+}
+
+/* Cột ngày và thứ */
+.schedule-table td:nth-child(2),
+.schedule-table td:nth-child(3) {
+  white-space: nowrap;
+  width: 80px;
+}
+
+/* Cột phòng */
+.schedule-table td:nth-child(4) {
+  width: 60px;
+  text-align: center;
+}
+
+/* Cột giờ bắt đầu và kết thúc */
+.schedule-table td:nth-child(5),
+.schedule-table td:nth-child(6) {
+  width: 50px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Cột thời gian sử dụng */
+.schedule-table td:nth-child(7) {
+  width: 60px;
+  text-align: center;
+}
+
+/* Hover effect */
+.schedule-table tr:hover {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+/* Zebra striping */
+.schedule-table tr:nth-child(even) {
+  background-color: rgba(255, 255, 255, 0.01);
+}
+
+/* Thêm hover effect cho row */
+.table-row:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+.table-header,
+.table-row {
+  display: flex;
+  width: 100%;
+  min-width: 800px;
+  align-items: center;
+  gap: 5px;
+  padding: 12px 0;
+  border-bottom: 1px solid #000;
+}
+.table-header {
+  font-weight: bold;
+}
+/* Các cột chung */
+.table-header > div,
+.table-row > div {
+  padding: 0 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Điều chỉnh width các cột */
+.table-header > div:nth-child(1),
+.table-row > div:nth-child(1) {
+  /* TT */
+  flex: 0 0 3%;
+}
+
+.table-header > div:nth-child(2),
+.table-row > div:nth-child(2) {
+  /* Ngày */
+  flex: 0 0 9%;
+}
+
+.table-header > div:nth-child(3),
+.table-row > div:nth-child(3) {
+  /* Thứ */
+  flex: 0 0 10%;
+}
+
+.table-header > div:nth-child(4),
+.table-row > div:nth-child(4) {
+  /* Phòng */
+  flex: 0 0 12%;
+}
+
+.table-header > div:nth-child(5),
+.table-row > div:nth-child(5), /* Giờ bắt đầu */
+.table-header > div:nth-child(6),
+.table-row > div:nth-child(6) {
+  /* Giờ kết thúc */
+  flex: 0 0 8%;
+}
+
+.table-header > div:nth-child(7),
+.table-row > div:nth-child(7) {
+  /* Thời gian SD */
+  flex: 0 0 10%;
+}
+
+.table-header > div:nth-child(8),
+.table-row > div:nth-child(8) {
+  /* Mục đích */
+  flex: 1 0 14%;
+}
+
+.table-header > div:nth-child(9),
+.table-row > div:nth-child(9) {
+  /* Nội dung */
+  flex: 2 0 15%;
+}
+
+/* Responsive cho iPad (768px) */
+@media (max-width: 768px) {
+  .table-header > div:nth-child(3), /* Thứ */
+  .table-header > div:nth-child(7), /* Thời gian SD */
+  .table-row > div:nth-child(3),
+  .table-row > div:nth-child(7) {
+    flex-basis: 0;
+    overflow: hidden;
+    padding: 0;
+    display: none;
+  }
+
+  .table-header > div:nth-child(2) {
+    /* Ngày */
+    flex-basis: 12%;
+  }
+
+  .table-header > div:nth-child(8), /* Mục đích */
+  .table-row > div:nth-child(8) {
+    flex: 1 0 30%;
+  }
+
+  .table-header > div:nth-child(9), /* Nội dung */
+  .table-row > div:nth-child(9) {
+    flex: 2 0 35%;
+  }
+}
+
+/* Responsive cho điện thoại (480px) */
+@media (max-width: 480px) {
+  .table-header,
+  .table-row {
+    gap: 3px;
+    padding: 8px 0;
+    min-width: 600px;
+  }
+
+  .table-header > div:nth-child(4), /* Phòng */
+  .table-header > div:nth-child(5), /* Giờ bắt đầu */
+  .table-header > div:nth-child(6), /* Giờ kết thúc */
+  .table-row > div:nth-child(4),
+  .table-row > div:nth-child(5),
+  .table-row > div:nth-child(6) {
+    flex-basis: 0;
+    display: none;
+  }
+
+  .table-header > div,
+  .table-row > div {
+    font-size: 14px;
+  }
+
+  .table-header > div:nth-child(2) {
+    /* Ngày */
+    flex-basis: 15%;
+  }
+
+  .table-header > div:nth-child(8), /* Mục đích */
+  .table-row > div:nth-child(8) {
+    flex: 1 0 35%;
+  }
+
+  .table-header > div:nth-child(9), /* Nội dung */
+  .table-row > div:nth-child(9) {
+    flex: 2 0 45%;
+  }
+}
+
+.room-buttons {
+  margin-top: 2%; /* Push to bottom */
+  padding: 15px;
+  gap: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0; /* Prevent buttons from shrinking */
+}
+@media (min-width: 1300px) and (max-width: 1600px) {
+  .room-buttons {
+    margin-bottom: 2%;
+  }
+}
+@media (min-width: 1900px) {
+  .room-buttons {
+    margin-bottom: 2%;
+  }
+}
+/* Scrollbar styles */
+.schedule-table::-webkit-scrollbar {
+  width: 8px;
+}
+
+.schedule-table::-webkit-scrollbar-track {
+  background: rgba(240, 240, 240, 0.8);
+  border-radius: 4px;
+}
+
+.schedule-table::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 4px;
+}
+
+.schedule-table::-webkit-scrollbar-thumb:hover {
+  background-color: #555;
+}
+/* New update - Room button hover effects */
+.room-button {
+  border-radius: 23px;
+  background-color: rgba(69, 255, 218, 0.6);
+  transition: all 0.3s ease-in-out;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+@media (min-width: 321px) and(max-width: 768px) {
+  .room-button {
+    margin-bottom: -2%;
+  }
+}
+.room-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 5px 15px rgba(69, 255, 218, 0.4);
+  background-color: rgba(69, 255, 218, 0.8);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.room-button:active {
+  transform: scale(0.98);
+}
+.upload-button:hover {
+  background-color: rgba(130, 132, 255, 1);
+  box-shadow: 0 5px 15px rgba(130, 132, 255, 0.6);
+  transform: translateY(-2px);
+  border: 2px #fff;
+}
+
+.upload-button:active {
+  transform: translateY(1px);
+}
+
+/* Table row hover effects */
+.table-row {
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.table-row:hover {
+  background-color: rgba(69, 255, 218, 0.1);
+  transform: translateX(5px);
+  box-shadow: -5px 0 0 rgba(69, 255, 218, 0.5);
+}
+
+/* Meeting info card hover effects */
+.meeting-info {
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+}
+
+.meeting-info:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  border-color: rgba(69, 255, 218, 0.3);
+}
+
+/* Status indicator hover effect */
+.status-indicator {
+  transition: all 0.2s ease;
+}
+
+.status-indicator:hover {
+  transform: scale(1.02);
+  opacity: 0.9;
+}
+
+/* Indicator dot pulse animation for busy status */
+.indicator-dot.busy {
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 0, 0, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 0, 0, 0);
+  }
+}
+.indicator-dot.available {
+  animation: pulseAvail 1s infinite;
+}
+@keyframes pulseAvail {
+  0% {
+    box-shadow: 0 0 0 0 rgba(32, 255, 2, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 0, 0, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 0, 0, 0);
+  }
+}
+
+/* Smooth transition for all interactive elements */
+* {
+  transition: background-color 0.2s ease, transform 0.2s ease,
+    box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.button-content {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+}
+
+.button-text {
+  align-self: stretch;
+  min-width: 240px;
+  width: 100%;
+  flex: 1;
+  margin: auto 0;
+  padding: 0 2px;
+
+  /* Thêm các thuộc tính sau để căn giữa */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+/*//=======New update : Selection when user pick any date=====*/
+.date-picker {
+  background-color: #ffffff; /* Nền trắng */
+  color: #ffffff; /* Màu chữ tối */
+  transition: border-color 0.3s ease; /* Hiệu ứng chuyển màu viền */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ */
+  background-color: rgba(130, 132, 255, 0.86);
+  text-align: center;
+  justify-content: center;
+  margin-left: 65%;
+  height: 40px; /* Cùng chiều cao với button */
+  padding: 0 12px;
+  border: 1px solid #ccc;
+  border-radius: 23px;
+  font-size: 1rem;
+}
+
+@media (min-width: 1370px) and (max-width: 1600px) {
+  .date-picker {
+    margin-left: 50%;
+  }
+}
+@media (min-width: 1610px) {
+  .date-picker {
+    margin-left: 65%;
+  }
+}
+@media (min-width: 1200px) and (max-width: 1350px) {
+  .date-picker {
+    margin-left: 80%;
+    /* margin-top: -5%; */
+  }
+}
+
+@media (max-width: 991px) {
+  .date-picker {
+    margin-left: 10%;
+  }
+}
+.date-picker:hover {
+  outline: none;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(130, 132, 255, 0.7);
+}
+.upload-button:active {
+  transform: translateY(1px);
+}
+.date-picker::placeholder {
+  /* Định dạng placeholder */
+  color: #999999; /* Màu chữ placeholder */
+}
+
+/*========Upgrade with Change Background Feature============*/
+.button-icon-wrapper {
+  background-color: rgba(255, 255, 255, 0.2);
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.background-upload-button .button-icon-wrapper i {
+  color: white;
+  font-size: 16px;
+  transition: transform 0.3s ease;
+}
+
+/* Hover Effects */
+.change-name-button:hover,
+.background-upload-button:hover,
+.reset-background-button:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 20px rgba(0, 0, 0, 0.2), 0 20px 20px rgba(0, 0, 0, 0.1);
+}
+.change-name-button:hover .button-icon-wrapper {
+  transform: rotate(360deg);
+}
+
+.change-name-button:hover .button-icon-wrapper i {
+  transform: scale(1.2);
+}
+.background-upload-button:hover .button-icon-wrapper {
+  transform: rotate(360deg);
+}
+
+.background-upload-button:hover .button-icon-wrapper i {
+  transform: scale(1.2);
+}
+
+.reset-background-button:hover .button-icon-wrapper {
+  transform: rotate(360deg);
+}
+
+.reset-background-button:hover .button-icon-wrapper i {
+  transform: scale(1.2);
+}
+
+.change-name-button:hover::before,
+.background-upload-button:hover::before,
+.reset-background-button:hover::before {
+  left: 100%;
+}
+
+/* Active State */
+.change-name-button:active,
+.background-upload-button:active,
+.reset-background-button:active {
+  transform: translateY(2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.change-name-button,
+.reset-background-button,
+.background-upload-button,
+.reset-background-button {
+  position: relative;
+  overflow: hidden; /* Ẩn phần tràn của pseudo-element */
+}
+
+.reset-background-button::before,
+.change-name-button::before,
+.background-upload-button::before,
+.reset-background-button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transition: all 0.4s ease;
+}
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .background-management {
+    flex-direction: column;
+    gap: 12px;
+    padding: 15px;
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .background-upload-button,
+  .reset-background-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .background-management {
+    flex-direction: column;
+    gap: 15px;
+    padding: 20px;
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .background-upload-button,
+  .reset-background-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+.meeting-page {
+  position: relative; /* Thêm position relative */
+}
+
+.modal-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.background-preview-modal {
+  pointer-events: auto;
+}
+
+/* Đảm bảo modal container hoạt động đúng trong chế độ fullscreen */
+.meeting-page:fullscreen .modal-container {
+  position: fixed;
+}
+.background-preview-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* Nền đen đậm hơn */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+  backdrop-filter: blur(10px); /* Tăng hiệu ứng mờ */
+}
+
+.background-preview-modal.show {
+  opacity: 1;
+  visibility: visible;
+}
+.background-preview-content {
+  background: rgba(0, 0, 0, 0.5); /* Nền đen trong suốt */
+  border: 2px solid rgba(69, 255, 218, 0.3); /* Viền neon xanh */
+  border-radius: 15px;
+  padding: 30px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 0 30px rgba(69, 255, 218, 0.2); /* Hiệu ứng ánh sáng xanh */
+  position: relative;
+  transform: scale(0.7);
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+.background-preview-modal.show .background-preview-content {
+  transform: scale(1);
+  opacity: 1;
+}
+:fullscreen .background-preview-content,
+:-webkit-full-screen .background-preview-content,
+:-moz-full-screen .background-preview-content {
+  display: block;
+  visibility: visible;
+  opacity: 1;
+}
+
+.background-preview-content img {
+  max-width: 100%;
+  max-height: 60vh;
+  object-fit: contain;
+  margin-bottom: 25px;
+  border-radius: 15px; /* Bo tròn ảnh preview */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1), 0 6px 10px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease;
+}
+
+.background-preview-content img:hover {
+  transform: scale(1.02); /* Hiệu ứng phóng to nhẹ khi hover */
+}
+
+.background-preview-actions {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 20px;
+}
+.background-preview-actions button {
+  padding: 12px 30px;
+  font-size: 12px;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.background-confirm-btn {
+  background: linear-gradient(
+    135deg,
+    rgba(69, 255, 218, 0.2),
+    rgba(69, 255, 218, 0.1)
+  );
+  color: rgba(69, 255, 218, 0.9);
+  border: 1px solid rgba(69, 255, 218, 0.3);
+  box-shadow: 0 0 15px rgba(69, 255, 218, 0.15);
+}
+
+.background-cancel-btn {
+  background: linear-gradient(
+    135deg,
+    rgba(69, 255, 218, 0.1),
+    rgba(69, 255, 218, 0.05)
+  );
+  color: rgba(69, 255, 218, 0.8);
+  border: 1px solid rgba(69, 255, 218, 0.2);
+}
+
+/* Hiệu ứng hover */
+.background-cancel-btn:hover,
+.background-confirm-btn:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(69, 255, 218, 0.1),
+    rgba(69, 255, 218, 0.2)
+  );
+  color: rgba(69, 255, 218, 1);
+}
+.background-cancel-btn:hover {
+  background: linear-gradient(135deg, rgba(107, 239, 235, 0.3));
+}
+/* Điều chỉnh ảnh preview */
+.background-preview-content img {
+  border: 2px solid rgba(69, 255, 218, 0.2);
+  background: linear-gradient(
+    135deg,
+    rgba(69, 255, 218, 0.05),
+    rgba(69, 255, 218, 0.02)
+  );
+}
+
+.background-confirm-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 4px 8px rgba(69, 255, 218, 0.1),
+    0 2px 4px rgba(69, 255, 218, 0.05);
+}
+.background-cancel-btn:active {
+  background: linear-gradient(135deg, rgba(255, 18, 34, 0.3));
+}
+/* Thêm icon cho nút */
+.background-confirm-btn::before {
+  content: "✔";
+  margin-right: 10px;
+}
+
+.background-cancel-btn::before {
+  content: "✖";
+  margin-right: 10px;
+}
+@keyframes glow {
+  0% {
+    box-shadow: 0 0 10px rgba(69, 255, 218, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(69, 255, 218, 0.4);
+  }
+  100% {
+    box-shadow: 0 0 10px rgba(69, 255, 218, 0.2);
+  }
+}
+
+.background-preview-content {
+  animation: glow 3s infinite;
+}
+
+/* Text styling */
+.background-preview-content h2 {
+  color: rgba(69, 255, 218, 0.8);
+  text-shadow: 0 0 10px rgba(69, 255, 218, 0.3);
+}
+/*=======Hiệu ứng khi click Restart========*/
+.reset-main-btn,
+.reset-schedule-btn,
+.background-cancel-btn {
+  padding: 12px 30px;
+  border: none;
+  border-radius: 30px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  position: relative; /* Để sử dụng cho hiệu ứng ánh sáng */
+  overflow: hidden; /* Ẩn phần ánh sáng ra ngoài nút */
+}
+
+/* Màu sắc cho từng nút */
+.reset-main-btn {
+  background: linear-gradient(
+    135deg,
+    rgba(69, 255, 218, 0.2),
+    rgba(69, 255, 218, 0.7)
+  );
+  color: white;
+}
+
+.reset-schedule-btn {
+  background: linear-gradient(
+    135deg,
+    rgba(69, 255, 218, 0.2),
+    rgba(69, 255, 218, 0.7)
+  );
+  color: white;
+}
+
+.background-cancel-btn {
+  background: linear-gradient(
+    135deg,
+    rgba(69, 255, 218, 0.2),
+    rgba(69, 255, 218, 0.7)
+  );
+  color: white;
+}
+
+/* Hiệu ứng hover */
+.reset-main-btn:hover,
+.reset-schedule-btn:hover {
+  transform: translateY(-4px); /* Di chuyển lên */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2), 0 6px 10px rgba(0, 0, 0, 0.1); /* Đổ bóng */
+}
+
+.background-cancel-btn:hover {
+  transform: translateY(-4px); /* Di chuyển lên */
+  background-color: rgba(250, 31, 31, 0.819);
+  box-shadow: 0 10px 20px rgba(244, 71, 41, 0.748),
+    0 6px 10px rgba(246, 238, 238, 0.4);
+  color: #ccc;
+}
+
+/* Hiệu ứng biểu tượng khi hover */
+.reset-main-btn:hover .button-icon-wrapper,
+.reset-schedule-btn:hover .button-icon-wrapper,
+.background-cancel-btn:hover .button-icon-wrapper {
+  transform: rotate(360deg); /* Quay biểu tượng */
+}
+
+.reset-main-btn:hover .button-icon-wrapper i,
+.reset-schedule-btn:hover .button-icon-wrapper i,
+.background-cancel-btn:hover .button-icon-wrapper i {
+  transform: scale(1.2); /* Phóng to biểu tượng */
+}
+
+/* Hiệu ứng ánh sáng lấp lánh */
+.reset-main-btn::before,
+.reset-schedule-btn::before,
+.background-cancel-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%; /* Bắt đầu từ bên trái */
+  width: 100%; /* Chiều rộng bằng nút */
+  height: 100%; /* Chiều cao bằng nút */
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transition: all 0.4s ease; /* Hiệu ứng chuyển tiếp */
+}
+
+.reset-main-btn:hover::before,
+.reset-schedule-btn:hover::before,
+.background-cancel-btn:hover::before {
+  left: 100%; /* Chạy qua bên phải */
+}
+
+/* Hiệu ứng click */
+.reset-main-btn:active,
+.reset-schedule-btn:active,
+.background-cancel-btn:active {
+  transform: translateY(2px); /* Di chuyển xuống */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.05); /* Đổ bóng */
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .background-management {
+    flex-direction: column;
+    gap: 15px;
+    padding: 20px;
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .reset-main-btn,
+  .reset-schedule-btn,
+  .background-cancel-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/*=======Update when user click setting=======*/
+/* Container chính */
+.background-management {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  z-index: 1000;
+}
+
+/* Icon settings */
+.settings-icon {
+  cursor: pointer;
+  font-size: 24px;
+  color: white;
+  transition: transform 0.3s ease;
+  background: rgba(0, 0, 0, 0.5);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.settings-icon:hover {
+  transform: rotate(90deg);
+}
+
+/* Content dropdown */
+.settings-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 15px;
+  border-radius: 12px;
+  margin-top: 5px;
+  min-width: 200px;
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(0.95); /* Thêm transform để tối ưu hiệu ứng */
+  transition: opacity 0.2s ease-out, visibility 0.2s ease-out,
+    transform 0.2s ease-out; /* Transition cho 3 thuộc tính */
+  will-change: opacity, transform; /* Tối ưu rendering */
+}
+
+.settings-content.active {
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1);
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.95) 0%,
+    rgba(0, 0, 0, 0.85) 100%
+  );
+  transition: opacity 0.2s ease-in, transform 0.2s ease-in; /* Transition riêng cho trạng thái active */
+}
+.background-upload-container.active,
+.reset-background-button.active {
+  opacity: 1;
+  visibility: visible;
+  transform: scaleX(1);
+}
+.change-name-container {
+  width: 100%;
+  opacity: 0;
+  visibility: hidden;
+  margin-bottom: 10px;
+}
+
+.change-name-button {
+  width: 82%;
+  display: flex;
+  margin-left: 20px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 15px;
+  background-color: rgb(0 149 119 / 78%);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: 500;
+  font-size: 11.5px;
+  /* text-transform: uppercase; */
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.change-name-button:hover {
+  background-color: rgb(0 149 119);
+}
+
+.change-name-container.active {
+  opacity: 1;
+  visibility: visible;
+}
+/* Style cho modal */
+.name-change-modal {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.95) 0%,
+    rgba(0, 0, 0, 0.85) 100%
+  );
+  padding: 25px; /* Tăng padding */
+  border-radius: 12px;
+  z-index: 99999;
+  width: 400px; /* Tăng width */
+  min-height: 150px; /* Thêm min-height */
+}
+.name-change-modal input {
+  width: 100%;
+  padding: 12px; /* Tăng padding của input */
+  margin-bottom: 15px; /* Tăng margin dưới */
+  border: 1px solid #009577;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 16px; /* Tăng font size */
+  height: 45px; /* Thêm height cố định */
+}
+.modal-buttons {
+  display: flex;
+  gap: 15px; /* Tăng khoảng cách giữa các nút */
+  justify-content: flex-end;
+  margin-top: 20px; /* Thêm margin top */
+}
+.modal-button {
+  padding: 10px 20px; /* Tăng padding của buttons */
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px; /* Tăng font size */
+  transition: all 0.3s ease;
+}
+
+.name-change-modal.move-to-top {
+  top: 0;
+  margin-bottom: -320px;
+}
+
+.name-change-modal.active {
+  transform: translateY(0);
+}
+
+.save-button {
+  background-color: rgb(0 149 119 / 78%);
+  color: white;
+}
+
+.cancel-button {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.modal-overlay.active {
+  display: block;
+}
+
+/* Animation keyframes */
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -70%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+@keyframes overlayFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Modal styling với animation */
+.name-change-modal {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.95) 0%,
+    rgba(0, 0, 0, 0.85) 100%
+  );
+  padding: 25px;
+  border-radius: 12px;
+  z-index: 99999;
+  width: 400px;
+  min-height: 150px;
+  box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.name-change-modal.active {
+  display: block;
+  animation: modalFadeIn 0.3s ease forwards;
+}
+
+/* Input styling với hover và focus effects */
+.name-change-modal input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border: 2px solid rgba(0, 149, 119, 0.5);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  font-size: 16px;
+  height: 45px;
+  transition: all 0.3s ease;
+}
+
+.name-change-modal input:hover {
+  border-color: rgba(0, 149, 119, 0.8);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.name-change-modal input:focus {
+  outline: none;
+  border-color: rgb(0, 149, 119);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 10px rgba(0, 149, 119, 0.2);
+}
+
+/* Button styling với hover effects */
+.modal-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.modal-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.save-button {
+  background-color: rgb(0 149 119 / 78%);
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.save-button:hover {
+  background-color: rgb(0 149 119);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 149, 119, 0.2);
+}
+
+.save-button:active {
+  transform: translateY(0);
+}
+
+.cancel-button {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.cancel-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.cancel-button:active {
+  transform: translateY(0);
+}
+
+/* Overlay styling với animation */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 99998;
+  backdrop-filter: blur(3px);
+}
+
+.modal-overlay.active {
+  display: block;
+  animation: overlayFadeIn 0.3s ease forwards;
+}
+/* Style cho các container và button */
+.reset-background-button {
+  width: 82%;
+  display: flex;
+  margin-left: 20px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 15px; /* Thay padding cho đồng nhất */
+  background-color: rgb(0 149 119 / 78%); /* Tương tự như các nút khác */
+  border: none;
+  border-radius: 8px; /* Sử dụng border-radius giống các nút */
+  color: white;
+  font-weight: 500; /* Giữ font-weight giống */
+  font-size: 12px; /* Điều chỉnh font size để giống nhau */
+  /* text-transform: uppercase; */
+  letter-spacing: 1px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  opacity: 0; /* Giữ opacity cho đến khi được hiển thị */
+  visibility: hidden; /* Ẩn khi không sử dụng */
+}
+
+.background-upload-container {
+  width: 100%;
+  opacity: 1;
+  transform: scaleX(1);
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 40px;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  visibility: hidden;
+}
+
+.background-upload-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 15px;
+  background-color: rgb(0 149 119 / 78%);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.background-upload-button:hover {
+  background-color: rgb(0 149 119);
+}
+
+.background-upload-container.active,
+.reset-background-button.active,
+.settings-content.active {
+  opacity: 1;
+  visibility: visible;
+  transform: scaleX(1); /* Mở rộng toàn bộ */
+}
+
+.button-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+}
+/*==================Upload processing=============*/
+/* Center the window */
+.window {
+  width: 400px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1001;
+}
+
+.title-bar {
+  display: flex;
+  align-items: center;
+  background-color: #e0e0e0;
+  padding: 5px 10px;
+  border-bottom: 1px solid #ccc;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+}
+
+.title-bar .buttons {
+  display: flex;
+  gap: 5px;
+}
+
+.title-bar .buttons div {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.title-bar .buttons .close {
+  background-color: #ff5f56;
+}
+
+.title-bar .buttons .minimize {
+  background-color: #ffbd2e;
+}
+
+.title-bar .buttons .maximize {
+  background-color: #27c93f;
+}
+
+.title-bar .title {
+  flex-grow: 1;
+  text-align: center;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.content {
+  padding: 20px;
+}
+
+.content p {
+  margin: 0 0 10px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 10px;
+  background-color: #e0e0e0;
+  border-radius: 5px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.progress-bar .progress {
+  width: 33%;
+  height: 100%;
+  background-color: #4caf50;
+  transition: width 0.5s;
+}
+
+.button-container {
+  text-align: right;
+}
+
+.button-container button {
+  padding: 5px 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background-color: #f0f0f0;
+  cursor: pointer;
+}
+
+/*===============Fullscreen Feature================*/
+.fullscreen-toggle {
+  position: fixed; /* Thay đổi từ absolute sang fixed */
+  top: 20px; /* Khoảng cách từ đỉnh */
+  right: 20px; /* Khoảng cách từ phải */
+  z-index: 9999; /* Đảm bảo nút luôn nằm trên cùng */
+}
+
+.fullscreen-button {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Thêm shadow để nổi bật */
+}
+
+.fullscreen-button:hover {
+  background: rgba(255, 255, 255, 0.4);
+  transform: scale(1.1);
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+}
+
+.fullscreen-button i {
+  color: white;
+  font-size: 20px;
+}
+
+/* Responsive cho các kích thước màn hình */
+@media (max-width: 768px) {
+  .fullscreen-toggle {
+    top: 10px;
+    right: 10px;
+  }
+
+  .fullscreen-button {
+    width: 35px;
+    height: 35px;
+  }
+
+  .fullscreen-button i {
+    font-size: 18px;
+  }
+}
+
+/* Đảm bảo .content-wrapper xếp dọc trên mobile */
+@media (max-width: 600px) {
+  .content-wrapper {
+    flex-direction: column !important;
+    gap: 4px !important;
+    padding: 4px !important;
+    min-width: 100vw !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    height: auto !important;
+  }
+  .left-column {
+    order: 1 !important;
+    width: 100% !important;
+    padding: 4px !important;
+    margin: 0 !important;
+  }
+  .right-column {
+    order: 2 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    height: auto !important;
+    display: block !important;
+    padding: 4px !important;
+  }
+  .schedule-section {
+    width: 100% !important;
+    min-height: 200px !important;
+    display: block !important;
+    position: static !important;
+    padding-bottom: 20px !important;
+    overflow: visible !important;
+    height: auto !important;
+  }
+  .meeting-page,
+  .container,
+  body,
+  html {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    height: auto !important;
+    min-height: 100vh !important;
+  }
+  /* Đưa settings-icon lên góc trên cùng bên trái, KHÔNG ẩn các phần tử con */
+  .background-management {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    padding: 4px !important;
+    margin: 0 !important;
+    z-index: 10000 !important;
+    width: auto !important;
+    background: none !important;
+    box-shadow: none !important;
+    flex-direction: row !important;
+    align-items: flex-start !important;
+    gap: 0 !important;
+  }
+  .settings-icon {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 38px !important;
+    height: 38px !important;
+    font-size: 22px !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    border-radius: 50% !important;
+    box-shadow: none !important;
+  }
+  /* KHÔNG ẩn các phần tử con của .background-management để JS vẫn hoạt động */
+}
+
+@media (max-width: 480px) {
+  .fullscreen-toggle {
+    top: 5px;
+    right: 5px;
+  }
+
+  .fullscreen-button {
+    width: 30px;
+    height: 30px;
+  }
+
+  .fullscreen-button i {
+    font-size: 16px;
+  }
+}
+
+/* Responsive cho màn hình từ 1200px đến 1650px */
+/* Mobile - Small (320px and up) */
+/* Base styles */
+* {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  box-sizing: border-box;
+}
+/* Mobile First - Extra Small (320px and up) */
+@media (min-width: 320px) {
+  .meeting-screen,
+  .meeting-container {
+    max-width: 100%;
+    padding: 8px;
+  }
+
+  .content-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px;
+  }
+
+  .left-column,
+  .right-column {
+    width: 100%;
+  }
+
+  .header-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 6px;
+  }
+  .date-wrapper,
+  .welcome-text {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+    font-size: 12px; /* Giảm font-size */
+  }
+  .welcome-message,
+  .schedule-title {
+    font-size: 16px; /* Giảm font-size */
+    padding: 4px;
+  }
+
+  .meeting-info {
+    padding: 6px;
+    margin: 3px 0;
+    min-height: 100px; /* Giảm min-height */
+    height: auto; /* Cho phép co giãn theo nội dung */
+  }
+  .meeting-title {
+    font-size: 11px;
+    line-height: 1.2;
+    margin-bottom: 3px;
+  }
+
+  .meeting-time,
+  .meeting-stats,
+  .stats-row {
+    font-size: 10px;
+    gap: 3px;
+  }
+
+  .room-buttons {
+    margin-right: 4px;
+    padding: 0 8px;
+  }
+
+  .room-button {
+    min-width: 100px;
+    padding: 6px;
+  }
+
+  .logo {
+    width: 100px;
+  }
+}
+@media (min-width: 1300px) and (max-width: 1600px) {
+  .clock-container {
+    margin-top: 2%;
+    padding-right: 10px;
+  }
+}
+@media (min-width: 330px) and (max-width: 1200px) {
+  .room-button {
+    margin-bottom: -9%;
+  }
+}
+/* Tablet (768px and up) */
+@media (min-width: 768px) {
+  .clock-container {
+    margin-left: 5%;
+  }
+  .content-wrapper {
+    flex-direction: row;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .left-column {
+    width: 40%;
+    min-width: 280px;
+    max-width: 350px;
+  }
+
+  .right-column {
+    width: 60%;
+    flex-grow: 1;
+  }
+
+  .welcome-message,
+  .schedule-title {
+    font-size: 18px;
+    margin-top: -20px;
+  }
+  .current-date {
+    margin-left: 60%;
+    margin-top: -5%;
+  }
+  .date-wrapper,
+  .welcome-text {
+    font-size: 13px; /* Giảm font-size */
+    gap: 6px;
+    margin-bottom: 5px;
+  }
+
+  .meeting-info {
+    padding: 8px;
+    margin: 4px 0;
+    min-height: 110px;
+  }
+
+  .meeting-title {
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+
+  .meeting-time,
+  .meeting-stats,
+  .stats-row {
+    font-size: 11px;
+    gap: 4px;
+  }
+
+  .logo {
+    width: 120px;
+  }
+}
+
+/* Desktop (1200px and up) */
+@media (min-width: 1025px) {
+  .content-wrapper {
+    gap: 15px;
+    max-width: 1600px;
+    margin: 0 auto;
+    height: 100vh;
+  }
+
+  .left-column {
+    width: 35%;
+    max-width: 400px;
+  }
+
+  .right-column {
+    width: 65%;
+    height: 80%;
+  }
+
+  .welcome-message,
+  .schedule-title {
+    font-size: 34px;
+    margin-top: 18px;
+  }
+
+  .date-wrapper,
+  .welcome-text {
+    font-size: 14px; /* Giảm font-size */
+    gap: 8px;
+  }
+
+  .meeting-info {
+    padding: 8px 10px;
+    margin: 4px 0;
+    margin-bottom: 4%;
+    min-height: 115px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .meeting-header {
+    margin-bottom: 4px;
+  }
+
+  .meeting-title {
+    font-size: 12px;
+    line-height: 1.3;
+    margin-bottom: 4px;
+  }
+
+  .meeting-time,
+  .meeting-stats,
+  .stats-row {
+    font-size: 11px;
+    gap: 5px;
+  }
+
+  /* Tối ưu spacing cho thông tin stats */
+  .meeting-stats {
+    margin-top: 4px;
+  }
+
+  .stats-row {
+    display: flex;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+  .powerLavender1 {
+    margin-left: 60px;
+  }
+  .powerLavender2 {
+    margin-left: 63px;
+  }
+  /* Thêm ellipsis cho text dài */
+  .meeting-title,
+  .stats-row > * {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .currentLotus {
+    padding-right: 50px;
+  }
+  .room-button {
+    min-width: 110px;
+    padding: 8px;
+    margin-bottom: 40px;
+  }
+  .current-date {
+    margin-left: 20%;
+    margin-top: 8%;
+  }
+}
+
+/* Large Desktop (1440px and up) */
+@media (min-width: 1440px) {
+  .content-wrapper {
+    gap: 20px;
+    max-width: 1800px;
+  }
+
+  .left-column {
+    max-width: 420px;
+  }
+  .date-wrapper,
+  .welcome-text {
+    font-size: 14px; /* Giữ nguyên size */
+  }
+  .welcome-message {
+    margin-top: 15%;
+  }
+  .schedule-title {
+    font-size: 22px;
+  }
+  .clock-container {
+    margin-left: 5%;
+  }
+  .current-date {
+    margin-top: 8%;
+    margin-left: 24%;
+  }
+}
+
+/* Extra Large Desktop (1920px and up) */
+@media (min-width: 1920px) {
+  .content-wrapper {
+    max-width: 1900px;
+  }
+
+  .left-column {
+    max-width: 450px;
+  }
+  .schedule-actions {
+    position: relative;
+    justify-content: flex-start;
+  }
+
+  .date-picker {
+    position: absolute;
+    right: 0;
+    min-width: 200px;
+  }
+}
+
+/* Utility Classes */
+.text-ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.flex-auto {
+  flex: 1 1 auto;
+}
+
+.overflow-wrap {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  hyphens: auto;
+}
+
+@media (max-width: 850px) {
+  .date-wrapper {
+    font-size: 10px; /* Giảm font size */
+    gap: 4px; /* Giảm khoảng cách */
+    margin-bottom: 3px;
+  }
+
+  .logo {
+    width: 90px; /* Giảm width của logo */
+  }
+}
+.flex-grow {
+  flex-grow: 1;
+}
+
+.flex-shrink {
+  flex-shrink: 1;
+}
+
+.text-compact {
+  letter-spacing: -0.2px;
+}
+/*==================CSS Page 2================*/
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --secondary-gradient: linear-gradient(to bottom right, #20293cc4, #c6d9ff59);
+  --panel-spacing: clamp(10px, 2vw, 20px);
+  --font-small: clamp(0.8rem, 1.5vw, 1rem);
+  /* --font-medium: clamp(1rem, 2vw, 1.2rem); */
+  --font-large: clamp(1.5rem, 3vw, 2rem);
+  --font-xlarge: clamp(2rem, 5vw, 5em);
+}
+
+body {
+  margin: 0;
+  font-family: "Roboto", sans-serif;
+  min-height: 100vh;
+  background: var(--primary-gradient);
+}
+/* Đảm bảo không có margin hoặc padding không mong muốn */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.dynamic-page-container {
+  background-image: url(imgs/background1.jpg);
+  position: fixed; /* Đảm bảo nó cố định toàn màn hình */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Ví dụ về màu nền */
+  z-index: 100; /* Đảm bảo nó hiển thị phía trên các thành phần khác */
+}
+
+.dynamic-page-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+
+  background-size: cover;
+  background-position: center;
+  z-index: -1;
+}
+
+.dynamic-page-container {
+  height: 100vh; /* Sử dụng viewport height */
+  max-height: 100vh;
+  overflow: hidden;
+  padding: 0; /* Loại bỏ padding */
+  margin: 0; /* Loại bỏ margin */
+}
+.container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Prevent double scrollbars */
+}
+
+/* Header section */
+.header {
+  flex-shrink: 0; /* Prevent header from shrinking */
+}
+
+/* Table container */
+.table-container {
+  flex-shrink: 0; /* Prevent table from shrinking */
+}
+
+/* Room tabs (P1, P2, P3) */
+.room-tabs {
+  flex-shrink: 0; /* Prevent tabs from shrinking */
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+/* Hiệu ứng chuyển trang mượt mà */
+.dynamic-page-container {
+  transition: all 0.3s ease-in-out;
+}
+
+.dynamic-page-container.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.container {
+  display: grid;
+  grid-template-columns: minmax(250px, 1fr) minmax(300px, 2fr) minmax(
+      250px,
+      1fr
+    );
+  gap: var(--panel-spacing);
+  min-height: 100vh;
+  padding: var(--panel-spacing);
+}
+
+/* Copy các style từ index1.html vào đây */
+.dynamic-page-container .left-panel {
+  background: var(--primary-gradient);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--panel-spacing);
+  border-radius: 30px;
+}
+.container {
+  display: grid;
+  grid-template-columns: minmax(250px, 1fr) minmax(300px, 2fr) minmax(
+      250px,
+      1fr
+    );
+  gap: var(--panel-spacing);
+  min-height: 100vh;
+  padding: var(--panel-spacing);
+}
+
+.left-panel {
+  background: var(--primary-gradient);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--panel-spacing);
+  border-radius: 30px;
+}
+.currentDateElement-1 {
+  margin-left: 60%;
+  margin-top: 20%;
+}
+.time {
+  font-size: var(--font-xlarge);
+  font-weight: 300;
+  line-height: 1;
+}
+
+.date {
+  font-size: var(--font-medium);
+  font-weight: 300;
+}
+
+.device {
+  background: white;
+  border-radius: 10px;
+  padding: var(--panel-spacing);
+  margin-bottom: var(--panel-spacing);
+  color: black;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-left: 5%;
+  max-width: 320px;
+}
+
+.device-info {
+  flex: 1;
+  min-width: 200px;
+  font-size: var(--font-small);
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.online .status span {
+  color: green;
+}
+.offline .status span {
+  color: red;
+}
+
+.main-panel {
+  background: white;
+  border-radius: 20px;
+  padding: 2rem; /* Sử dụng đơn vị rem thay vì calc */
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem; /* Tạo khoảng cách đều giữa các phần tử con */
+  min-height: 400px; /* Chiều cao tối thiểu cho iPad */
+  height: 100%; /* Chiếm full chiều cao container cha */
+}
+
+.main-panel h1 {
+  font-size: clamp(1.5rem, 3vw, 2rem); /* Responsive font size */
+  margin-bottom: 0.5rem;
+  line-height: 1.2;
+}
+
+.current-status {
+  color: red;
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+.meeting-title {
+  font-size: 0.9rem;
+  line-height: 1.3;
+  margin-bottom: 1rem;
+  word-break: break-word; /* Ngắt dòng cho text dài */
+}
+.meeting-title-1 {
+  font-size: 1.2rem;
+  line-height: 1.3;
+  margin-bottom: 1rem;
+  word-break: break-word; /* Ngắt dòng cho text dài */
+}
+
+.meeting-time-1 {
+  color: blue;
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.purpose {
+  font-size: 1.1rem;
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+.purpose-value {
+  font-size: 1.25rem;
+  line-height: 1.4;
+  color: #333;
+  word-break: break-word;
+}
+
+.end-meeting {
+  margin-top: auto; /* Đẩy button xuống dưới cùng */
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  background: #ff4757;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: fit-content; /* Chiều rộng theo nội dung */
+  align-self: center; /* Căn giữa theo chiều ngang */
+}
+
+/* Media query cho iPad (768px) */
+@media (max-width: 768px) {
+  .main-panel {
+    padding: 1.5rem;
+    min-height: 350px;
+  }
+
+  .meeting-title-1 {
+    font-size: 1.5rem;
+  }
+
+  .meeting-time-1 {
+    font-size: 1.1rem;
+    flex-direction: column;
+  }
+
+  .end-meeting {
+    width: 100%;
+    padding: 1rem;
+  }
+}
+
+/* Media query cho màn hình nhỏ hơn (480px) */
+@media (max-width: 480px) {
+  .main-panel {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .main-panel h1 {
+    font-size: 1.3rem;
+  }
+
+  .meeting-title-1 {
+    font-size: 1.25rem;
+  }
+}
+.right-panel {
+  background: var(--secondary-gradient);
+  border-radius: 20px;
+  padding: calc(var(--panel-spacing) * 1.5);
+  color: white;
+  margin-bottom: 12px;
+}
+
+.right-panel h2 {
+  color: limegreen;
+  font-size: var(--font-medium);
+  margin-bottom: 1rem;
+  justify-content: center;
+}
+
+.upcoming-meeting {
+  margin-bottom: var(--panel-spacing);
+}
+.purpose,
+.purpose-value {
+  font-size: large;
+}
+.upcoming-meeting .meeting-title {
+  font-size: var(--font-medium);
+  color: white;
+}
+
+.upcoming-meeting .meeting-time-1 {
+  font-size: var(--font-small);
+  color: lightgray;
+}
+
+button {
+  padding: calc(var(--panel-spacing));
+  border: none;
+  border-radius: 10px;
+  font-size: var(--font-medium);
+  cursor: pointer;
+  color: white;
+  transition: opacity 0.2s;
+}
+
+.home-button {
+  background: #00c6ff;
+  width: 45%;
+  margin-bottom: 30px;
+  margin-left: 20px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: 600;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.3s ease; /* Thêm transition cho mượt */
+  cursor: pointer; /* Thêm cursor pointer để rõ là có thể click */
+}
+@media (max-width: 1650px) {
+  .home-button {
+    width: 50%;
+  }
+}
+.home-button:hover {
+  transform: scale(1.05); /* Scale to lớn hơn 5% khi hover */
+  background: #00b3ff; /* Màu hơi đậm hơn một chút khi hover */
+  box-shadow: 0 5px 15px rgba(0, 198, 255, 0.4); /* Thêm shadow khi hover */
+}
+
+.home-button:active {
+  transform: scale(0.95); /* Thu nhỏ lại khi click */
+}
+
+.home-button i {
+  font-size: 18px;
+  transition: transform 0.3s ease; /* Transition riêng cho icon */
+}
+
+.home-button:hover i {
+  transform: translateY(-2px); /* Icon nhảy lên một chút khi hover */
+}
+
+.home-button::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transform: rotate(45deg);
+  animation: shine 3s infinite;
+}
+
+@keyframes shine {
+  0% {
+    transform: translateX(-100%) rotate(45deg);
+  }
+  100% {
+    transform: translateX(100%) rotate(45deg);
+  }
+}
+.end-meeting {
+  background: red;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+.time-and-date-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%; /* Để auto scale full loại màn hình */
+}
+
+.time-1 {
+  margin-left: -30%;
+  margin-top: 40px;
+}
+
+@media (min-width: 1300px) and (max-width: 1369px) {
+  .time-1 {
+    margin-left: -17%;
+  }
+  .current-date-1 {
+    margin-left: 75%;
+  }
+}
+@media (min-width: 1370px) and (max-width: 1590px) {
+  .time-1 {
+    margin-left: -17%;
+  }
+  .currentDateElement-1 {
+    margin-top: 15%;
+  }
+}
+@media (min-width: 1370px) and (max-width: 1700px) {
+  .currentDateElement-1 {
+    margin-top: 25%;
+  }
+}
+@media (min-width: 1750px) {
+  .time-1 {
+    margin-left: -10%;
+  }
+  .currentDateElement-1 {
+    margin-top: 17%;
+    margin-left: 63%;
+  }
+}
+
+@media (max-width: 1200px) {
+  .time-1 {
+    font-size: xxx-large;
+  }
+}
+@media (max-width: 1024px) {
+  .container {
+    grid-template-columns: 1fr 1.5fr;
+    grid-template-rows: auto 1fr;
+  }
+
+  .right-panel {
+    grid-column: 1 / -1;
+    width: 100%;
+    height: 40%;
+    scroll-behavior: smooth;
+  }
+  .schedule-actions {
+    flex-direction: column; /* Xếp dọc trên màn hình nhỏ */
+  }
+
+  .upload-button,
+  .date-picker {
+    width: 100%;
+    box-sizing: border-box; /* Đảm bảo padding không làm tràn */
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+  }
+
+  .device-info {
+    min-width: 150px;
+  }
+}
+/* @media (min-width: 320px) and (max-width: 991px) {
+  .right-panel {
+    width: 100%;
+    height: 100%;
+    scroll-padding-top: 200px;
+  }
+} */
+
+/*================Device Control Card - Modern Design===============*/
+.device-control-card {
+  background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+  border-radius: 16px;
+  padding: 0;
+  width: 100%;
+  max-width: 340px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  margin-left: 5%;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.device-control-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.card-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.card-header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.device-icon {
+  width: 48px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.device-icon svg {
+  width: 26px;
+  height: 26px;
+  color: #ffffff;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
+.device-header-content {
+  flex: 1;
+  color: #ffffff;
+}
+
+.device-title {
+  margin: 0 0 4px 0;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.3;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.device-type {
+  font-size: 16px;
+  font-weight: 500;
+  opacity: 0.95;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.room-name {
+  font-size: 20px;
+  font-weight: 700;
+  background: linear-gradient(90deg, #ffffff 0%, #f0f9ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: none;
+}
+
+.device-subtitle {
+  font-size: 13px;
+  opacity: 0.8;
+  font-weight: 400;
+  margin-top: 2px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.card-body {
+  padding: 24px 20px 20px;
+}
+
+.device-controls {
+  margin-bottom: 20px;
+}
+
+.device-power-btn {
+  width: 100%;
+  background: linear-gradient(145deg, #4f46e5 0%, #6366f1 100%);
+  border: none;
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3), 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.device-power-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s;
+}
+
+.device-power-btn:hover::before {
+  left: 100%;
+}
+
+.device-power-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4), 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.device-power-btn:active {
+  transform: translateY(0px);
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3), 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.power-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.power-icon svg {
+  width: 20px;
+  height: 20px;
+  color: #ffffff;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+}
+
+.btn-text {
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.device-status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: rgba(248, 250, 252, 0.6);
+  border-radius: 8px;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  position: relative;
+}
+
+.status-dot.offline {
+  background: #ef4444;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+}
+
+.status-dot.online {
+  background: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+  animation: pulse-green 2s infinite;
+}
+
+.status-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.last-updated {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 400;
+}
+
+@keyframes pulse-green {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .device-control-card {
+    background: linear-gradient(145deg, #1e293b 0%, #334155 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .card-body {
+    background: transparent;
+  }
+
+  .device-status {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .device-control-card {
+    max-width: 100%;
+    margin-left: 0;
+    margin: 0 10px;
+  }
+
+  .card-header {
+    padding: 16px;
+  }
+
+  .card-body {
+    padding: 20px 16px 16px;
+  }
+
+  .device-title {
+    font-size: 16px;
+  }
+
+  .room-name {
+    font-size: 18px;
+  }
+}
+
+/* Old Air Conditioner styles - cleaned up and replaced by Device Control Card */
+
+.people-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+.people-indicator or {
+  transition: all 0.2s ease;
+}
+
+.people-indicator:hover {
+  transform: scale(1.02);
+  opacity: 0.9;
+}
+
+/* Indicator dot pulse animation for busy status */
+.indicator-dot.busy {
+  animation: pulse 1s infinite;
+}
+.indicator-dot,
+.people-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.indicator-dot.busy {
+  background-color: #ff0000;
+}
+
+.indicator-dot.available {
+  background-color: #4caf50;
+}
+.people-indicator.busy {
+  background-color: #ff0000;
+}
+.people-indicator .available {
+  background-color: #4caf50;
+}
+
+.people-dot {
+  background-color: #ff0000;
+}
+
+.people-indicator.occupied .people-dot {
+  background-color: #4caf50;
+}
+
+/* Status indicators styling */
+.indicators-container {
+  margin-top: 10px;
+  padding: 5px 0;
+}
+
+.status-group {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+}
+
+.status-indicator,
+.people-indicator {
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 4px;
+  /* background: rgba(255, 255, 255, 0.1); */
+  flex: 1;
+  min-width: 120px;
+}
+
+.indicator-dot,
+.people-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.indicator-dot.busy {
+  background-color: #ff0000;
+}
+
+.people-dot {
+  background-color: #ff0000;
+}
+
+.people-dot.occupied {
+  background-color: #4caf50;
+}
+
+.status-text,
+.people-status-text {
+  font-size: 1rem;
+  color: #000000;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Animation for status updates */
+@keyframes statusPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.status-update {
+  animation: statusPulse 0.5s ease;
+}
+
+/* Siêu nhỏ: iPhone SE, 12 mini, v.v. */
+@media (max-width: 400px) {
+  .content-wrapper,
+  .container {
+    flex-direction: column !important;
+    gap: 4px !important;
+    padding: 4px !important;
+    min-width: 100vw !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+  .left-column,
+  .right-column,
+  .main-panel,
+  .header-section {
+    width: 100% !important;
+    padding: 4px !important;
+    margin: 0 !important;
+    min-width: 0 !important;
+    max-width: 100vw !important;
+  }
+  .logo {
+    display: none !important;
+  }
+  .meeting-info,
+  .meeting-table,
+  .schedule-table {
+    font-size: 11px !important;
+    padding: 2px !important;
+    margin: 2px 0 !important;
+  }
+  .table-header > div,
+  .table-row > div {
+    font-size: 11px !important;
+    padding: 0 2px !important;
+  }
+  /* Ẩn các cột phụ, chỉ giữ lại cột chính */
+  .table-header > div:nth-child(n + 3),
+  .table-row > div:nth-child(n + 3) {
+    display: none !important;
+  }
+  .upload-button,
+  .date-picker,
+  .room-button {
+    width: 100% !important;
+    font-size: 13px !important;
+    padding: 6px !important;
+    margin: 2px 0 !important;
+  }
+  .background-management,
+  .room-buttons {
+    flex-direction: column !important;
+    gap: 6px !important;
+    padding: 4px !important;
+  }
+  .clock-container {
+    font-size: 1.5rem !important;
+    margin: 0 !important;
+    left: 0 !important;
+    top: 0 !important;
+  }
+  .welcome-message,
+  .welcome-text {
+    font-size: 1rem !important;
+    margin: 2px 0 !important;
+    padding: 2px !important;
+  }
+  .modal-container,
+  .background-preview-modal,
+  .name-change-modal {
+    width: 90vw !important;
+    min-width: 0 !important;
+    left: 5vw !important;
+    padding: 8px !important;
+  }
+  .modal-button,
+  .save-button,
+  .cancel-button {
+    font-size: 12px !important;
+    padding: 6px 10px !important;
+  }
+}
+
+@media (max-width: 600px) {
+  html,
+  body,
+  .meeting-page,
+  .content-wrapper {
+    height: 100vh !important;
+    min-height: 100vh !important;
+    overflow: auto !important;
+  }
+  .schedule-section {
+    min-height: 200px !important;
+    height: auto !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .fullscreen-toggle {
+    display: block !important;
+    position: fixed !important;
+    top: 10px !important;
+    right: 10px !important;
+    z-index: 9999 !important;
+  }
+  .background-management {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    padding: 4px !important;
+    margin: 0 !important;
+    z-index: 10000 !important;
+    width: auto !important;
+    background: none !important;
+    box-shadow: none !important;
+    flex-direction: row !important;
+    align-items: flex-start !important;
+    gap: 0 !important;
+  }
+  .settings-icon {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 38px !important;
+    height: 38px !important;
+    font-size: 22px !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    border-radius: 50% !important;
+    box-shadow: none !important;
+  }
+  /* Nếu có các phần tử khác trong .background-management, ẩn đi trên mobile */
+  .background-management > *:not(.settings-icon) {
+    display: none !important;
+  }
+  /* KHÔNG ẩn .settings-content! */
+  /* .background-management > *:not(.settings-icon) { display: none !important; } */
+  /* Nếu muốn ẩn các phần khác, chỉ ẩn các container upload/reset, KHÔNG ẩn .settings-content */
+  .background-management > .main-bg-container,
+  .background-management > .schedule-bg-container,
+  .background-management > .reset-background-button {
+    display: none !important;
+  }
+  .settings-content.active {
+    z-index: 10001 !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .schedule-actions {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 6px !important;
+    width: 100% !important;
+    margin-bottom: 8px !important;
+  }
+  .upload-button,
+  .date-picker {
+    width: 48% !important;
+    min-width: unset !important;
+    max-width: unset !important;
+    font-size: 13px !important;
+    padding: 6px 0 !important;
+    height: 36px !important;
+    border-radius: 16px !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    text-align: center !important;
+  }
+  .upload-button img,
+  .upload-icon {
+    width: 18px !important;
+    margin-left: 4px !important;
+  }
+}
+
+@media (min-width: 900px) {
+  .room-buttons {
+    margin-bottom: 40px;
+  }
+}
