@@ -1,226 +1,218 @@
 /**
  * Meeting Data Manager
- * Handles Excel file processing, data validation, caching, and meeting operations
+ * Handles meeting data validation, caching, and meeting operations
  */
 
 import { DateTimeUtils, FormatUtils, ValidationUtils } from "../utils/core.js";
-import { EXCEL_COLUMNS, TIME_CONFIG } from "../config/constants.js";
+import { TIME_CONFIG } from "../config/constants.js";
 
 export class MeetingDataManager {
   constructor() {
-    this.fileHandle = null;
-    this.lastFileData = null;
-    this.fileCheckInterval = null;
+    // Initialize with empty meeting data
+    this.initializeEmptyData();
   }
 
   /**
-   * Process Excel file and extract meeting data
+   * Initialize empty data structure
    */
-  async processExcelFile(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const data = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(data, { type: "array" });
-          const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-          const rawData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-
-          console.log("Raw Excel data:", rawData);
-
-          // Find header row
-          let headerRowIndex = -1;
-          for (let i = 0; i < rawData.length; i++) {
-            const row = rawData[i];
-            if (
-              Array.isArray(row) &&
-              row.some((cell) => cell && String(cell).includes("NGÀY"))
-            ) {
-              headerRowIndex = i;
-              break;
-            }
-          }
-
-          if (headerRowIndex === -1) {
-            throw new Error("Không tìm thấy header row trong file Excel");
-          }
-
-          const headerRow = rawData[headerRowIndex];
-          console.log(
-            "Header row found at index",
-            headerRowIndex,
-            ":",
-            headerRow
-          );
-
-          // Map columns
-          const columnIndices = this._mapColumns(headerRow);
-          console.log("Column indices found:", columnIndices);
-
-          // Validate column indices
-          if (
-            columnIndices.startTime === -1 ||
-            columnIndices.endTime === -1 ||
-            columnIndices.duration === -1
-          ) {
-            console.warn("Warning: Some columns not found", columnIndices);
-          }
-
-          const meetings = [];
-          for (let i = headerRowIndex + 1; i < rawData.length; i++) {
-            const row = rawData[i];
-            if (!row.some((cell) => cell)) continue; // Skip empty rows
-
-            console.log(`Processing row ${i}:`, {
-              rawStartTime: row[columnIndices.startTime],
-              rawEndTime: row[columnIndices.endTime],
-              rawDuration: row[columnIndices.duration],
-            });
-
-            // Extract time values with fallback
-            const startTimeValue = row[columnIndices.startTime] || row[3];
-            const endTimeValue = row[columnIndices.endTime] || row[4];
-            const durationValue = row[columnIndices.duration] || row[5];
-
-            const meeting = {
-              id: meetings.length + 1,
-              date: DateTimeUtils.formatDate(row[0]),
-              dayOfWeek: DateTimeUtils.formatDayOfWeek(row[1]),
-              room: FormatUtils.formatRoomName(row[2]),
-              startTime: DateTimeUtils.formatTime(startTimeValue),
-              endTime: DateTimeUtils.formatTime(endTimeValue),
-              duration: FormatUtils.formatDuration(durationValue),
-              content: row[7] || "",
-              purpose: FormatUtils.determinePurpose(row[7]),
-            };
-
-            console.log(`Processed meeting data:`, meeting);
-            meetings.push(meeting);
-          }
-
-          resolve(meetings);
-        } catch (error) {
-          console.error("Error processing Excel file:", error);
-          reject(error);
-        }
-      };
-
-      reader.onerror = () => reject(new Error("Lỗi đọc file"));
-      reader.readAsArrayBuffer(file);
-    });
+  initializeEmptyData() {
+    // Create empty meeting data cache
+    window.currentMeetingData = window.currentMeetingData || [];
   }
 
   /**
-   * Validate meetings for conflicts
+   * Get cached meeting data
    */
-  async validateMeetings(meetings) {
-    const conflicts = [];
-    const processedMeetings = new Set();
+  getCachedMeetingData() {
+    return window.currentMeetingData || [];
+  }
 
-    for (let i = 0; i < meetings.length; i++) {
-      const currentMeeting = meetings[i];
+  /**
+   * Set cached meeting data
+   */
+  setCachedMeetingData(data) {
+    window.currentMeetingData = data;
+    return data;
+  }
 
-      for (let j = 0; j < meetings.length; j++) {
-        if (i === j) continue;
-        const otherMeeting = meetings[j];
+  /**
+   * Create a new meeting
+   */
+  createMeeting(meetingData) {
+    const currentData = this.getCachedMeetingData();
+    const newMeeting = {
+      id: this._generateMeetingId(),
+      date: meetingData.date,
+      dayOfWeek: meetingData.dayOfWeek || this._getDayOfWeek(meetingData.date),
+      room: meetingData.room,
+      startTime: meetingData.startTime,
+      endTime: meetingData.endTime,
+      duration: DateTimeUtils.calculateDuration(
+        meetingData.startTime,
+        meetingData.endTime
+      ),
+      purpose: meetingData.purpose,
+      content: meetingData.content,
+      isEnded: false,
+      forceEndedByUser: false,
+      createdAt: new Date().toISOString(),
+    };
 
-        if (
-          currentMeeting.date === otherMeeting.date &&
-          FormatUtils.normalizeRoomName(currentMeeting.room) ===
-            FormatUtils.normalizeRoomName(otherMeeting.room)
-        ) {
-          if (DateTimeUtils.checkTimeConflict(currentMeeting, otherMeeting)) {
-            const conflictKey = [i, j].sort().join("_");
-            if (!processedMeetings.has(conflictKey)) {
-              conflicts.push({
-                meeting1: currentMeeting,
-                meeting2: otherMeeting,
-                message:
-                  `Xung đột lịch họp tại phòng ${currentMeeting.room} ngày ${currentMeeting.date}:\n` +
-                  `- Cuộc họp 1: "${
-                    currentMeeting.content || currentMeeting.purpose
-                  }" (${currentMeeting.startTime} - ${
-                    currentMeeting.endTime
-                  })\n` +
-                  `- Cuộc họp 2: "${
-                    otherMeeting.content || otherMeeting.purpose
-                  }" (${otherMeeting.startTime} - ${otherMeeting.endTime})`,
-              });
-              processedMeetings.add(conflictKey);
-            }
-          }
-        }
-      }
+    // Validate the new meeting
+    if (!this.validateMeetingData(newMeeting)) {
+      throw new Error("Invalid meeting data");
     }
 
-    return conflicts;
-  }
-
-  /**
-   * Validate new meeting against existing meetings
-   */
-  validateNewMeeting(newMeeting, existingMeetings) {
-    const conflicts = existingMeetings.filter(
-      (meeting) =>
-        meeting.date === newMeeting.date &&
-        FormatUtils.normalizeRoomName(meeting.room) ===
-          FormatUtils.normalizeRoomName(newMeeting.room) &&
-        DateTimeUtils.checkTimeConflict(meeting, newMeeting)
-    );
-
-    return conflicts;
-  }
-
-  /**
-   * Handle meeting end by user
-   */
-  handleEndMeeting(event) {
-    // Show confirmation dialog first
-    const isConfirmed = confirm(
-      "Bạn có chắc chắn muốn kết thúc cuộc họp này không?"
-    );
-
-    if (!isConfirmed) {
-      console.log("End meeting rejected by user");
-      return;
+    // Check for conflicts
+    const conflicts = this.checkMeetingConflicts(newMeeting, currentData);
+    if (conflicts.length > 0) {
+      throw new Error(
+        `Meeting conflicts with existing meeting(s): ${conflicts
+          .map((m) => `${m.content} (${m.startTime}-${m.endTime})`)
+          .join(", ")}`
+      );
     }
 
-    // Get cached data from memory
-    const data = this.getCachedMeetingData();
-    if (!data || !Array.isArray(data)) {
-      console.error("No meeting data found!");
-      return;
+    // Add to current data
+    const updatedData = [...currentData, newMeeting];
+    this.setCachedMeetingData(updatedData);
+
+    // Trigger update event
+    this._triggerMeetingUpdate(updatedData);
+
+    return newMeeting;
+  }
+
+  /**
+   * Generate unique meeting ID
+   */
+  _generateMeetingId() {
+    return `meeting_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+  }
+
+  /**
+   * Get day of week from date
+   */
+  _getDayOfWeek(dateStr) {
+    const dateParts = dateStr.split("/");
+    const day = parseInt(dateParts[0], 10);
+    const month = parseInt(dateParts[1], 10) - 1;
+    const year = parseInt(dateParts[2], 10);
+
+    const date = new Date(year, month, day);
+    const dayOfWeek = date.getDay();
+
+    // Map day of week (0-6) to Vietnamese format
+    const days = ["CN", "2", "3", "4", "5", "6", "7"];
+    return days[dayOfWeek];
+  }
+
+  /**
+   * Update an existing meeting
+   */
+  updateMeeting(meetingId, updatedData) {
+    const currentData = this.getCachedMeetingData();
+    const meetingIndex = currentData.findIndex(
+      (meeting) => meeting.id === meetingId
+    );
+
+    if (meetingIndex === -1) {
+      throw new Error("Meeting not found");
+    }
+
+    const existingMeeting = currentData[meetingIndex];
+    const updatedMeeting = {
+      ...existingMeeting,
+      ...updatedData,
+      lastUpdated: new Date().getTime(),
+    };
+
+    // Validate the updated meeting
+    if (!this.validateMeetingData(updatedMeeting)) {
+      throw new Error("Invalid meeting data");
+    }
+
+    // Check for conflicts (excluding the current meeting)
+    const otherMeetings = currentData.filter((m) => m.id !== meetingId);
+    const conflicts = this.checkMeetingConflicts(updatedMeeting, otherMeetings);
+    if (conflicts.length > 0) {
+      throw new Error(
+        `Meeting conflicts with existing meeting(s): ${conflicts
+          .map((m) => `${m.content} (${m.startTime}-${m.endTime})`)
+          .join(", ")}`
+      );
+    }
+
+    // Update the meeting
+    const newData = [...currentData];
+    newData[meetingIndex] = updatedMeeting;
+
+    this.setCachedMeetingData(newData);
+    this._triggerMeetingUpdate(newData);
+
+    return updatedMeeting;
+  }
+
+  /**
+   * Delete a meeting
+   */
+  deleteMeeting(meetingId) {
+    const currentData = this.getCachedMeetingData();
+    const updatedData = currentData.filter(
+      (meeting) => meeting.id !== meetingId
+    );
+
+    if (updatedData.length === currentData.length) {
+      throw new Error("Meeting not found");
+    }
+
+    this.setCachedMeetingData(updatedData);
+    this._triggerMeetingUpdate(updatedData);
+
+    return true;
+  }
+
+  /**
+   * End a meeting
+   */
+  endMeeting(meetingId) {
+    const currentData = this.getCachedMeetingData();
+    const meetingIndex = currentData.findIndex(
+      (meeting) => meeting.id === meetingId
+    );
+
+    if (meetingIndex === -1) {
+      throw new Error("Meeting not found");
     }
 
     const currentTime = DateTimeUtils.getCurrentTime();
-    const currentDate = DateTimeUtils.getCurrentDate();
+    const meeting = currentData[meetingIndex];
 
-    // Get room name from DOM
-    let roomName = null;
-    const mainPanel = event.target.closest(".main-panel");
-    if (mainPanel) {
-      const h1Element = mainPanel.querySelector("h1");
-      if (h1Element) {
-        roomName = h1Element.textContent.trim();
-      }
-    }
+    const updatedMeeting = {
+      ...meeting,
+      endTime: currentTime,
+      isEnded: true,
+      forceEndedByUser: true,
+      originalEndTime: meeting.endTime,
+      lastUpdated: new Date().getTime(),
+    };
 
-    // Fallback: try to get room name from page title or other sources
-    if (!roomName) {
-      const pageTitle = document.querySelector(
-        ".room-title, .meeting-room-title, h1"
-      );
-      if (pageTitle) {
-        roomName = pageTitle.textContent.trim();
-      }
-    }
+    const updatedData = [...currentData];
+    updatedData[meetingIndex] = updatedMeeting;
 
-    if (!roomName) {
-      console.error("Could not determine room name from DOM");
-      return;
-    }
+    this.setCachedMeetingData(updatedData);
+    this._triggerMeetingUpdate(updatedData);
+    this._showEndMeetingSuccess();
 
-    console.log("Ending meeting for room:", roomName);
+    return updatedMeeting;
+  }
+
+  /**
+   * End meeting by room and current time
+   */
+  endMeetingByRoom(roomName) {
+    const data = this.getCachedMeetingData();
+    const currentTime = DateTimeUtils.getCurrentTime();
 
     // Find current meeting using the extracted room name
     const roomMeetings = data.filter(
@@ -250,180 +242,132 @@ export class MeetingDataManager {
           forceEndedByUser: true,
         };
 
-        // Update memory storage
         this.setCachedMeetingData(updatedData);
-
-        // Trigger UI updates
         this._triggerMeetingUpdate(updatedData);
-
-        console.log("Meeting ended successfully:", currentMeeting);
-
-        // Show success message
         this._showEndMeetingSuccess();
+        return updatedData[currentMeetingIndex];
       }
-    } else {
-      console.log("No active meeting found to end");
-      alert("Không có cuộc họp đang diễn ra để kết thúc.");
     }
+
+    throw new Error("No active meeting found for this room");
   }
 
   /**
-   * File monitoring and auto-update
+   * Check for meeting time conflicts
    */
-  async startFileMonitoring(fileHandle) {
-    this.fileHandle = fileHandle;
+  checkMeetingConflicts(meeting, existingMeetings) {
+    const sameDay = existingMeetings.filter(
+      (m) => m.date === meeting.date && m.room === meeting.room
+    );
 
-    if (this.fileCheckInterval) {
-      clearInterval(this.fileCheckInterval);
-    }
-
-    this.fileCheckInterval = setInterval(() => {
-      this._checkFileChanges();
-    }, TIME_CONFIG.FILE_CHECK_INTERVAL);
-  }
-
-  stopFileMonitoring() {
-    if (this.fileCheckInterval) {
-      clearInterval(this.fileCheckInterval);
-      this.fileCheckInterval = null;
-    }
-    this.fileHandle = null;
-    this.lastFileData = null;
+    return sameDay.filter((m) => DateTimeUtils.checkTimeConflict(meeting, m));
   }
 
   /**
-   * Data caching methods
+   * Validate meeting data structure
    */
-  getCachedMeetingData() {
-    return window.currentMeetingData || [];
-  }
+  validateMeetingData(meeting) {
+    // Check required fields
+    if (
+      !meeting.date ||
+      !meeting.room ||
+      !meeting.startTime ||
+      !meeting.endTime
+    ) {
+      console.error("Missing required meeting fields");
+      return false;
+    }
 
-  setCachedMeetingData(data) {
-    window.currentMeetingData = data;
+    // Validate date format (dd/mm/yyyy)
+    if (!ValidationUtils.isValidDate(meeting.date)) {
+      console.error("Invalid date format:", meeting.date);
+      return false;
+    }
+
+    // Validate time formats (HH:MM)
+    if (
+      !ValidationUtils.isValidTime(meeting.startTime) ||
+      !ValidationUtils.isValidTime(meeting.endTime)
+    ) {
+      console.error("Invalid time format:", meeting.startTime, meeting.endTime);
+      return false;
+    }
+
+    // Check if end time is after start time
+    const startMinutes = DateTimeUtils.timeToMinutes(meeting.startTime);
+    const endMinutes = DateTimeUtils.timeToMinutes(meeting.endTime);
+    if (endMinutes <= startMinutes) {
+      console.error("End time must be after start time");
+      return false;
+    }
+
+    return true;
   }
 
   /**
-   * Filter today's meetings
+   * Get meetings for today
    */
-  getTodayMeetings(data = null) {
-    const meetingData = data || this.getCachedMeetingData();
-    const today = new Date();
+  getTodayMeetings(data) {
+    const today = DateTimeUtils.getCurrentDate();
+    return data.filter((meeting) => meeting.date === today);
+  }
 
-    return meetingData.filter((meeting) => {
-      const meetingDateParts = meeting.date.split("/");
-      const meetingDay = parseInt(meetingDateParts[0]);
-      const meetingMonth = parseInt(meetingDateParts[1]);
-      const meetingYear = parseInt(meetingDateParts[2]);
-
-      return (
-        meetingDay === today.getDate() &&
-        meetingMonth === today.getMonth() + 1 &&
-        meetingYear === today.getFullYear()
-      );
-    });
+  /**
+   * Get meetings for specific date
+   */
+  getMeetingsByDate(date, data) {
+    return data.filter((meeting) => meeting.date === date);
   }
 
   /**
    * Get meetings for specific room
    */
-  getRoomMeetings(roomName, data = null) {
-    const meetingData = data || this.getCachedMeetingData();
-    return meetingData.filter(
+  getRoomMeetings(roomName, data) {
+    return data.filter(
       (meeting) =>
-        FormatUtils.normalizeRoomKey(meeting.room) ===
-        FormatUtils.normalizeRoomKey(roomName)
+        FormatUtils.normalizeRoomName(meeting.room) ===
+        FormatUtils.normalizeRoomName(roomName)
     );
   }
 
   /**
-   * Private helper methods
+   * Get current active meeting for a room
    */
-  _mapColumns(headerRow) {
-    const columnIndices = {
-      date: -1,
-      dayOfWeek: -1,
-      room: -1,
-      startTime: -1,
-      endTime: -1,
-      duration: -1,
-      content: -1,
-    };
+  getCurrentMeeting(roomName, data) {
+    const currentTime = DateTimeUtils.getCurrentTime();
+    const roomMeetings = this.getRoomMeetings(roomName, data);
 
-    headerRow.forEach((cell, index) => {
-      if (!cell) return;
-
-      const cellStr = String(cell).toUpperCase().trim();
-
-      if (cellStr.includes("NGÀY")) columnIndices.date = index;
-      else if (cellStr.includes("THỨ")) columnIndices.dayOfWeek = index;
-      else if (cellStr.includes("PHÒNG")) columnIndices.room = index;
-      else if (cellStr.includes("BẮT ĐẦU")) columnIndices.startTime = index;
-      else if (cellStr.includes("KẾT THÚC")) columnIndices.endTime = index;
-      else if (cellStr.includes("THỜI LƯỢNG")) columnIndices.duration = index;
-      else if (cellStr.includes("NỘI DUNG")) columnIndices.content = index;
-    });
-
-    return columnIndices;
+    return roomMeetings.find(
+      (meeting) =>
+        DateTimeUtils.isTimeInRangeWithSeconds(
+          currentTime,
+          meeting.startTime,
+          meeting.endTime
+        ) &&
+        !meeting.isEnded &&
+        !meeting.forceEndedByUser
+    );
   }
 
-  async _checkFileChanges() {
-    if (!this.fileHandle) return;
+  /**
+   * Get upcoming meetings for a room
+   */
+  getUpcomingMeetings(roomName, data) {
+    const currentTime = DateTimeUtils.getCurrentTime();
+    const roomMeetings = this.getRoomMeetings(roomName, data);
 
-    try {
-      const file = await this.fileHandle.getFile();
-      const fileData = await file.text();
-
-      if (this.lastFileData === null) {
-        this.lastFileData = fileData;
-        return;
-      }
-
-      // Use current memory data to preserve ended meeting states
-      const currentData = this.getCachedMeetingData();
-      const endedMeetings = currentData.filter(
-        (meeting) => meeting.isEnded && meeting.forceEndedByUser
-      );
-
-      if (fileData !== this.lastFileData) {
-        console.log("File changed, updating...");
-        const newData = await this.processExcelFile(file);
-
-        // Merge new data with ended meetings status
-        const mergedData = newData.map((meeting) => {
-          const endedMeeting = endedMeetings.find(
-            (ended) =>
-              ended.id === meeting.id &&
-              ended.room === meeting.room &&
-              ended.date === meeting.date
-          );
-
-          if (endedMeeting) {
-            return endedMeeting;
-          }
-          return meeting;
-        });
-
-        this.setCachedMeetingData(mergedData);
-        this.lastFileData = fileData;
-
-        // Trigger UI updates
-        this._triggerMeetingUpdate(mergedData);
-      } else {
-        // When file hasn't changed, use current memory data
-        const todayMeetings = this.getTodayMeetings(currentData);
-        console.log("Using data from memory:", todayMeetings);
-
-        // Only trigger room status update
-        this._triggerRoomStatusUpdate(todayMeetings);
-      }
-    } catch (error) {
-      console.error("Error checking file:", error);
-      if (error.name === "NotAllowedError") {
-        this.stopFileMonitoring();
-      }
-    }
+    return roomMeetings.filter(
+      (meeting) =>
+        DateTimeUtils.timeToMinutes(meeting.startTime) >
+          DateTimeUtils.timeToMinutes(currentTime) &&
+        !meeting.isEnded &&
+        !meeting.forceEndedByUser
+    );
   }
 
+  /**
+   * Trigger meeting data update event
+   */
   _triggerMeetingUpdate(data) {
     // Dispatch custom event for meeting data update
     const event = new CustomEvent("meetingDataUpdated", {
@@ -432,6 +376,9 @@ export class MeetingDataManager {
     document.dispatchEvent(event);
   }
 
+  /**
+   * Trigger room status update event
+   */
   _triggerRoomStatusUpdate(todayMeetings) {
     // Dispatch custom event for room status update only
     const event = new CustomEvent("roomStatusUpdate", {
@@ -440,6 +387,9 @@ export class MeetingDataManager {
     document.dispatchEvent(event);
   }
 
+  /**
+   * Show end meeting success notification
+   */
   _showEndMeetingSuccess() {
     // Create success notification
     const notification = document.createElement("div");

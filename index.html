@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <!-- Excel library removed -->
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     <script src="https://alcdn.msauth.net/browser/2.39.0/js/msal-browser.min.js"></script>
@@ -229,13 +229,9 @@
                 <div class="schedule-content">
                   <h1 class="schedule-title">THÔNG TIN LỊCH HỌP</h1>
                   <div class="schedule-actions">
-                    <button class="upload-button">
-                      Upload Meeting From
-                      <img
-                        class="upload-icon"
-                        src="https://cdn.builder.io/api/v1/image/assets/TEMP/63b8f295cfd8166b173b26ae08d375f7f940976a41ab185ea145bd917523e537"
-                        alt="Upload icon"
-                      />
+                    <button class="create-meeting-button">
+                      Create Meeting
+                      <i class="fas fa-calendar-plus"></i>
                     </button>
                     <input type="date" id="meetingDate" class="date-picker" />
                   </div>
@@ -308,23 +304,54 @@
       <div class="modal-container"></div>
     </div>
 
-    <div class="window">
-      <div class="title-bar">
-        <div class="buttons">
-          <div class="close"></div>
-          <div class="minimize"></div>
-          <div class="maximize"></div>
+    <!-- Meeting Creation Form -->
+    <div id="createMeetingModal" class="modal" style="display: none">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Create New Meeting</h3>
+          <span class="close-modal">&times;</span>
         </div>
-        <div class="title">Progress Extracting</div>
-      </div>
-      <div class="content">
-        <p id="progressText">Processing Extract Data...</p>
-        <p id="progressStatus">Processing . . .</p>
-        <div id="progressContainer" class="progress-bar">
-          <div id="progressFill" class="progress"></div>
-        </div>
-        <div class="button-container">
-          <button id="stopUploadBtn">Cancel</button>
+        <div class="modal-body">
+          <form id="createMeetingForm">
+            <div class="form-group">
+              <label for="meetingRoom">Room:</label>
+              <select id="meetingRoom" required>
+                <option value="Phòng họp lầu 3">Phòng họp lầu 3</option>
+                <option value="Phòng họp lầu 4">Phòng họp lầu 4</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="meetingDate">Date:</label>
+              <input type="date" id="meetingDate" required />
+            </div>
+            <div class="form-group">
+              <label for="meetingStartTime">Start Time:</label>
+              <input type="time" id="meetingStartTime" required />
+            </div>
+            <div class="form-group">
+              <label for="meetingEndTime">End Time:</label>
+              <input type="time" id="meetingEndTime" required />
+            </div>
+            <div class="form-group">
+              <label for="meetingPurpose">Purpose:</label>
+              <select id="meetingPurpose" required>
+                <option value="Họp">Họp</option>
+                <option value="Đào tạo">Đào tạo</option>
+                <option value="Phỏng vấn">Phỏng vấn</option>
+                <option value="Thảo luận">Thảo luận</option>
+                <option value="Báo cáo">Báo cáo</option>
+                <option value="Khác">Khác</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="meetingContent">Content:</label>
+              <textarea id="meetingContent" rows="3" required></textarea>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="submit-btn">Create Meeting</button>
+              <button type="button" class="cancel-btn">Cancel</button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
