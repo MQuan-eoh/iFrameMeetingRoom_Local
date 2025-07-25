@@ -1309,6 +1309,7 @@ schedule-table {
   text-align: center;
 }
 /*//=======New update : Selection when user pick any date=====*/
+
 .date-picker {
   background-color: #ffffff; /* Nền trắng */
   color: #ffffff; /* Màu chữ tối */
@@ -1321,10 +1322,23 @@ schedule-table {
   height: 40px; /* Cùng chiều cao với button */
   padding: 0 12px;
   border: 1px solid #ccc;
-  border-radius: 23px;
+  border-radius: 12px;
   font-size: 1rem;
 }
-
+.create-meeting-button {
+  background-color: #ffffff; /* Nền trắng */
+  color: #ffffff; /* Màu chữ tối */
+  transition: border-color 0.3s ease; /* Hiệu ứng chuyển màu viền */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ */
+  background-color: rgba(130, 132, 255, 0.86);
+  text-align: center;
+  justify-content: center;
+  height: 50px; /* Cùng chiều cao với button */
+  padding: 0 12px;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  font-size: 1rem;
+}
 @media (min-width: 1370px) and (max-width: 1600px) {
   .date-picker {
     margin-left: 50%;
@@ -3826,7 +3840,7 @@ button:hover {
     width: 100% !important;
     margin-bottom: 8px !important;
   }
-  .upload-button,
+  .create-meeting-button,
   .date-picker {
     width: 48% !important;
     min-width: unset !important;

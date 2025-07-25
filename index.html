@@ -30,6 +30,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="assets/styles.css" />
+    <link rel="stylesheet" href="assets/schedule-booking.css" />
   </head>
   <body>
     <div class="meeting-page">
@@ -229,49 +230,263 @@
                 <div class="schedule-content">
                   <h1 class="schedule-title">THÔNG TIN LỊCH HỌP</h1>
                   <div class="schedule-actions">
-                    <button class="create-meeting-button">
+                    <button class="create-meeting-button" id="createMeetingBtn">
                       Create Meeting
                       <i class="fas fa-calendar-plus"></i>
                     </button>
                     <input type="date" id="meetingDate" class="date-picker" />
                   </div>
-                  <div
-                    class="schedule-table"
-                    role="table"
-                    aria-label="Meeting Schedule"
-                  >
-                    <div class="table-header" role="row">
-                      <div role="columnheader">TT</div>
-                      <div role="columnheader">Ngày</div>
-                      <div role="columnheader">Thứ</div>
-                      <div role="columnheader">Phòng</div>
-                      <div role="columnheader">Giờ bắt đầu</div>
-                      <div role="columnheader">Giờ kết thúc</div>
-                      <div role="columnheader">Thời gian sử dụng</div>
-                      <div role="columnheader">Mục đích sử dụng</div>
-                      <div role="columnheader">Nội dung</div>
+
+                  <!-- New Schedule Booking System -->
+                  <div class="schedule-booking-container">
+                    <!-- View Controls -->
+                    <div class="schedule-view-controls">
+                      <div class="schedule-view-title">Lịch Phòng Họp</div>
+                      <div class="schedule-view-selector">
+                        <div class="view-option active" data-view="week">
+                          Tuần
+                        </div>
+                        <div class="view-option" data-view="month">Tháng</div>
+                      </div>
                     </div>
-                    <div class="table-row" role="row">
-                      <div role="cell">1</div>
-                      <div role="cell">12/11/2024</div>
-                      <div role="cell">Thứ 3</div>
-                      <div role="cell">P. 1</div>
-                      <div role="cell">7:30</div>
-                      <div role="cell">9:30</div>
-                      <div role="cell">2:00</div>
-                      <div role="cell">Họp</div>
-                      <div role="cell">Họp nội bộ</div>
+
+                    <!-- Navigation Controls -->
+                    <div class="schedule-navigation">
+                      <button class="nav-arrow" id="prevPeriod">
+                        <i class="fas fa-chevron-left"></i> Trước
+                      </button>
+                      <div class="current-period" id="currentPeriod">
+                        25/07 - 31/07/2025
+                      </div>
+                      <button class="nav-arrow" id="nextPeriod">
+                        Sau <i class="fas fa-chevron-right"></i>
+                      </button>
                     </div>
-                    <div class="table-row" role="row">
-                      <div role="cell">2</div>
-                      <div role="cell">14/11/2024</div>
-                      <div role="cell">Thứ 5</div>
-                      <div role="cell">P. 2</div>
-                      <div role="cell">7:30</div>
-                      <div role="cell">17:00</div>
-                      <div role="cell">9:30</div>
-                      <div role="cell">Đào tạo</div>
-                      <div role="cell">Đào tạo</div>
+
+                    <!-- Week View -->
+                    <div class="schedule-week-view" id="weekView">
+                      <!-- Time Column -->
+                      <div class="time-column">
+                        <div class="day-header"></div>
+                        <div class="time-slot">07:00</div>
+                        <div class="time-slot">08:00</div>
+                        <div class="time-slot">09:00</div>
+                        <div class="time-slot">10:00</div>
+                        <div class="time-slot">11:00</div>
+                        <div class="time-slot">12:00</div>
+                        <div class="time-slot">13:00</div>
+                        <div class="time-slot">14:00</div>
+                        <div class="time-slot">15:00</div>
+                        <div class="time-slot">16:00</div>
+                        <div class="time-slot">17:00</div>
+                        <div class="time-slot">18:00</div>
+                      </div>
+
+                      <!-- Day Columns (Will be populated by JavaScript) -->
+                      <div class="day-column" data-day="0">
+                        <div class="day-header">
+                          <div class="day-name">T2</div>
+                          <div class="day-date">25/07</div>
+                        </div>
+                        <div class="day-grid">
+                          <div class="day-cell" data-time="07:00"></div>
+                          <div class="day-cell" data-time="08:00"></div>
+                          <div class="day-cell" data-time="09:00">
+                            <div
+                              class="meeting-event purpose-hop"
+                              style="top: 0; height: 120px"
+                            >
+                              <div class="event-room">P.HỌP LẦU 3</div>
+                              <div class="event-title">
+                                Họp nội bộ phòng kỹ thuật
+                              </div>
+                              <div class="event-time">09:00 - 11:00</div>
+                            </div>
+                          </div>
+                          <div class="day-cell" data-time="10:00"></div>
+                          <div class="day-cell" data-time="11:00"></div>
+                          <div class="day-cell" data-time="12:00"></div>
+                          <div class="day-cell" data-time="13:00">
+                            <div
+                              class="meeting-event purpose-daotao"
+                              style="top: 0; height: 180px"
+                            >
+                              <div class="event-room">P.HỌP LẦU 4</div>
+                              <div class="event-title">Đào tạo nhân sự mới</div>
+                              <div class="event-time">13:00 - 16:00</div>
+                            </div>
+                          </div>
+                          <div class="day-cell" data-time="14:00"></div>
+                          <div class="day-cell" data-time="15:00"></div>
+                          <div class="day-cell" data-time="16:00"></div>
+                          <div class="day-cell" data-time="17:00"></div>
+                          <div class="day-cell" data-time="18:00"></div>
+                        </div>
+                      </div>
+
+                      <!-- Sample day columns for the rest of the week -->
+                      <div class="day-column day-today" data-day="1">
+                        <div class="day-header">
+                          <div class="day-name">T3</div>
+                          <div class="day-date">26/07</div>
+                        </div>
+                        <div class="day-grid">
+                          <div class="day-cell" data-time="07:00"></div>
+                          <div class="day-cell" data-time="08:00"></div>
+                          <div class="day-cell" data-time="09:00"></div>
+                          <div class="day-cell" data-time="10:00"></div>
+                          <div class="day-cell" data-time="11:00"></div>
+                          <div class="day-cell" data-time="12:00"></div>
+                          <div class="day-cell" data-time="13:00"></div>
+                          <div class="day-cell" data-time="14:00">
+                            <div
+                              class="meeting-event purpose-phongvan"
+                              style="top: 0; height: 60px"
+                            >
+                              <div class="event-room">P.HỌP LẦU 3</div>
+                              <div class="event-title">Phỏng vấn ứng viên</div>
+                              <div class="event-time">14:00 - 15:00</div>
+                            </div>
+                          </div>
+                          <div class="day-cell" data-time="15:00"></div>
+                          <div class="day-cell" data-time="16:00"></div>
+                          <div class="day-cell" data-time="17:00"></div>
+                          <div class="day-cell" data-time="18:00"></div>
+                        </div>
+                      </div>
+
+                      <!-- More day columns will be dynamically generated by JS -->
+                      <div class="day-column" data-day="2">
+                        <div class="day-header">
+                          <div class="day-name">T4</div>
+                          <div class="day-date">27/07</div>
+                        </div>
+                        <div class="day-grid">
+                          <div class="day-cell" data-time="07:00"></div>
+                          <div class="day-cell" data-time="08:00"></div>
+                          <div class="day-cell" data-time="09:00"></div>
+                          <div class="day-cell" data-time="10:00"></div>
+                          <div class="day-cell" data-time="11:00"></div>
+                          <div class="day-cell" data-time="12:00"></div>
+                          <div class="day-cell" data-time="13:00"></div>
+                          <div class="day-cell" data-time="14:00"></div>
+                          <div class="day-cell" data-time="15:00"></div>
+                          <div class="day-cell" data-time="16:00"></div>
+                          <div class="day-cell" data-time="17:00"></div>
+                          <div class="day-cell" data-time="18:00"></div>
+                        </div>
+                      </div>
+
+                      <div class="day-column" data-day="3">
+                        <div class="day-header">
+                          <div class="day-name">T5</div>
+                          <div class="day-date">28/07</div>
+                        </div>
+                        <div class="day-grid">
+                          <div class="day-cell" data-time="07:00"></div>
+                          <div class="day-cell" data-time="08:00"></div>
+                          <div class="day-cell" data-time="09:00"></div>
+                          <div class="day-cell" data-time="10:00">
+                            <div
+                              class="meeting-event purpose-thaoluan"
+                              style="top: 0; height: 120px"
+                            >
+                              <div class="event-room">P.HỌP LẦU 3</div>
+                              <div class="event-title">Thảo luận dự án mới</div>
+                              <div class="event-time">10:00 - 12:00</div>
+                            </div>
+                          </div>
+                          <div class="day-cell" data-time="11:00"></div>
+                          <div class="day-cell" data-time="12:00"></div>
+                          <div class="day-cell" data-time="13:00"></div>
+                          <div class="day-cell" data-time="14:00"></div>
+                          <div class="day-cell" data-time="15:00"></div>
+                          <div class="day-cell" data-time="16:00"></div>
+                          <div class="day-cell" data-time="17:00"></div>
+                          <div class="day-cell" data-time="18:00"></div>
+                        </div>
+                      </div>
+
+                      <div class="day-column" data-day="4">
+                        <div class="day-header">
+                          <div class="day-name">T6</div>
+                          <div class="day-date">29/07</div>
+                        </div>
+                        <div class="day-grid">
+                          <div class="day-cell" data-time="07:00"></div>
+                          <div class="day-cell" data-time="08:00"></div>
+                          <div class="day-cell" data-time="09:00"></div>
+                          <div class="day-cell" data-time="10:00"></div>
+                          <div class="day-cell" data-time="11:00"></div>
+                          <div class="day-cell" data-time="12:00"></div>
+                          <div class="day-cell" data-time="13:00"></div>
+                          <div class="day-cell" data-time="14:00"></div>
+                          <div class="day-cell" data-time="15:00">
+                            <div
+                              class="meeting-event purpose-baocao"
+                              style="top: 0; height: 120px"
+                            >
+                              <div class="event-room">P.HỌP LẦU 4</div>
+                              <div class="event-title">Báo cáo kết quả quý</div>
+                              <div class="event-time">15:00 - 17:00</div>
+                            </div>
+                          </div>
+                          <div class="day-cell" data-time="16:00"></div>
+                          <div class="day-cell" data-time="17:00"></div>
+                          <div class="day-cell" data-time="18:00"></div>
+                        </div>
+                      </div>
+
+                      <div class="day-column" data-day="5">
+                        <div class="day-header">
+                          <div class="day-name">T7</div>
+                          <div class="day-date">30/07</div>
+                        </div>
+                        <div class="day-grid">
+                          <div class="day-cell" data-time="07:00"></div>
+                          <div class="day-cell" data-time="08:00"></div>
+                          <div class="day-cell" data-time="09:00"></div>
+                          <div class="day-cell" data-time="10:00"></div>
+                          <div class="day-cell" data-time="11:00"></div>
+                          <div class="day-cell" data-time="12:00"></div>
+                          <div class="day-cell" data-time="13:00"></div>
+                          <div class="day-cell" data-time="14:00"></div>
+                          <div class="day-cell" data-time="15:00"></div>
+                          <div class="day-cell" data-time="16:00"></div>
+                          <div class="day-cell" data-time="17:00"></div>
+                          <div class="day-cell" data-time="18:00"></div>
+                        </div>
+                      </div>
+
+                      <div class="day-column" data-day="6">
+                        <div class="day-header">
+                          <div class="day-name">CN</div>
+                          <div class="day-date">31/07</div>
+                        </div>
+                        <div class="day-grid">
+                          <div class="day-cell" data-time="07:00"></div>
+                          <div class="day-cell" data-time="08:00"></div>
+                          <div class="day-cell" data-time="09:00"></div>
+                          <div class="day-cell" data-time="10:00"></div>
+                          <div class="day-cell" data-time="11:00"></div>
+                          <div class="day-cell" data-time="12:00"></div>
+                          <div class="day-cell" data-time="13:00"></div>
+                          <div class="day-cell" data-time="14:00"></div>
+                          <div class="day-cell" data-time="15:00"></div>
+                          <div class="day-cell" data-time="16:00"></div>
+                          <div class="day-cell" data-time="17:00"></div>
+                          <div class="day-cell" data-time="18:00"></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Month View (Hidden by default) -->
+                    <div
+                      class="schedule-month-view"
+                      id="monthView"
+                      style="display: none"
+                    >
+                      <!-- Will be populated by JavaScript -->
                     </div>
                   </div>
                 </div>
@@ -304,37 +519,104 @@
       <div class="modal-container"></div>
     </div>
 
-    <!-- Meeting Creation Form -->
-    <div id="createMeetingModal" class="modal" style="display: none">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3>Create New Meeting</h3>
-          <span class="close-modal">&times;</span>
+    <!-- Meeting Creation Modal -->
+    <div id="bookingModal" class="booking-modal">
+      <div class="booking-modal-content">
+        <div class="booking-modal-header">
+          <h2 class="booking-modal-title">Đặt Lịch Phòng Họp</h2>
+          <button class="modal-close" id="closeBookingModal">&times;</button>
         </div>
-        <div class="modal-body">
-          <form id="createMeetingForm">
+
+        <div class="booking-modal-body">
+          <form id="bookingForm" class="booking-form">
+            <!-- Room Selection -->
             <div class="form-group">
-              <label for="meetingRoom">Room:</label>
-              <select id="meetingRoom" required>
+              <label for="bookingRoom">Phòng Họp:</label>
+              <select id="bookingRoom" class="form-control" required>
+                <option value="">-- Chọn phòng họp --</option>
                 <option value="Phòng họp lầu 3">Phòng họp lầu 3</option>
                 <option value="Phòng họp lầu 4">Phòng họp lầu 4</option>
               </select>
             </div>
+
+            <!-- Date Picker -->
             <div class="form-group">
-              <label for="meetingDate">Date:</label>
-              <input type="date" id="meetingDate" required />
+              <label for="bookingDate">Ngày:</label>
+              <input
+                type="date"
+                id="bookingDate"
+                class="form-control"
+                required
+              />
             </div>
+
+            <!-- Time Selection -->
             <div class="form-group">
-              <label for="meetingStartTime">Start Time:</label>
-              <input type="time" id="meetingStartTime" required />
+              <label for="bookingStartTime">Thời gian bắt đầu:</label>
+              <select id="bookingStartTime" class="form-control" required>
+                <option value="">-- Chọn --</option>
+                <option value="07:00">07:00</option>
+                <option value="07:30">07:30</option>
+                <option value="08:00">08:00</option>
+                <option value="08:30">08:30</option>
+                <option value="09:00">09:00</option>
+                <option value="09:30">09:30</option>
+                <option value="10:00">10:00</option>
+                <option value="10:30">10:30</option>
+                <option value="11:00">11:00</option>
+                <option value="11:30">11:30</option>
+                <option value="12:00">12:00</option>
+                <option value="12:30">12:30</option>
+                <option value="13:00">13:00</option>
+                <option value="13:30">13:30</option>
+                <option value="14:00">14:00</option>
+                <option value="14:30">14:30</option>
+                <option value="15:00">15:00</option>
+                <option value="15:30">15:30</option>
+                <option value="16:00">16:00</option>
+                <option value="16:30">16:30</option>
+                <option value="17:00">17:00</option>
+                <option value="17:30">17:30</option>
+                <option value="18:00">18:00</option>
+              </select>
             </div>
+
             <div class="form-group">
-              <label for="meetingEndTime">End Time:</label>
-              <input type="time" id="meetingEndTime" required />
+              <label for="bookingEndTime">Thời gian kết thúc:</label>
+              <select id="bookingEndTime" class="form-control" required>
+                <option value="">-- Chọn --</option>
+                <option value="07:30">07:30</option>
+                <option value="08:00">08:00</option>
+                <option value="08:30">08:30</option>
+                <option value="09:00">09:00</option>
+                <option value="09:30">09:30</option>
+                <option value="10:00">10:00</option>
+                <option value="10:30">10:30</option>
+                <option value="11:00">11:00</option>
+                <option value="11:30">11:30</option>
+                <option value="12:00">12:00</option>
+                <option value="12:30">12:30</option>
+                <option value="13:00">13:00</option>
+                <option value="13:30">13:30</option>
+                <option value="14:00">14:00</option>
+                <option value="14:30">14:30</option>
+                <option value="15:00">15:00</option>
+                <option value="15:30">15:30</option>
+                <option value="16:00">16:00</option>
+                <option value="16:30">16:30</option>
+                <option value="17:00">17:00</option>
+                <option value="17:30">17:30</option>
+                <option value="18:00">18:00</option>
+                <option value="18:30">18:30</option>
+                <option value="19:00">19:00</option>
+              </select>
             </div>
+
+            <!-- Purpose Selection -->
             <div class="form-group">
-              <label for="meetingPurpose">Purpose:</label>
-              <select id="meetingPurpose" required>
+              <label for="bookingPurpose">Mục đích:</label>
+              <select id="bookingPurpose" class="form-control" required>
+                <option value="">-- Chọn mục đích --</option>
                 <option value="Họp">Họp</option>
                 <option value="Đào tạo">Đào tạo</option>
                 <option value="Phỏng vấn">Phỏng vấn</option>
@@ -343,15 +625,50 @@
                 <option value="Khác">Khác</option>
               </select>
             </div>
+
+            <!-- Department Selection -->
             <div class="form-group">
-              <label for="meetingContent">Content:</label>
-              <textarea id="meetingContent" rows="3" required></textarea>
+              <label for="bookingDepartment">Phòng/Ban:</label>
+              <select id="bookingDepartment" class="form-control">
+                <option value="">-- Chọn phòng ban --</option>
+                <option value="Kỹ thuật">Phòng Kỹ thuật</option>
+                <option value="Kinh doanh">Phòng Kinh doanh</option>
+                <option value="Nhân sự">Phòng Nhân sự</option>
+                <option value="Kế toán">Phòng Kế toán</option>
+                <option value="Marketing">Phòng Marketing</option>
+                <option value="Ban Giám đốc">Ban Giám đốc</option>
+                <option value="Khác">Khác</option>
+              </select>
             </div>
-            <div class="form-actions">
-              <button type="submit" class="submit-btn">Create Meeting</button>
-              <button type="button" class="cancel-btn">Cancel</button>
+
+            <!-- Meeting Title -->
+            <div class="form-group form-full-width">
+              <label for="bookingTitle">Tiêu đề cuộc họp:</label>
+              <input
+                type="text"
+                id="bookingTitle"
+                class="form-control"
+                placeholder="Nhập tiêu đề cuộc họp"
+                required
+              />
+            </div>
+
+            <!-- Meeting Description -->
+            <div class="form-group form-full-width">
+              <label for="bookingDescription">Nội dung chi tiết:</label>
+              <textarea
+                id="bookingDescription"
+                class="form-control"
+                rows="4"
+                placeholder="Nhập nội dung chi tiết cuộc họp"
+              ></textarea>
             </div>
           </form>
+        </div>
+
+        <div class="booking-modal-footer">
+          <button class="btn btn-cancel" id="cancelBooking">Hủy</button>
+          <button class="btn btn-save" id="saveBooking">Lưu</button>
         </div>
       </div>
     </div>

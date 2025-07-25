@@ -4,7 +4,7 @@
  *
  * @version 2.0.0
  * @author EoH Company
- * @description Local meeting room management with direct booking functionality
+ * @description Local meeting room management with Excel file processing
  */
 
 // Import all modules
@@ -46,8 +46,6 @@ class MeetingRoomApp {
       this.managers.uiManager = new UIManager();
       this.managers.roomManager = new RoomManager();
       this.managers.deviceManager = new DeviceManager();
-
-      // Initialize booking manager
       this.managers.scheduleBookingManager = new ScheduleBookingManager();
 
       // Initialize event handlers (must be last as it depends on other managers)
