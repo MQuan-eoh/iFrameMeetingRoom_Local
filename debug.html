@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Meeting Room - Debug Mode</title>
+
+    <!-- External Libraries -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+    <script src="https://alcdn.msauth.net/browser/2.39.0/js/msal-browser.min.js"></script>
+
+    <!-- Fonts and Icons -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="assests/styles.css" />
+
+    <!-- Debug Script (loaded first) -->
+    <script src="script/debug.js"></script>
+  </head>
+  <body>
+    <!-- Main Meeting Interface -->
+    <div class="meeting-page">
+      <div
+        class="dynamic-page-container"
+        id="dynamicPageContent"
+        style="display: none"
+      ></div>
+      <div class="meeting-screen">
+        <div class="meeting-container">
+          <div class="content-wrapper">
+            <div class="left-column">
+              <div class="header-section">
+                <div class="date-wrapper">
+                  <div class="logo">Time</div>
+                  <div class="current-date">
+                    <span id="currentDate">Loading...</span>
+                  </div>
+                </div>
+                <div class="time-wrapper">
+                  <div class="current-time" id="currentTime">00:00:00</div>
+                </div>
+              </div>
+
+              <div class="room-info">
+                <div class="room-name" id="roomName">Meeting Room</div>
+                <div class="meeting-status" id="meetingStatusIndicator">
+                  <div class="status-text">Available</div>
+                </div>
+              </div>
+
+              <div class="current-meeting" id="currentMeetingInfo">
+                <div class="no-meeting">
+                  <div class="no-meeting-icon">📅</div>
+                  <div class="no-meeting-text">No meeting scheduled</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="right-column">
+              <div class="upcoming-meetings">
+                <div class="section-title">Upcoming Meetings</div>
+                <div class="meetings-list" id="upcomingMeetingsContainer">
+                  <div class="no-upcoming">No upcoming meetings</div>
+                </div>
+              </div>
+
+              <div class="controls-section">
+                <button class="control-btn" id="refreshBtn">
+                  <i class="fas fa-sync-alt"></i>
+                  Refresh
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upload Progress Modal -->
+    <div id="progressModal" class="modal">
+      <div class="content">
+        <p id="progressText">Processing...</p>
+        <p id="progressStatus">Processing . . .</p>
+        <div id="progressContainer" class="progress-bar">
+          <div id="progressFill" class="progress"></div>
+        </div>
+        <div class="button-container">
+          <button id="stopUploadBtn">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Debug Info Panel -->
+    <div
+      id="debug-info"
+      style="
+        position: fixed;
+        bottom: 10px;
+        left: 10px;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+        font-family: monospace;
+        font-size: 12px;
+        z-index: 9999;
+      "
+    >
+      <div>🐛 Debug Mode Active</div>
+      <div id="module-status">Modules: Loading...</div>
+      <div id="error-count">Errors: 0</div>
+    </div>
+
+    <!-- External Scripts -->
+    <script src="@eohjsc/era-widget/src/index.js"></script>
+
+    <!-- Main Application -->
+    <script type="module">
+      debugLog("🚀 Starting main application in debug mode", "info");
+
+      let moduleLoadCount = 0;
+      let errorCount = 0;
+
+      // Update debug info panel
+      function updateDebugInfo() {
+        const moduleStatus = document.getElementById("module-status");
+        const errorCountEl = document.getElementById("error-count");
+
+        if (moduleStatus)
+          moduleStatus.textContent = `Modules: ${moduleLoadCount}/7`;
+        if (errorCountEl) errorCountEl.textContent = `Errors: ${errorCount}`;
+      }
+
+      // Enhanced error tracking
+      window.addEventListener("error", () => {
+        errorCount++;
+        updateDebugInfo();
+      });
+
+      window.addEventListener("unhandledrejection", () => {
+        errorCount++;
+        updateDebugInfo();
+      });
+
+      try {
+        // Import and initialize main application
+        debugLog("📦 Importing main application module...", "info");
+
+        const mainApp = await import("./script/index-new.js");
+        moduleLoadCount++;
+        updateDebugInfo();
+
+        debugLog("✅ Main application module loaded successfully", "success");
+        debugLog("🎯 Application should be initializing...", "info");
+
+        // Give the app time to initialize
+        setTimeout(() => {
+          debugLog("🔍 Running post-initialization checks...", "info");
+
+          // Check if global variables are set
+          if (window.currentMeetingData !== undefined) {
+            debugLog("✅ Global meeting data initialized", "success");
+          } else {
+            debugLog("⚠️ Global meeting data not found", "warning");
+          }
+
+          // Check if DOM elements have been updated
+          const timeElement = document.getElementById("currentTime");
+          if (timeElement && timeElement.textContent !== "00:00:00") {
+            debugLog("✅ Time display is updating", "success");
+          } else {
+            debugLog("⚠️ Time display may not be updating", "warning");
+          }
+
+          debugLog("📊 Application initialization complete", "success");
+        }, 2000);
+      } catch (error) {
+        errorCount++;
+        updateDebugInfo();
+        debugLog(
+          `❌ Failed to load main application: ${error.message}`,
+          "error"
+        );
+        console.error("Main app loading error:", error);
+      }
+
+      // Manual test buttons (for debugging)
+      window.addEventListener("keydown", (event) => {
+        if (event.ctrlKey && event.shiftKey) {
+          switch (event.key) {
+            case "D":
+              event.preventDefault();
+              debugLog("🔄 Manual debug check triggered", "info");
+              window.checkModuleLoading();
+              window.checkDOMElements();
+              break;
+            case "M":
+              event.preventDefault();
+              debugLog("💾 Memory check triggered", "info");
+              if (window.performance && window.performance.memory) {
+                const memory = window.performance.memory;
+                const used =
+                  Math.round((memory.usedJSHeapSize / 1048576) * 100) / 100;
+                debugLog(`Current memory usage: ${used}MB`, "info");
+              }
+              break;
+            case "C":
+              event.preventDefault();
+              document.getElementById("debug-content").innerHTML = "";
+              debugLog("🧹 Debug console cleared", "info");
+              break;
+          }
+        }
+      });
+
+      updateDebugInfo();
+    </script>
+
+    <style>
+      /* Debug mode specific styles */
+      .debug-highlight {
+        outline: 2px solid #e74c3c !important;
+        outline-offset: 2px;
+      }
+
+      .debug-info {
+        background: rgba(52, 152, 219, 0.1) !important;
+        border: 1px solid #3498db;
+      }
+    </style>
+  </body>
+</html>
