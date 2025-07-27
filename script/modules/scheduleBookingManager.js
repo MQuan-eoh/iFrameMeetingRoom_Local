@@ -24,10 +24,50 @@ export class ScheduleBookingManager {
   _initialize() {
     this._attachEventListeners();
     this._updateCurrentPeriod();
+    this._renderWeekView();
     this._renderTimeIndicator();
+    // Set up periodic updates for current time indicator and date
+    setInterval(() => {
+      this._renderTimeIndicator();
 
-    // Set up periodic updates for current time indicator
-    setInterval(() => this._renderTimeIndicator(), 60000); // Update every minute
+      // Get Vietnam time
+      const now = new Date();
+      now.setHours(now.getHours() + 7 - new Date().getTimezoneOffset() / 60);
+
+      // Update day-date every hour to keep it current
+      if (now.getMinutes() === 0) {
+        this._renderWeekView();
+      }
+
+      // If today is different from when we last rendered, update the view
+      const today = now.getDate();
+      if (this._lastRenderedDay !== today) {
+        this._lastRenderedDay = today;
+        this.currentDate = "reset"; // Reset to current date
+        this._renderWeekView();
+      }
+    }, 60000); // Update every minute
+
+    // Store current day to detect date changes
+    const now = new Date();
+    now.setHours(now.getHours() + 7 - new Date().getTimezoneOffset() / 60);
+    this._lastRenderedDay = now.getDate();
+  }
+
+  /**
+   * Scroll the schedule view
+   */
+  _scrollSchedule(direction) {
+    const weekView = document.getElementById("weekView");
+    if (!weekView) return;
+
+    const scrollAmount = 200; // pixels to scroll
+
+    if (direction === "up") {
+      weekView.scrollBy({ top: -scrollAmount, behavior: "smooth" });
+    } else {
+      weekView.scrollBy({ top: scrollAmount, behavior: "smooth" });
+    }
   }
 
   /**
@@ -49,6 +89,25 @@ export class ScheduleBookingManager {
     document
       .getElementById("nextPeriod")
       .addEventListener("click", () => this._navigatePeriod(1));
+
+    // Add Today button if it doesn't exist
+    let todayButton = document.getElementById("todayButton");
+    if (!todayButton) {
+      todayButton = document.createElement("button");
+      todayButton.id = "todayButton";
+      todayButton.className = "nav-arrow";
+      todayButton.innerHTML = "Hôm nay";
+      todayButton.style.margin = "0 10px";
+
+      // Insert between prev and next buttons
+      const currentPeriodEl = document.getElementById("currentPeriod");
+      if (currentPeriodEl) {
+        currentPeriodEl.parentNode.insertBefore(todayButton, currentPeriodEl);
+      }
+    }
+
+    // Add event listener for Today button
+    todayButton.addEventListener("click", () => this._navigatePeriod("today"));
 
     // Create meeting button
     document
@@ -126,12 +185,15 @@ export class ScheduleBookingManager {
    * Navigate between periods (weeks/months)
    */
   _navigatePeriod(direction) {
-    if (this.currentView === "week") {
+    if (direction === "today") {
+      // Reset to current date
+      this.currentDate = "reset";
+    } else if (this.currentView === "week") {
       // Move by 7 days
       this.currentDate.setDate(this.currentDate.getDate() + 7 * direction);
     } else {
       // Move by 1 month
-      this.currentDate.setMonth(this.currentDate.getDate() + direction);
+      this.currentDate.setMonth(this.currentDate.getMonth() + direction);
     }
 
     this._updateCurrentPeriod();
@@ -201,7 +263,9 @@ export class ScheduleBookingManager {
       .querySelectorAll(".current-time-indicator")
       .forEach((el) => el.remove());
 
+    // Get Vietnam time (UTC+7)
     const now = new Date();
+    now.setHours(now.getHours() + 7 - new Date().getTimezoneOffset() / 60);
     const currentHour = now.getHours();
     const currentMinute = now.getMinutes();
 
@@ -215,7 +279,7 @@ export class ScheduleBookingManager {
     }
 
     // Find the current day column
-    const today = new Date().getDay(); // 0 = Sunday, 1 = Monday, ...
+    const today = now.getDay(); // 0 = Sunday, 1 = Monday, ...
     const dayIndex = today === 0 ? 6 : today - 1; // Convert to our 0 = Monday format
 
     const dayColumn = document.querySelector(
@@ -245,6 +309,23 @@ export class ScheduleBookingManager {
     indicator.appendChild(timeLabel);
 
     currentHourCell.appendChild(indicator);
+
+    // Scroll to current time if during work hours
+    if (minutesSince7am >= 0 && minutesSince7am <= 12 * 60) {
+      // Auto scroll to current time position (with offset to show it in the middle)
+      const weekView = document.getElementById("weekView");
+      if (weekView) {
+        const hourHeight = 60; // Height of each hour cell in pixels
+        const scrollPosition =
+          (currentHour - 7) * hourHeight + (currentMinute / 60) * hourHeight;
+        // Scroll to position with offset to center current time
+        const offset = weekView.clientHeight / 2;
+        weekView.scrollTo({
+          top: Math.max(0, scrollPosition - offset),
+          behavior: "smooth",
+        });
+      }
+    }
   }
 
   /**
@@ -578,6 +659,77 @@ export class ScheduleBookingManager {
         document.body.removeChild(notification);
       }, 300);
     }, 3000);
+  }
+
+  /**
+   * Render week view with proper dates
+   */
+  _renderWeekView() {
+    // Use Vietnam timezone (UTC+7) for all date calculations
+    // Get current date in Vietnam timezone
+    const vietnamDate = new Date();
+    vietnamDate.setHours(
+      vietnamDate.getHours() + 7 - new Date().getTimezoneOffset() / 60
+    );
+
+    // If current date is not set or manually changed, use current Vietnam date
+    if (!this.currentDate || this.currentDate === "reset") {
+      this.currentDate = new Date(vietnamDate);
+    }
+
+    // Get start of week from current date (Monday)
+    const startOfWeek = new Date(this.currentDate);
+    startOfWeek.setDate(
+      this.currentDate.getDate() - this.currentDate.getDay() + 1
+    ); // Monday
+
+    // If Sunday, go back to previous Monday
+    if (this.currentDate.getDay() === 0) {
+      startOfWeek.setDate(startOfWeek.getDate() - 7);
+    }
+
+    // Update each day column with the correct date
+    for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
+      const currentDate = new Date(startOfWeek);
+      currentDate.setDate(startOfWeek.getDate() + dayIndex);
+
+      // Format the date for display (DD/MM)
+      const day = String(currentDate.getDate()).padStart(2, "0");
+      const month = String(currentDate.getMonth() + 1).padStart(2, "0");
+
+      // Get day name in Vietnamese
+      const dayNames = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
+      const dayName = dayNames[currentDate.getDay()];
+
+      // Find the day column
+      const dayColumn = document.querySelector(
+        `.day-column[data-day="${dayIndex}"]`
+      );
+      if (dayColumn) {
+        // Update date
+        const dateElement = dayColumn.querySelector(".day-date");
+        if (dateElement) {
+          dateElement.textContent = `${day}/${month}`;
+        }
+
+        // Update day name
+        const nameElement = dayColumn.querySelector(".day-name");
+        if (nameElement) {
+          nameElement.textContent = dayName;
+        }
+
+        // Mark current day
+        const isToday =
+          currentDate.getDate() === vietnamDate.getDate() &&
+          currentDate.getMonth() === vietnamDate.getMonth() &&
+          currentDate.getFullYear() === vietnamDate.getFullYear();
+
+        dayColumn.classList.toggle("day-today", isToday);
+      }
+    }
+
+    // Re-render current time indicator after updating the dates
+    this._renderTimeIndicator();
   }
 
   /**
