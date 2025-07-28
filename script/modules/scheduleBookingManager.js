@@ -3,6 +3,8 @@
  * Manages room booking scheduling functionality
  */
 
+import { DateTimeUtils } from "../utils/core.js";
+
 export class ScheduleBookingManager {
   constructor() {
     this.currentView = "week";
@@ -65,17 +67,20 @@ export class ScheduleBookingManager {
     setInterval(() => {
       this._renderTimeIndicator();
 
-      // Get Vietnam time
-      const now = new Date();
-      now.setHours(now.getHours() + 7 - new Date().getTimezoneOffset() / 60);
+      // Get proper Vietnam time using DateTimeUtils
+      const vietnamTime = DateTimeUtils.getCurrentTime(); // Returns "HH:MM:SS"
+      const timeParts = vietnamTime.split(":");
+      const currentMinute = parseInt(timeParts[1]);
 
       // Update day-date every hour to keep it current
-      if (now.getMinutes() === 0) {
+      if (currentMinute === 0) {
         this._renderWeekView();
       }
 
-      // If today is different from when we last rendered, update the view
-      const today = now.getDate();
+      // Get proper Vietnam date for day checking
+      const vietnamDate = DateTimeUtils.getCurrentDate(); // Returns "DD/MM/YYYY"
+      const [day] = vietnamDate.split("/");
+      const today = parseInt(day);
       if (this._lastRenderedDay !== today) {
         this._lastRenderedDay = today;
         this.currentDate = "reset"; // Reset to current date
@@ -305,23 +310,39 @@ export class ScheduleBookingManager {
       .querySelectorAll(".current-time-indicator")
       .forEach((el) => el.remove());
 
-    // Get Vietnam time (UTC+7)
-    const now = new Date();
-    now.setHours(now.getHours() + 7 - new Date().getTimezoneOffset() / 60);
-    const currentHour = now.getHours();
-    const currentMinute = now.getMinutes();
+    // Get proper Vietnam time using DateTimeUtils
+    const vietnamTime = DateTimeUtils.getCurrentTime(); // Returns "HH:MM:SS"
+    const timeParts = vietnamTime.split(":");
+    const currentHour = parseInt(timeParts[0]);
+    const currentMinute = parseInt(timeParts[1]);
 
     // Calculate position within the day cell
     const minutesSinceMidnight = currentHour * 60 + currentMinute;
     const minutesSince7am = minutesSinceMidnight - 7 * 60; // Adjust for 7am start
 
     if (minutesSince7am < 0 || minutesSince7am > 12 * 60) {
-      // Outside of display hours
+      // Outside of display hours (7am to 7pm)
       return;
     }
 
-    // Find the current day column
-    const today = now.getDay(); // 0 = Sunday, 1 = Monday, ...
+    // Get proper Vietnam date for today calculation
+    const vietnamDate = DateTimeUtils.getCurrentDate(); // Returns "DD/MM/YYYY"
+    const now = new Date();
+
+    // Get proper Vietnam timezone date
+    const timezoneOffsetHours = -now.getTimezoneOffset() / 60;
+    let vietnamDateObj;
+
+    if (timezoneOffsetHours === 7) {
+      vietnamDateObj = now;
+    } else {
+      const offsetDifference = 7 - timezoneOffsetHours;
+      vietnamDateObj = new Date(
+        now.getTime() + offsetDifference * 60 * 60 * 1000
+      );
+    }
+
+    const today = vietnamDateObj.getDay(); // 0 = Sunday, 1 = Monday, ...
     const dayIndex = today === 0 ? 6 : today - 1; // Convert to our 0 = Monday format
 
     const dayColumn = document.querySelector(
