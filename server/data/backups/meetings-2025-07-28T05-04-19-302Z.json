@@ -126,21 +126,5 @@
     "createdAt": "2025-07-28T04:37:27.785Z",
     "isEnded": false,
     "forceEndedByUser": false
-  },
-  {
-    "id": "meeting_1753679089193",
-    "room": "Phòng họp lầu 4",
-    "date": "28/07/2025",
-    "dayOfWeek": "2",
-    "startTime": "12:00",
-    "endTime": "12:30",
-    "duration": "30m",
-    "purpose": "Phỏng vấn",
-    "department": "",
-    "title": "25",
-    "content": "25",
-    "createdAt": "2025-07-28T05:04:49.193Z",
-    "isEnded": false,
-    "forceEndedByUser": false
   }
 ]
