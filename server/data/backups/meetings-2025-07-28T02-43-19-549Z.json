@@ -1,0 +1,18 @@
+[
+  {
+    "id": "meeting_1753670568377",
+    "room": "Phòng họp lầu 3",
+    "date": "28/07/2025",
+    "dayOfWeek": "2",
+    "startTime": "08:30",
+    "endTime": "10:00",
+    "duration": "1h30m",
+    "purpose": "Họp",
+    "department": "",
+    "title": "d",
+    "content": "test",
+    "createdAt": "2025-07-28T02:42:48.377Z",
+    "isEnded": false,
+    "forceEndedByUser": false
+  }
+]

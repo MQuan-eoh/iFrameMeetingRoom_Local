@@ -5,11 +5,18 @@
 
 import { DateTimeUtils, FormatUtils, ValidationUtils } from "../utils/core.js";
 import { TIME_CONFIG } from "../config/constants.js";
+import dataService from "../services/dataService.js";
 
 export class MeetingDataManager {
   constructor() {
     // Initialize with empty meeting data
     this.initializeEmptyData();
+    this.isOnline = true;
+    this.isLoading = false;
+    this.lastSync = null;
+
+    // Setup periodic sync
+    this._setupPeriodicSync();
   }
 
   /**
@@ -18,6 +25,8 @@ export class MeetingDataManager {
   initializeEmptyData() {
     // Create empty meeting data cache
     window.currentMeetingData = window.currentMeetingData || [];
+    // Load data from server
+    this.loadMeetingsFromServer();
   }
 
   /**
@@ -36,9 +45,77 @@ export class MeetingDataManager {
   }
 
   /**
+   * Load meetings from server
+   */
+  async loadMeetingsFromServer() {
+    if (this.isLoading) return this.getCachedMeetingData();
+
+    this.isLoading = true;
+    try {
+      const meetings = await dataService.getMeetings();
+      this.setCachedMeetingData(meetings);
+      this.isOnline = true;
+      this.lastSync = new Date();
+
+      // Dispatch event for UI update
+      document.dispatchEvent(
+        new CustomEvent("meetingDataUpdated", {
+          detail: { meetings },
+        })
+      );
+
+      return meetings;
+    } catch (error) {
+      console.error("Failed to load meetings from server:", error);
+      this.isOnline = false;
+      return this.getCachedMeetingData();
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  /**
+   * Save all meetings to server
+   */
+  async saveMeetingsToServer() {
+    try {
+      const meetings = this.getCachedMeetingData();
+      await dataService.updateAllMeetings(meetings);
+      this.isOnline = true;
+      this.lastSync = new Date();
+      return true;
+    } catch (error) {
+      console.error("Failed to save meetings to server:", error);
+      this.isOnline = false;
+      return false;
+    }
+  }
+
+  /**
+   * Setup periodic sync with server
+   */
+  _setupPeriodicSync() {
+    // Sync every 5 minutes
+    setInterval(() => {
+      this.loadMeetingsFromServer();
+    }, 5 * 60 * 1000);
+
+    // Listen for online/offline events
+    window.addEventListener("online", () => {
+      console.log("🌐 Browser went online, syncing data...");
+      this.saveMeetingsToServer();
+    });
+
+    // Listen for API connection errors
+    window.addEventListener("apiConnectionError", () => {
+      this.isOnline = false;
+    });
+  }
+
+  /**
    * Create a new meeting
    */
-  createMeeting(meetingData) {
+  async createMeeting(meetingData) {
     const currentData = this.getCachedMeetingData();
     const newMeeting = {
       id: this._generateMeetingId(),
@@ -76,6 +153,19 @@ export class MeetingDataManager {
     // Add to current data
     const updatedData = [...currentData, newMeeting];
     this.setCachedMeetingData(updatedData);
+
+    try {
+      // Save to server if online
+      if (this.isOnline) {
+        await dataService.createMeeting(newMeeting);
+        this.lastSync = new Date();
+      } else {
+        console.warn("Server connection unavailable, saving locally only");
+      }
+    } catch (error) {
+      console.error("Failed to save meeting to server:", error);
+      this.isOnline = false;
+    }
 
     // Trigger update event
     this._triggerMeetingUpdate(updatedData);

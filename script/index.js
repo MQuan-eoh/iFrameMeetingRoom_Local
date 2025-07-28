@@ -14,6 +14,7 @@ import RoomManager from "./modules/roomManager.js";
 import DeviceManager from "./modules/deviceManager.js";
 import EventHandlers from "./modules/eventHandlers.js";
 import ScheduleBookingManager from "./modules/scheduleBookingManager.js";
+import ConnectionStatusManager from "./modules/connectionStatusManager.js";
 
 // Import utilities and constants
 import { DateTimeUtils } from "./utils/core.js";
@@ -52,6 +53,11 @@ class MeetingRoomApp {
 
       // Initialize event handlers (must be last as it depends on other managers)
       this.managers.eventHandlers = new EventHandlers(this.managers);
+
+      // Initialize connection status manager
+      this.managers.connectionStatusManager = new ConnectionStatusManager(
+        this.managers.meetingDataManager
+      );
 
       // Setup global error handling
       this._setupGlobalErrorHandling();

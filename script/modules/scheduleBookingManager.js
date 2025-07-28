@@ -500,6 +500,19 @@ export class ScheduleBookingManager {
     // Update storage
     window.currentMeetingData = meetingData;
 
+    // Try to save to server if MeetingDataManager is available
+    if (
+      window.meetingRoomApp &&
+      window.meetingRoomApp.managers &&
+      window.meetingRoomApp.managers.meetingDataManager
+    ) {
+      window.meetingRoomApp.managers.meetingDataManager
+        .saveMeetingsToServer()
+        .catch((err) =>
+          console.error("Failed to save meeting from booking manager:", err)
+        );
+    }
+
     // Dispatch event for other modules
     const event = new CustomEvent("meetingDataUpdated", {
       detail: {
