@@ -4,7 +4,7 @@
  */
 
 import { UI_CONFIG, STORAGE_KEYS } from "../config/constants.js";
-import { DOMUtils } from "../utils/core.js";
+import { DOMUtils, DateTimeUtils } from "../utils/core.js";
 
 export class UIManager {
   constructor() {
@@ -304,10 +304,12 @@ export class UIManager {
       const timeElements = document.querySelectorAll('[id^="currentTime"]');
       timeElements.forEach((element) => {
         if (element) {
-          const now = new Date();
-          now.setHours(now.getHours() + 7); // UTC+7
-          const hours = String(now.getHours()).padStart(2, "0");
-          const minutes = String(now.getMinutes()).padStart(2, "0");
+          // Use the proper Vietnam time from DateTimeUtils
+          const vietnamTime = DateTimeUtils.getCurrentTime();
+          // Extract hours and minutes from the format "HH:MM:SS"
+          const timeParts = vietnamTime.split(":");
+          const hours = timeParts[0];
+          const minutes = timeParts[1];
           element.textContent = `${hours}:${minutes}`;
         }
       });
@@ -340,12 +342,26 @@ export class UIManager {
       ];
 
       const now = new Date();
-      now.setHours(now.getHours() + 7); // UTC+7
 
-      const dayOfWeek = daysOfWeek[now.getDay()];
-      const day = now.getDate();
-      const month = months[now.getMonth()];
-      const year = now.getFullYear();
+      // Get proper Vietnam timezone date
+      const timezoneOffsetHours = -now.getTimezoneOffset() / 60;
+      let vietnamDate;
+
+      if (timezoneOffsetHours === 7) {
+        // Already in Vietnam timezone
+        vietnamDate = now;
+      } else {
+        // Convert to Vietnam timezone (UTC+7)
+        const offsetDifference = 7 - timezoneOffsetHours;
+        vietnamDate = new Date(
+          now.getTime() + offsetDifference * 60 * 60 * 1000
+        );
+      }
+
+      const dayOfWeek = daysOfWeek[vietnamDate.getDay()];
+      const day = vietnamDate.getDate();
+      const month = months[vietnamDate.getMonth()];
+      const year = vietnamDate.getFullYear();
 
       const formattedDate = `${dayOfWeek}, ${day} ${month} ${year}`;
 
