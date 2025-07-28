@@ -4,6 +4,12 @@
  */
 
 import { DateTimeUtils } from "../utils/core.js";
+import {
+  initTeamsTimeDropdown,
+  createFullDayTimeOptions,
+  updateEndTimeOptions,
+  toggleTimeDropdown,
+} from "./teamsTimeDropdown.js";
 
 export class ScheduleBookingManager {
   constructor() {
@@ -173,10 +179,29 @@ export class ScheduleBookingManager {
       .addEventListener("click", () => this._saveBooking());
 
     // Form events
-    const startTimeSelect = document.getElementById("bookingStartTime");
-    if (startTimeSelect) {
-      startTimeSelect.addEventListener("change", () =>
+    const startTimeInput = document.getElementById("bookingStartTime");
+    const endTimeInput = document.getElementById("bookingEndTime");
+
+    if (startTimeInput) {
+      startTimeInput.addEventListener("input", () =>
         this._updateEndTimeOptions()
+      );
+      startTimeInput.addEventListener("focus", () =>
+        this._populateStartTimeOptions()
+      );
+      // Validate time format on blur
+      startTimeInput.addEventListener("blur", (e) =>
+        this._validateTimeFormat(e.target)
+      );
+    }
+
+    if (endTimeInput) {
+      endTimeInput.addEventListener("focus", () =>
+        this._updateEndTimeOptions()
+      );
+      // Validate time format on blur
+      endTimeInput.addEventListener("blur", (e) =>
+        this._validateTimeFormat(e.target)
       );
     }
 
@@ -200,6 +225,10 @@ export class ScheduleBookingManager {
         this._quickBookSlot(dayDate, dayIndex, timeSlot);
       });
     });
+
+    // Initialize time selection behavior like Teams
+    // Use the imported function instead of internal implementation
+    initTeamsTimeDropdown();
   }
 
   /**
@@ -419,6 +448,9 @@ export class ScheduleBookingManager {
    */
   _openBookingModal() {
     this.bookingModal.classList.add("active");
+
+    // Populate start time options when modal opens
+    this._populateStartTimeOptions();
   }
 
   /**
@@ -433,37 +465,178 @@ export class ScheduleBookingManager {
    * Update end time options based on selected start time
    */
   _updateEndTimeOptions() {
-    const startTimeSelect = document.getElementById("bookingStartTime");
-    const endTimeSelect = document.getElementById("bookingEndTime");
+    const startTimeInput = document.getElementById("bookingStartTime");
+    const endTimeDatalist = document.getElementById("endTimeOptions");
 
-    if (!startTimeSelect || !endTimeSelect || !startTimeSelect.value) return;
+    if (!startTimeInput || !endTimeDatalist) return;
 
-    // Clear existing end time options
-    endTimeSelect.innerHTML = '<option value="">-- Chọn --</option>';
+    // Use full day options from _createFullDayTimeOptions instead
+    this._createFullDayTimeOptions();
+
+    const startTimeValue = startTimeInput.value.trim();
+    if (!startTimeValue) return;
+
+    // Validate start time format first
+    if (!this._validateTimeFormat(startTimeInput)) return;
 
     // Get start time value
-    const [startHour, startMinute] = startTimeSelect.value
-      .split(":")
-      .map(Number);
+    const [startHour, startMinute] = startTimeValue.split(":").map(Number);
 
-    // Create options starting from startTime + 30 minutes
-    for (let hour = startHour; hour <= 19; hour++) {
-      for (let minute of hour === startHour ? [30, 0] : [0, 30]) {
-        // Skip the first option if it's the start minute
-        if (hour === startHour && minute === 0) continue;
-        if (hour === startHour && minute <= startMinute) continue;
+    // Calculate minimum end time (start time + 30 minutes)
+    let minEndHour = startHour;
+    let minEndMinute = startMinute + 30;
 
-        // Don't offer end times past 7pm
-        if (hour === 19 && minute === 30) continue;
+    if (minEndMinute >= 60) {
+      minEndHour += 1;
+      minEndMinute -= 60;
+    }
 
-        const timeValue = `${hour.toString().padStart(2, "0")}:${minute
-          .toString()
-          .padStart(2, "0")}`;
-        const option = document.createElement("option");
-        option.value = timeValue;
-        option.textContent = timeValue;
-        endTimeSelect.appendChild(option);
+    // The minimum end time to highlight
+    const minEndTime = `${minEndHour.toString().padStart(2, "0")}:${minEndMinute
+      .toString()
+      .padStart(2, "0")}`;
+
+    // Highlight and scroll to the suggested minimum end time
+    Array.from(endTimeDatalist.querySelectorAll("option")).forEach((option) => {
+      // Get the time value of this option
+      const optionTime = option.value;
+      const [optionHour, optionMinute] = optionTime.split(":").map(Number);
+      const optionMinutes = optionHour * 60 + optionMinute;
+      const minEndMinutes = minEndHour * 60 + minEndMinute;
+
+      if (optionTime === minEndTime) {
+        // This is the suggested minimum end time - highlight it
+        option.setAttribute("selected", "selected");
+        option.style.backgroundColor = "#e6f0ff";
+        option.style.fontWeight = "bold";
+
+        // Scroll to this option when dropdown opens
+        setTimeout(() => {
+          option.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 100);
+      } else if (optionMinutes < minEndMinutes) {
+        // These times are before the minimum end time - dim them
+        option.style.opacity = "0.5";
+        option.style.color = "#999";
       }
+    });
+  }
+
+  /**
+   * Populate start time options with smart suggestions from current time
+   */
+  _populateStartTimeOptions() {
+    const startTimeDatalist = document.getElementById("startTimeOptions");
+    if (!startTimeDatalist) return;
+
+    // Let the _createFullDayTimeOptions handle populating all the options
+    this._createFullDayTimeOptions();
+
+    // Get current Vietnam time to highlight or scroll to
+    const vietnamTime = DateTimeUtils.getCurrentTime(); // Returns "HH:MM:SS"
+    const [currentHour, currentMinute] = vietnamTime.split(":").map(Number);
+
+    // Round up to next 30-minute interval for suggestion
+    let suggestedHour = currentHour;
+    let suggestedMinute = currentMinute <= 30 ? 30 : 0;
+
+    if (suggestedMinute === 0) {
+      suggestedHour += 1;
+    }
+
+    // If it's past working hours, suggest from 7 AM next day (or current time if during working hours)
+    if (suggestedHour >= 19) {
+      suggestedHour = 7;
+      suggestedMinute = 0;
+    } else if (suggestedHour < 7) {
+      suggestedHour = 7;
+      suggestedMinute = 0;
+    }
+
+    // Highlight the suggested time option
+    const suggestedTime = `${suggestedHour
+      .toString()
+      .padStart(2, "0")}:${suggestedMinute.toString().padStart(2, "0")}`;
+
+    // Find and highlight suggested option
+    Array.from(startTimeDatalist.querySelectorAll("option")).forEach(
+      (option) => {
+        if (option.value === suggestedTime) {
+          option.setAttribute("selected", "selected");
+          option.style.backgroundColor = "#e6f0ff";
+          option.style.fontWeight = "bold";
+
+          // Scroll to this option when dropdown opens
+          setTimeout(() => {
+            option.scrollIntoView({ behavior: "smooth", block: "center" });
+          }, 100);
+        }
+      }
+    );
+  }
+
+  /**
+   * Validate time format (HH:MM)
+   */
+  _validateTimeFormat(input) {
+    const timePattern = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+    const value = input.value.trim();
+
+    if (value && !timePattern.test(value)) {
+      input.classList.add("invalid");
+      this._showTimeFormatError(input);
+      return false;
+    } else {
+      input.classList.remove("invalid");
+      this._clearTimeFormatError(input);
+
+      // If valid, check if it's within working hours
+      if (value) {
+        const [hour, minute] = value.split(":").map(Number);
+        if (hour < 7 || hour > 19 || (hour === 19 && minute > 0)) {
+          input.classList.add("invalid");
+          this._showWorkingHoursError(input);
+          return false;
+        }
+      }
+      return true;
+    }
+  }
+
+  /**
+   * Show time format error message
+   */
+  _showTimeFormatError(input) {
+    this._clearTimeFormatError(input);
+
+    const errorMsg = document.createElement("small");
+    errorMsg.className = "form-text text-danger time-error";
+    errorMsg.textContent =
+      "Định dạng thời gian không hợp lệ. Vui lòng nhập theo định dạng HH:MM (VD: 09:30)";
+
+    input.parentNode.appendChild(errorMsg);
+  }
+
+  /**
+   * Show working hours error message
+   */
+  _showWorkingHoursError(input) {
+    this._clearTimeFormatError(input);
+
+    const errorMsg = document.createElement("small");
+    errorMsg.className = "form-text text-danger time-error";
+    errorMsg.textContent = "Thời gian phải trong khoảng 07:00 - 19:00";
+
+    input.parentNode.appendChild(errorMsg);
+  }
+
+  /**
+   * Clear time format error message
+   */
+  _clearTimeFormatError(input) {
+    const existingError = input.parentNode.querySelector(".time-error");
+    if (existingError) {
+      existingError.remove();
     }
   }
 
@@ -479,15 +652,40 @@ export class ScheduleBookingManager {
       return;
     }
 
+    // Validate time formats
+    const startTimeInput = document.getElementById("bookingStartTime");
+    const endTimeInput = document.getElementById("bookingEndTime");
+
+    if (
+      !this._validateTimeFormat(startTimeInput) ||
+      !this._validateTimeFormat(endTimeInput)
+    ) {
+      return;
+    }
+
     // Get form values
     const room = document.getElementById("bookingRoom").value;
     const dateInput = document.getElementById("bookingDate").value;
-    const startTime = document.getElementById("bookingStartTime").value;
-    const endTime = document.getElementById("bookingEndTime").value;
+    const startTime = document.getElementById("bookingStartTime").value.trim();
+    const endTime = document.getElementById("bookingEndTime").value.trim();
     const purpose = document.getElementById("bookingPurpose").value;
     const department = document.getElementById("bookingDepartment").value;
     const title = document.getElementById("bookingTitle").value;
     const description = document.getElementById("bookingDescription").value;
+
+    // Additional time validation
+    const startTimeMinutes = this._timeToMinutes(startTime);
+    const endTimeMinutes = this._timeToMinutes(endTime);
+
+    if (endTimeMinutes <= startTimeMinutes) {
+      endTimeInput.classList.add("invalid");
+      this._clearTimeFormatError(endTimeInput);
+      const errorMsg = document.createElement("small");
+      errorMsg.className = "form-text text-danger time-error";
+      errorMsg.textContent = "Thời gian kết thúc phải sau thời gian bắt đầu";
+      endTimeInput.parentNode.appendChild(errorMsg);
+      return;
+    }
 
     // Format date for display (DD/MM/YYYY)
     const [year, month, day] = dateInput.split("-");
@@ -900,6 +1098,14 @@ export class ScheduleBookingManager {
     // Month view implementation
     // This would generate a full month calendar view
     console.log("Month view not yet implemented");
+  }
+
+  /**
+   * Convert time string to minutes since midnight
+   */
+  _timeToMinutes(timeStr) {
+    const [hours, minutes] = timeStr.split(":").map(Number);
+    return hours * 60 + minutes;
   }
 }
 
