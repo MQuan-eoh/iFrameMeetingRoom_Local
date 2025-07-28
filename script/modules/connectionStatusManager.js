@@ -155,18 +155,33 @@ export class ConnectionStatusManager {
     this.statusElement.innerHTML =
       '<span style="display:inline-block; width:8px; height:8px; border-radius:50%; background-color: #FFC107"></span> Đang đồng bộ...';
 
-    // Attempt to sync data
-    Promise.all([
-      this.meetingDataManager.saveMeetingsToServer(),
-      this.meetingDataManager.loadMeetingsFromServer(),
-    ])
-      .then(() => {
+    // Use the new force refresh method for complete UI update
+    this.meetingDataManager
+      .forceRefresh()
+      .then((meetings) => {
         // Show success briefly
         this.statusElement.innerHTML =
           '<span style="display:inline-block; width:8px; height:8px; border-radius:50%; background-color: #4CAF50"></span> Đồng bộ thành công!';
 
         // Reset to normal display after a moment
         setTimeout(() => this._updateStatus(), 2000);
+
+        // Show notification
+        this._showNotification(
+          "Đồng bộ thành công",
+          `Dữ liệu đã được đồng bộ với máy chủ (${meetings.length} cuộc họp).`
+        );
+
+        // Force another room status update after a delay (for reliable UI update)
+        setTimeout(() => {
+          const todayMeetings =
+            this.meetingDataManager.getTodayMeetings(meetings);
+          document.dispatchEvent(
+            new CustomEvent("refreshRoomStatus", {
+              detail: { todayMeetings },
+            })
+          );
+        }, 1000);
       })
       .catch((error) => {
         console.error("Sync failed:", error);
@@ -175,7 +190,89 @@ export class ConnectionStatusManager {
 
         // Reset to normal display after a moment
         setTimeout(() => this._updateStatus(), 2000);
+
+        // Show error notification
+        this._showNotification(
+          "Đồng bộ thất bại",
+          "Không thể đồng bộ dữ liệu với máy chủ. Vui lòng kiểm tra kết nối mạng.",
+          true
+        );
       });
+  }
+
+  /**
+   * Check server connection
+   */
+  async _checkServerConnection() {
+    try {
+      if (!this.meetingDataManager) return false;
+
+      const online = await fetch(
+        `${window.location.protocol}//${
+          window.location.hostname
+        }:3000/api/meetings?t=${Date.now()}`,
+        {
+          method: "HEAD",
+          cache: "no-cache",
+          headers: {
+            "Cache-Control": "no-cache",
+          },
+        }
+      )
+        .then((res) => res.ok)
+        .catch(() => false);
+
+      this.meetingDataManager.isOnline = online;
+      return online;
+    } catch (error) {
+      console.error("Connection check failed:", error);
+      this.meetingDataManager.isOnline = false;
+      return false;
+    }
+  }
+
+  /**
+   * Show a notification
+   */
+  _showNotification(title, message, isError = false) {
+    // Create notification element
+    const notification = document.createElement("div");
+    notification.className = "sync-notification";
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px;
+      background-color: ${isError ? "#f44336" : "#4CAF50"};
+      color: white;
+      border-radius: 4px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      z-index: 10000;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      max-width: 300px;
+    `;
+
+    notification.innerHTML = `
+      <div style="font-weight: bold;">${title}</div>
+      <div style="font-size: 14px; margin-top: 5px;">${message}</div>
+    `;
+
+    // Add to body
+    document.body.appendChild(notification);
+
+    // Fade in
+    setTimeout(() => {
+      notification.style.opacity = "1";
+    }, 10);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+      notification.style.opacity = "0";
+      setTimeout(() => {
+        notification.remove();
+      }, 300);
+    }, 3000);
   }
 }
 

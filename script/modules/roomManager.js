@@ -19,6 +19,17 @@ export class RoomManager {
   constructor() {
     this.previousStates = {};
     this.updateInterval = null;
+
+    // Ensure room sections are created when the DOM is ready
+    document.addEventListener("DOMContentLoaded", () => {
+      console.log("🏢 RoomManager: DOM ready, initializing room sections");
+      const roomsContainer = document.querySelector(".rooms-container");
+      if (roomsContainer) {
+        this._ensureRoomSections(roomsContainer);
+      } else {
+        console.warn("⚠️ RoomManager: Cannot find .rooms-container element");
+      }
+    });
   }
 
   /**
@@ -26,55 +37,117 @@ export class RoomManager {
    */
   updateRoomStatus(data) {
     console.log(
-      "Updating room status with data at:",
+      "🔄 Updating room status with data at:",
       DateTimeUtils.getCurrentTime()
     );
 
     const currentDate = DateTimeUtils.getCurrentDate();
     const currentTime = DateTimeUtils.getCurrentTime();
 
-    console.log("Current date:", currentDate);
-    console.log("Current time:", currentTime);
+    console.log("📅 Current date:", currentDate);
+    console.log("⏰ Current time:", currentTime);
+
+    // Use latest meeting data from global state if not provided
+    if (!data || !Array.isArray(data)) {
+      data = window.currentMeetingData || [];
+      console.log("📊 Using global meeting data:", data.length, "meetings");
+    }
 
     // Filter for today's meetings
     const todayMeetings = data.filter((meeting) => {
       const isToday = meeting.date === currentDate;
-      console.log(`Meeting date: ${meeting.date}, Is today: ${isToday}`);
       return isToday;
     });
 
-    console.log("Today's meetings:", todayMeetings);
+    console.log("📅 Today's meetings:", todayMeetings.length);
+
+    // Save state for debugging
+    this.lastUpdateTime = new Date();
+    this.lastUpdateData = [...todayMeetings];
+
+    // Check if we have a rooms-container element
+    const roomsContainer = document.querySelector(".rooms-container");
+    if (roomsContainer) {
+      console.log("🏢 Found rooms-container, ensuring all rooms are present");
+
+      // Ensure all rooms have room-section elements
+      this._ensureRoomSections(roomsContainer);
+    }
 
     const roomsToUpdate = Object.values(ROOM_CONFIG.ROOMS);
+    console.log(
+      `🏢 Updating ${roomsToUpdate.length} rooms: ${roomsToUpdate.join(", ")}`
+    );
+
     roomsToUpdate.forEach((roomName) => {
+      console.log(`🔄 Processing room update for: ${roomName}`);
+
       // If no data or empty data, pass empty array to indicate no meetings
-      if (!data || data.length === 0) {
+      if (!todayMeetings || todayMeetings.length === 0) {
+        console.log(
+          `ℹ️ No meetings data for ${roomName}, updating with empty array`
+        );
         this.updateSingleRoomStatus(roomName, [], currentTime);
       } else {
+        // Filter meetings specifically for this room to improve debugging
+        const roomSpecificMeetings = todayMeetings.filter((meeting) => {
+          const meetingRoomName = meeting.room?.toLowerCase().trim();
+          const currentRoomName = roomName.toLowerCase().trim();
+          const isMatch =
+            meetingRoomName === currentRoomName ||
+            meetingRoomName.includes(currentRoomName) ||
+            currentRoomName.includes(meetingRoomName);
+
+          if (isMatch) {
+            console.log(
+              `✓ Found meeting for ${roomName}: "${meeting.content}" (${meeting.startTime}-${meeting.endTime})`
+            );
+          }
+          return isMatch;
+        });
+
+        console.log(
+          `🔍 Found ${roomSpecificMeetings.length} meetings for ${roomName}`
+        );
         this.updateSingleRoomStatus(roomName, todayMeetings, currentTime);
       }
     });
+
+    // Update the data display after refreshing rooms
+    this.updateScheduleTable(todayMeetings);
   }
 
   /**
    * Update status for a specific room
    */
   updateSingleRoomStatus(roomCode, meetings, currentTime) {
-    console.log("Updating room status for:", roomCode);
+    console.log(
+      `📋 Updating room status for: "${roomCode}" with current VIETNAM time: ${currentTime}`
+    );
 
-    // Find room section in DOM
+    // First, ensure room sections are created if they don't exist
+    const roomsContainer = document.querySelector(".rooms-container");
+    if (roomsContainer) {
+      this._ensureRoomSections(roomsContainer);
+    } else {
+      console.error(`❌ Cannot find rooms-container element in DOM!`);
+    }
+
+    // Find room section in DOM with improved search
     const roomSection = DOMUtils.findRoomSection(roomCode);
 
     if (!roomSection) {
-      console.warn(`No room section found for room code: ${roomCode}`);
+      console.warn(`❌ No room section found for room code: ${roomCode}`);
       return;
+    } else {
+      console.log(`✅ Found room section for: ${roomCode}`);
     }
 
     // Get UI elements
     const uiElements = this._getRoomUIElements(roomSection);
 
     // Log which elements were found for debugging
-    console.log(`Room elements found for ${roomCode}:`, {
+    console.log(`🔍 Room elements found for ${roomCode}:`, {
       titleElement: !!uiElements.titleElement,
       startTimeElement: !!uiElements.startTimeElement,
       endTimeElement: !!uiElements.endTimeElement,
@@ -82,18 +155,68 @@ export class RoomManager {
       indicatorDot: !!uiElements.indicatorDot,
     });
 
-    // Filter meetings for current room
-    const roomMeetings = meetings.filter(
-      (meeting) =>
-        FormatUtils.normalizeRoomName(meeting.room) ===
-        FormatUtils.normalizeRoomName(roomCode)
-    );
+    // If any critical UI elements are missing, try to fix the room section
+    if (
+      !uiElements.titleElement ||
+      !uiElements.statusIndicator ||
+      !uiElements.indicatorDot
+    ) {
+      console.log(
+        `⚠️ Missing UI elements for ${roomCode}, attempting to repair room section`
+      );
+      // Remove the existing section and recreate it
+      if (roomSection.parentNode) {
+        roomSection.parentNode.removeChild(roomSection);
+      }
+
+      if (roomsContainer) {
+        this._ensureRoomSections(roomsContainer);
+        // Try again with the newly created section
+        const newRoomSection = DOMUtils.findRoomSection(roomCode);
+        if (newRoomSection) {
+          console.log(`✅ Successfully recreated room section for ${roomCode}`);
+          return this.updateSingleRoomStatus(roomCode, meetings, currentTime);
+        }
+      }
+    }
+
+    // If no meetings provided, try to get from global state
+    if (!meetings || !Array.isArray(meetings) || meetings.length === 0) {
+      if (
+        window.currentMeetingData &&
+        Array.isArray(window.currentMeetingData)
+      ) {
+        console.log("Using global meeting data for room update");
+        meetings = window.currentMeetingData;
+
+        // Filter for today
+        const currentDate = DateTimeUtils.getCurrentDate();
+        meetings = meetings.filter((m) => m.date === currentDate);
+      }
+    }
+
+    // Filter meetings for current room (with more flexible matching)
+    const roomMeetings = meetings.filter((meeting) => {
+      if (!meeting || !meeting.room) return false;
+
+      const normalizedRoomName = FormatUtils.normalizeRoomName(meeting.room);
+      const normalizedRoomCode = FormatUtils.normalizeRoomName(roomCode);
+
+      // Check both normalized name and if the room contains the room code
+      return (
+        normalizedRoomName === normalizedRoomCode ||
+        normalizedRoomName.includes(normalizedRoomCode) ||
+        normalizedRoomCode.includes(normalizedRoomName)
+      );
+    });
 
     console.log(`Found ${roomMeetings.length} meetings for room "${roomCode}"`);
 
-    // Find active meeting
-    const activeMeeting = roomMeetings.find(
-      (meeting) =>
+    // Find active meeting with more accurate time comparison
+    const activeMeeting = roomMeetings.find((meeting) => {
+      if (!meeting.startTime || !meeting.endTime) return false;
+
+      return (
         DateTimeUtils.isTimeInRangeWithSeconds(
           currentTime,
           meeting.startTime,
@@ -101,7 +224,8 @@ export class RoomManager {
         ) &&
         !meeting.isEnded &&
         !meeting.forceEndedByUser
-    );
+      );
+    });
 
     // Update UI elements
     this._updateRoomUIElements(
@@ -199,13 +323,55 @@ export class RoomManager {
       clearInterval(this.updateInterval);
     }
 
-    // Set up periodic updates
-    this.updateInterval = setInterval(() => {
-      console.log("Auto-updating room statuses...");
-      this.updateRoomStatus(data);
-    }, 30000); // Update every 30 seconds
+    // Initial update
+    this.updateRoomStatus(data);
 
-    console.log("Auto-update started for room statuses");
+    // Set up more frequent updates (every 15 seconds)
+    this.updateInterval = setInterval(() => {
+      console.log("🔄 Auto-updating room statuses...");
+
+      // Always get the latest data from global state
+      const latestData = window.currentMeetingData || [];
+      this.updateRoomStatus(latestData);
+    }, 15000); // Update every 15 seconds
+
+    // Add room status refresh event listener
+    document.addEventListener("refreshRoomStatus", () => {
+      console.log("🔄 Room status refresh explicitly requested");
+      const latestData = window.currentMeetingData || [];
+      this.updateRoomStatus(latestData);
+    });
+
+    // Listen for meeting data updates to refresh rooms
+    document.addEventListener("meetingDataUpdated", (event) => {
+      console.log("🔄 Meeting data updated, refreshing room status");
+      const meetingData =
+        event.detail?.meetings || window.currentMeetingData || [];
+      this.updateRoomStatus(meetingData);
+    });
+
+    // Listen for room status updates specifically
+    document.addEventListener("roomStatusUpdate", (event) => {
+      console.log("🔄 Room status update event received");
+      const todayMeetings = event.detail?.todayMeetings;
+      const allMeetings = window.currentMeetingData || [];
+      this.updateRoomStatus(todayMeetings || allMeetings);
+    });
+
+    // Also listen for dashboard updates as they might contain fresh meeting data
+    document.addEventListener("dashboardUpdate", (event) => {
+      console.log(
+        "🔄 Dashboard update event received, checking for room updates"
+      );
+      const todayMeetings = event.detail?.todayMeetings;
+      if (todayMeetings && todayMeetings.length > 0) {
+        this.updateRoomStatus(todayMeetings);
+      }
+    });
+
+    console.log(
+      "✅ Auto-update started for room statuses with multiple event listeners"
+    );
   }
 
   stopAutoUpdate() {
@@ -305,7 +471,10 @@ export class RoomManager {
    * Private helper methods
    */
   _getRoomUIElements(roomSection) {
-    return {
+    console.log(`🔍 Finding UI elements in room section:`, roomSection);
+
+    // Get standard UI elements using CSS classes
+    const standardElements = {
       titleElement: roomSection.querySelector(`.${CSS_CLASSES.MEETING_TITLE}`),
       startTimeElement: roomSection.querySelector(`.${CSS_CLASSES.START_TIME}`),
       endTimeElement: roomSection.querySelector(`.${CSS_CLASSES.END_TIME}`),
@@ -316,6 +485,72 @@ export class RoomManager {
         `.${CSS_CLASSES.STATUS_INDICATOR} .${CSS_CLASSES.INDICATOR_DOT}`
       ),
     };
+
+    // Log any missing elements
+    const missingElements = Object.entries(standardElements)
+      .filter(([_, element]) => !element)
+      .map(([name]) => name);
+
+    if (missingElements.length > 0) {
+      console.warn(
+        `⚠️ Missing room UI elements: ${missingElements.join(", ")}`
+      );
+
+      // Try alternative selectors for common issues
+      if (!standardElements.titleElement) {
+        standardElements.titleElement =
+          roomSection.querySelector(".meeting-title") ||
+          roomSection.querySelector('[class*="meeting-title"]');
+        console.log(
+          `🔍 Alternative title element:`,
+          standardElements.titleElement
+        );
+      }
+
+      if (!standardElements.startTimeElement) {
+        standardElements.startTimeElement =
+          roomSection.querySelector(".start-time") ||
+          roomSection.querySelector('[class*="start-time"]');
+        console.log(
+          `🔍 Alternative start time element:`,
+          standardElements.startTimeElement
+        );
+      }
+
+      if (!standardElements.endTimeElement) {
+        standardElements.endTimeElement =
+          roomSection.querySelector(".end-time") ||
+          roomSection.querySelector('[class*="end-time"]');
+        console.log(
+          `🔍 Alternative end time element:`,
+          standardElements.endTimeElement
+        );
+      }
+
+      if (!standardElements.statusIndicator) {
+        standardElements.statusIndicator =
+          roomSection.querySelector(".status-text") ||
+          roomSection.querySelector('[class*="status-text"]');
+        console.log(
+          `🔍 Alternative status indicator:`,
+          standardElements.statusIndicator
+        );
+      }
+
+      if (!standardElements.indicatorDot) {
+        standardElements.indicatorDot =
+          roomSection.querySelector(".indicator-dot") ||
+          roomSection.querySelector('[class*="indicator-dot"]');
+        console.log(
+          `🔍 Alternative indicator dot:`,
+          standardElements.indicatorDot
+        );
+      }
+    } else {
+      console.log(`✅ All room UI elements found successfully`);
+    }
+
+    return standardElements;
   }
 
   _updateRoomUIElements(
@@ -333,23 +568,87 @@ export class RoomManager {
       indicatorDot,
     } = elements;
 
-    if (activeMeeting) {
+    // Debug logs
+    console.log(
+      `🔍 Room ${roomCode} update - Active meeting:`,
+      activeMeeting ? activeMeeting.id : "none"
+    );
+    console.log(
+      `🔍 Room ${roomCode} update - Total meetings:`,
+      allMeetings.length
+    );
+    console.log(`🔍 Room ${roomCode} update - Current time:`, currentTime);
+
+    // Normalize current time for comparison (remove seconds)
+    const normalizedCurrentTime = currentTime.split(":").slice(0, 2).join(":");
+
+    // Filter meetings for just this room to avoid cross-room contamination
+    const roomMeetings = allMeetings.filter((meeting) => {
+      if (!meeting || !meeting.room) return false;
+
+      const normalizedRoomName = meeting.room.toLowerCase().trim();
+      const normalizedRoomCode = roomCode.toLowerCase().trim();
+
+      return (
+        normalizedRoomName === normalizedRoomCode ||
+        normalizedRoomName.includes(normalizedRoomCode) ||
+        normalizedRoomCode.includes(normalizedRoomName)
+      );
+    });
+
+    console.log(
+      `🔍 Filtered ${roomMeetings.length} meetings for room ${roomCode}`
+    );
+
+    // Check if any meetings are happening now - as a secondary check
+    const manualCheckActiveMeeting = roomMeetings.find((meeting) => {
+      const startMinutes = DateTimeUtils.timeToMinutes(meeting.startTime);
+      const endMinutes = DateTimeUtils.timeToMinutes(meeting.endTime);
+      const currentMinutes = DateTimeUtils.timeToMinutes(normalizedCurrentTime);
+
+      const isActive =
+        currentMinutes >= startMinutes &&
+        currentMinutes <= endMinutes &&
+        !meeting.isEnded &&
+        !meeting.forceEndedByUser;
+
+      if (isActive) {
+        console.log(
+          `✅ Found active meeting manually for ${roomCode}: ${meeting.id} (${meeting.startTime}-${meeting.endTime})`
+        );
+      }
+
+      return isActive;
+    });
+
+    // Use either the passed activeMeeting or the one we found manually
+    // But prioritize meetings for this specific room
+    const effectiveActiveMeeting =
+      activeMeeting &&
+      activeMeeting.room &&
+      activeMeeting.room.toLowerCase().includes(roomCode.toLowerCase())
+        ? activeMeeting
+        : manualCheckActiveMeeting;
+
+    if (effectiveActiveMeeting) {
       // Active meeting found
       if (titleElement) {
         titleElement.innerHTML = `<span>Thông tin cuộc họp:</span> ${
-          activeMeeting.content || activeMeeting.purpose || "Không có tiêu đề"
+          effectiveActiveMeeting.content ||
+          effectiveActiveMeeting.purpose ||
+          "Không có tiêu đề"
         }`;
       }
 
       if (startTimeElement) {
         startTimeElement.innerHTML = `<span>Thời gian bắt đầu:</span> ${
-          activeMeeting.startTime || "--:--"
+          effectiveActiveMeeting.startTime || "--:--"
         }`;
       }
 
       if (endTimeElement) {
         endTimeElement.innerHTML = `<span>Thời gian kết thúc:</span> ${
-          activeMeeting.endTime || "--:--"
+          effectiveActiveMeeting.endTime || "--:--"
         }`;
       }
 
@@ -363,7 +662,7 @@ export class RoomManager {
       }
 
       console.log(
-        `Updated room ${roomCode} with active meeting: "${activeMeeting.content}"`
+        `✅ Updated room ${roomCode} with active meeting: "${effectiveActiveMeeting.content}" (${effectiveActiveMeeting.startTime}-${effectiveActiveMeeting.endTime})`
       );
     } else {
       // No active meeting - check for upcoming meetings
@@ -372,7 +671,7 @@ export class RoomManager {
           !meeting.isEnded &&
           !meeting.forceEndedByUser &&
           DateTimeUtils.timeToMinutes(meeting.startTime) >
-            DateTimeUtils.timeToMinutes(currentTime)
+            DateTimeUtils.timeToMinutes(normalizedCurrentTime)
       );
 
       if (upcomingMeeting) {
@@ -519,6 +818,81 @@ export class RoomManager {
         });
       }
     }, 100);
+  }
+
+  /**
+   * Ensure that all rooms from ROOM_CONFIG have room-section elements
+   * This will create missing room sections if needed
+   */
+  _ensureRoomSections(roomsContainer) {
+    if (!roomsContainer) return;
+
+    const roomsToEnsure = Object.values(ROOM_CONFIG.ROOMS);
+    const existingRoomSections =
+      roomsContainer.querySelectorAll(".room-section");
+
+    // Check which rooms already have sections
+    const existingRooms = new Set();
+    existingRoomSections.forEach((section) => {
+      const roomElement = section.querySelector(".room-number");
+      if (roomElement) {
+        const roomName = roomElement.textContent.trim();
+        existingRooms.add(roomName.toLowerCase());
+      }
+    });
+
+    // Create sections for missing rooms
+    roomsToEnsure.forEach((roomName) => {
+      const normalizedRoomName = roomName.toLowerCase().trim();
+      if (!existingRooms.has(normalizedRoomName)) {
+        console.log(`➕ Creating missing room section for "${roomName}"`);
+
+        // Create new room section
+        const roomSection = document.createElement("div");
+        roomSection.className = "room-section";
+        roomSection.innerHTML = `
+          <div class="room-number">${roomName.toUpperCase()}</div>
+          <div class="room-details">
+            <div class="meeting-info">
+              <div class="meeting-header">
+                <div class="meeting-title">
+                  <span>Thông tin cuộc họp:</span> Trống
+                </div>
+                <div class="meeting-time">
+                  <div class="time-spacer"></div>
+                  <div class="start-time">
+                    <span>Thời gian bắt đầu:</span> --:--
+                  </div>
+                  <div class="end-time">
+                    <span>Thời gian kết thúc:</span> --:--
+                  </div>
+                </div>
+              </div>
+              <div class="meeting-stats">
+                <div class="stats-row indicators-container">
+                  <div class="status-group">
+                    <div class="status-indicator">
+                      <div class="indicator-dot available"></div>
+                      <div class="status-text">Trống</div>
+                    </div>
+                    <div class="people-indicator">
+                      <div class="people-dot"></div>
+                      <div class="people-status-text">Đang kiểm tra...</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Add to rooms-container
+        roomsContainer.appendChild(roomSection);
+        existingRooms.add(normalizedRoomName);
+
+        console.log(`✅ Added room section for "${roomName}"`);
+      }
+    });
   }
 }
 

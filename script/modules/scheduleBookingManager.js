@@ -26,6 +26,25 @@ export class ScheduleBookingManager {
     this._updateCurrentPeriod();
     this._renderWeekView();
     this._renderTimeIndicator();
+
+    // Listen for meeting data updates to refresh calendar
+    document.addEventListener("meetingDataUpdated", (event) => {
+      console.log("🔄 Meeting data updated, refreshing schedule view");
+      // Small delay to ensure data is fully updated
+      setTimeout(() => {
+        this._renderMeetingsForCurrentWeek();
+      }, 300);
+    });
+
+    // Listen for room status updates to refresh calendar
+    document.addEventListener("roomStatusUpdate", (event) => {
+      console.log("🔄 Room status updated, refreshing schedule view");
+      // Small delay to ensure data is fully updated
+      setTimeout(() => {
+        this._renderMeetingsForCurrentWeek();
+      }, 300);
+    });
+
     // Set up periodic updates for current time indicator and date
     setInterval(() => {
       this._renderTimeIndicator();
@@ -52,6 +71,13 @@ export class ScheduleBookingManager {
     const now = new Date();
     now.setHours(now.getHours() + 7 - new Date().getTimezoneOffset() / 60);
     this._lastRenderedDay = now.getDate();
+
+    // Initial render of meetings (after a short delay to ensure data is loaded)
+    setTimeout(() => {
+      this._renderMeetingsForCurrentWeek();
+    }, 1000);
+
+    console.log("✅ Schedule Booking Manager initialized");
   }
 
   /**
@@ -678,6 +704,8 @@ export class ScheduleBookingManager {
    * Render week view with proper dates
    */
   _renderWeekView() {
+    console.log("📅 Rendering week view");
+
     // Use Vietnam timezone (UTC+7) for all date calculations
     // Get current date in Vietnam timezone
     const vietnamDate = new Date();
@@ -701,6 +729,8 @@ export class ScheduleBookingManager {
       startOfWeek.setDate(startOfWeek.getDate() - 7);
     }
 
+    console.log(`📅 Week starting from: ${startOfWeek.toLocaleDateString()}`);
+
     // Update each day column with the correct date
     for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
       const currentDate = new Date(startOfWeek);
@@ -709,6 +739,7 @@ export class ScheduleBookingManager {
       // Format the date for display (DD/MM)
       const day = String(currentDate.getDate()).padStart(2, "0");
       const month = String(currentDate.getMonth() + 1).padStart(2, "0");
+      const year = currentDate.getFullYear();
 
       // Get day name in Vietnamese
       const dayNames = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
@@ -723,6 +754,8 @@ export class ScheduleBookingManager {
         const dateElement = dayColumn.querySelector(".day-date");
         if (dateElement) {
           dateElement.textContent = `${day}/${month}`;
+          // Store full date with year as attribute for reference
+          dateElement.dataset.fullDate = `${day}/${month}/${year}`;
         }
 
         // Update day name
@@ -738,11 +771,73 @@ export class ScheduleBookingManager {
           currentDate.getFullYear() === vietnamDate.getFullYear();
 
         dayColumn.classList.toggle("day-today", isToday);
+
+        // Set full date attribute on column for easier reference
+        dayColumn.dataset.fullDate = `${day}/${month}/${year}`;
       }
     }
 
+    // Re-render any meetings for this week view
+    this._renderMeetingsForCurrentWeek();
+
     // Re-render current time indicator after updating the dates
     this._renderTimeIndicator();
+  }
+
+  /**
+   * Render all meetings for current week view
+   */
+  _renderMeetingsForCurrentWeek() {
+    console.log("📅 Rendering meetings for current week view");
+
+    // First clear all existing meeting elements
+    document.querySelectorAll(".meeting-event").forEach((el) => el.remove());
+
+    // Get all meetings data
+    const allMeetings = window.currentMeetingData || [];
+    if (!allMeetings || allMeetings.length === 0) {
+      console.log("📅 No meetings data available");
+      return;
+    }
+
+    console.log(`📅 Found ${allMeetings.length} total meetings in data`);
+
+    // Get dates for each day in current view
+    const dayColumns = document.querySelectorAll(".day-column");
+    if (!dayColumns || dayColumns.length === 0) {
+      console.log("📅 No day columns found in week view");
+      return;
+    }
+
+    // Process each meeting and add to appropriate day
+    let meetingsRendered = 0;
+
+    allMeetings.forEach((meeting) => {
+      // Skip ended meetings
+      if (meeting.isEnded || meeting.forceEndedByUser) {
+        return;
+      }
+
+      // Find matching day column for this meeting's date
+      let matchingColumn = null;
+      dayColumns.forEach((column) => {
+        const columnDateStr = column.dataset.fullDate;
+        if (columnDateStr && columnDateStr === meeting.date) {
+          matchingColumn = column;
+        }
+      });
+
+      if (!matchingColumn) {
+        // Meeting is not in current week view
+        return;
+      }
+
+      // Render this meeting in the matching column
+      this._createMeetingElement(meeting);
+      meetingsRendered++;
+    });
+
+    console.log(`📅 Rendered ${meetingsRendered} meetings in week view`);
   }
 
   /**

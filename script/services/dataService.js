@@ -6,8 +6,10 @@
 class DataService {
   constructor() {
     // Default to current host with API port
-    const host = window.location.hostname;
-    this.apiBaseUrl = `http://${host}:3000/api`;
+    const host = window.location.hostname || "localhost";
+    // Use IP address if available from localStorage for network synchronization
+    const serverIP = localStorage.getItem("serverIP") || host;
+    this.apiBaseUrl = `http://${serverIP}:3000/api`;
 
     // Fallback if running directly from file
     if (window.location.protocol === "file:") {
@@ -17,8 +19,17 @@ class DataService {
     // Connection status
     this.isConnected = false;
 
+    // Last fetch time to prevent cache issues
+    this.lastFetchTime = 0;
+
+    // Print the API URL being used for debugging
+    console.log(`🔌 API connection using: ${this.apiBaseUrl}`);
+
     // Check connection on init
     this._checkConnection();
+
+    // Periodic connection checks
+    setInterval(() => this._checkConnection(), 30000);
   }
 
   /**
@@ -26,12 +37,40 @@ class DataService {
    */
   async _checkConnection() {
     try {
-      const response = await fetch(`${this.apiBaseUrl}/meetings`);
+      // Add a cache-busting timestamp to prevent getting cached responses
+      const timestamp = Date.now();
+      const response = await fetch(
+        `${this.apiBaseUrl}/meetings?t=${timestamp}`,
+        {
+          method: "GET",
+          headers: {
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            Pragma: "no-cache",
+            Expires: "0",
+          },
+        }
+      );
+
       this.isConnected = response.ok;
+
+      if (this.isConnected) {
+        console.log(
+          `✅ Connected successfully to API server at: ${this.apiBaseUrl}`
+        );
+      }
+
       return this.isConnected;
     } catch (error) {
       console.error("API connection failed:", error);
       this.isConnected = false;
+
+      // Dispatch an event so other components can react to the connection failure
+      window.dispatchEvent(
+        new CustomEvent("apiConnectionError", {
+          detail: { error, url: this.apiBaseUrl },
+        })
+      );
+
       return false;
     }
   }
@@ -41,13 +80,43 @@ class DataService {
    */
   async getMeetings() {
     try {
-      const response = await fetch(`${this.apiBaseUrl}/meetings`);
+      // Add cache-busting timestamp to prevent browser caching
+      const timestamp = Date.now();
+      this.lastFetchTime = timestamp;
+
+      console.log(
+        `📥 Fetching meetings from: ${this.apiBaseUrl}/meetings?t=${timestamp}`
+      );
+
+      const response = await fetch(
+        `${this.apiBaseUrl}/meetings?t=${timestamp}`,
+        {
+          method: "GET",
+          headers: {
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            Pragma: "no-cache",
+            Expires: "0",
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);
       }
 
-      return await response.json();
+      const data = await response.json();
+      this.isConnected = true;
+
+      console.log(`📊 Retrieved ${data.length} meetings from server`);
+
+      // Dispatch a global event that data has been refreshed from server
+      window.dispatchEvent(
+        new CustomEvent("meetingsRefreshedFromServer", {
+          detail: { meetings: data, timestamp: new Date() },
+        })
+      );
+
+      return data;
     } catch (error) {
       console.error("Error fetching meetings:", error);
       this._handleApiError(error);

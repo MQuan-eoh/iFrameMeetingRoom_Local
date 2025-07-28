@@ -15,8 +15,45 @@ export class MeetingDataManager {
     this.isLoading = false;
     this.lastSync = null;
 
+    // Track page reloads to detect potential issues
+    this.pageLoadTime = Date.now();
+    this.previousMeetingsCount = 0;
+
+    // Check for localStorage data to restore meetings on unexpected reload
+    this._checkForLocalStorageBackup();
+
     // Setup periodic sync
     this._setupPeriodicSync();
+  }
+
+  /**
+   * Check for a local storage backup to restore meetings on unexpected reload
+   */
+  _checkForLocalStorageBackup() {
+    try {
+      const lastStoredMeetings = localStorage.getItem("meetingDataBackup");
+      if (lastStoredMeetings) {
+        const backupData = JSON.parse(lastStoredMeetings);
+        const backupTime = localStorage.getItem("meetingDataBackupTime");
+
+        console.log(
+          `📦 Found local backup from ${new Date(
+            parseInt(backupTime)
+          ).toLocaleString()} with ${backupData.length} meetings`
+        );
+
+        // If we have a backup and it has meetings, restore it until server data loads
+        if (backupData && Array.isArray(backupData) && backupData.length > 0) {
+          this.previousMeetingsCount = backupData.length;
+          window.currentMeetingData = backupData;
+          console.log(
+            `📦 Temporarily restored ${backupData.length} meetings from local backup`
+          );
+        }
+      }
+    } catch (error) {
+      console.warn("Error checking for local storage backup:", error);
+    }
   }
 
   /**
@@ -41,6 +78,18 @@ export class MeetingDataManager {
    */
   setCachedMeetingData(data) {
     window.currentMeetingData = data;
+
+    // Create a local backup to prevent data loss on page reload/refresh
+    try {
+      if (data && Array.isArray(data) && data.length > 0) {
+        localStorage.setItem("meetingDataBackup", JSON.stringify(data));
+        localStorage.setItem("meetingDataBackupTime", Date.now().toString());
+        console.log(`📦 Created local backup with ${data.length} meetings`);
+      }
+    } catch (error) {
+      console.warn("Error creating local data backup:", error);
+    }
+
     return data;
   }
 
@@ -52,21 +101,102 @@ export class MeetingDataManager {
 
     this.isLoading = true;
     try {
+      console.log("🔍 Requesting meetings from server...");
       const meetings = await dataService.getMeetings();
-      this.setCachedMeetingData(meetings);
+
+      // Keep track of current data for comparison
+      const currentData = this.getCachedMeetingData();
+      const currentCount = currentData.length;
+
+      // Log detailed information about the data we received
+      if (Array.isArray(meetings)) {
+        console.log(
+          `📥 Server returned ${meetings.length} meetings (previously had ${currentCount})`
+        );
+      } else {
+        console.warn("⚠️ Server returned non-array data:", meetings);
+      }
+
+      // Only update if we actually got data back
+      if (Array.isArray(meetings) && meetings.length > 0) {
+        // If meetings decreased drastically (more than 50%), this might be an error
+        if (currentCount > 5 && meetings.length < currentCount * 0.5) {
+          console.warn(
+            `⚠️ POTENTIAL DATA LOSS DETECTED: Server returned ${meetings.length} meetings but we had ${currentCount} before`
+          );
+
+          // Show a warning to the user
+          this._showDataWarning(
+            `Potential data loss detected! Server returned ${meetings.length} meetings but we had ${currentCount} before. Using server data anyway.`
+          );
+        }
+
+        // Update cached data regardless - server is source of truth
+        this.setCachedMeetingData(meetings);
+        console.log(
+          `✅ Updated cache with ${meetings.length} meetings from server`
+        );
+      } else if (
+        Array.isArray(meetings) &&
+        meetings.length === 0 &&
+        currentCount > 0
+      ) {
+        // If we got an empty array and we had data before, this might be an error
+        // Keep the existing data to prevent data loss
+        console.warn(
+          "⚠️ Server returned empty meetings array but we have data locally. Keeping existing data to prevent loss."
+        );
+
+        // Show a warning to the user
+        this._showDataWarning(
+          `Server returned no meetings but we have ${currentCount} meetings locally. Keeping existing data to prevent loss.`
+        );
+      } else if (Array.isArray(meetings)) {
+        // Empty array and we had no data before - this is fine
+        this.setCachedMeetingData(meetings);
+      }
+
       this.isOnline = true;
       this.lastSync = new Date();
 
-      // Dispatch event for UI update
+      // Get today's meetings for room status updates
+      const todayMeetings = this.getTodayMeetings(
+        meetings.length > 0 ? meetings : currentData
+      );
+      console.log(`🗓️ ${todayMeetings.length} meetings found for today`);
+
+      // Update localStorage with sync timestamp to help cross-window coordination
+      localStorage.setItem("lastServerSync", Date.now().toString());
+
+      // Dispatch events for UI updates - use multiple event types for different components
       document.dispatchEvent(
         new CustomEvent("meetingDataUpdated", {
-          detail: { meetings },
+          detail: {
+            meetings: meetings.length > 0 ? meetings : currentData,
+            todayMeetings,
+          },
         })
       );
 
-      return meetings;
+      document.dispatchEvent(
+        new CustomEvent("roomStatusUpdate", {
+          detail: { todayMeetings },
+        })
+      );
+
+      // Specific event for dashboard updates
+      document.dispatchEvent(
+        new CustomEvent("dashboardUpdate", {
+          detail: {
+            meetings: meetings.length > 0 ? meetings : currentData,
+            todayMeetings,
+          },
+        })
+      );
+
+      return meetings.length > 0 ? meetings : currentData;
     } catch (error) {
-      console.error("Failed to load meetings from server:", error);
+      console.error("❌ Failed to load meetings from server:", error);
       this.isOnline = false;
       return this.getCachedMeetingData();
     } finally {
@@ -80,13 +210,43 @@ export class MeetingDataManager {
   async saveMeetingsToServer() {
     try {
       const meetings = this.getCachedMeetingData();
-      await dataService.updateAllMeetings(meetings);
+      console.log(`📤 Saving ${meetings.length} meetings to server...`);
+
+      const result = await dataService.updateAllMeetings(meetings);
       this.isOnline = true;
       this.lastSync = new Date();
+
+      // Store the update timestamp in localStorage for cross-tab/window synchronization
+      localStorage.setItem("meetingDataUpdated", new Date().toISOString());
+
+      console.log(
+        `✅ Successfully saved ${meetings.length} meetings to server`
+      );
+
+      // Trigger events to update the UI
+      document.dispatchEvent(
+        new CustomEvent("meetingDataUpdated", {
+          detail: { meetings, todayMeetings: this.getTodayMeetings(meetings) },
+        })
+      );
+
+      document.dispatchEvent(
+        new CustomEvent("syncCompleted", {
+          detail: { success: true, count: meetings.length },
+        })
+      );
+
       return true;
     } catch (error) {
-      console.error("Failed to save meetings to server:", error);
+      console.error("❌ Failed to save meetings to server:", error);
       this.isOnline = false;
+
+      document.dispatchEvent(
+        new CustomEvent("syncCompleted", {
+          detail: { success: false, error: error.message },
+        })
+      );
+
       return false;
     }
   }
@@ -95,20 +255,107 @@ export class MeetingDataManager {
    * Setup periodic sync with server
    */
   _setupPeriodicSync() {
-    // Sync every 5 minutes
+    // More aggressive sync - every 30 seconds for better real-time updates across network
     setInterval(() => {
-      this.loadMeetingsFromServer();
-    }, 5 * 60 * 1000);
+      console.log("🔄 Performing periodic server data sync...");
+      this.loadMeetingsFromServer()
+        .then((meetings) => {
+          console.log(
+            `📊 Periodic sync complete - ${meetings.length} meetings`
+          );
+          // Explicitly trigger room status update to refresh UI
+          this._triggerRoomStatusUpdate(this.getTodayMeetings(meetings));
+        })
+        .catch((err) => console.warn("Periodic sync error:", err));
+    }, 30 * 1000);
+
+    // Additional aggressive sync for the first 5 minutes after page load
+    // to ensure quick data consistency across network
+    let quickSyncCount = 0;
+    const quickSyncInterval = setInterval(() => {
+      if (quickSyncCount >= 10) {
+        // After 10 quick syncs (5 minutes)
+        clearInterval(quickSyncInterval);
+        return;
+      }
+
+      console.log("🔄 Performing quick initial sync...");
+      this.loadMeetingsFromServer()
+        .then(() => console.log("Quick sync complete"))
+        .catch((err) => console.warn("Quick sync error:", err));
+
+      quickSyncCount++;
+    }, 30 * 1000);
 
     // Listen for online/offline events
     window.addEventListener("online", () => {
       console.log("🌐 Browser went online, syncing data...");
-      this.saveMeetingsToServer();
+      this.loadMeetingsFromServer().then((meetings) => {
+        this.saveMeetingsToServer();
+        // Force UI refresh
+        this._triggerMeetingUpdate(meetings);
+      });
     });
 
     // Listen for API connection errors
     window.addEventListener("apiConnectionError", () => {
       this.isOnline = false;
+      console.log(
+        "⚠️ API connection error detected, will attempt reconnection"
+      );
+
+      // Try to reconnect after a short delay with increasing backoff
+      const attemptReconnection = (attempt = 1, maxAttempts = 5) => {
+        if (attempt > maxAttempts) {
+          console.warn(`⚠️ Failed to reconnect after ${maxAttempts} attempts`);
+          return;
+        }
+
+        const delay = Math.min(attempt * 3000, 15000); // Max 15 second delay
+        console.log(
+          `🔄 Reconnection attempt ${attempt}/${maxAttempts} in ${
+            delay / 1000
+          }s`
+        );
+
+        setTimeout(() => {
+          this.loadMeetingsFromServer()
+            .then((meetings) => {
+              if (meetings && meetings.length > 0) {
+                console.log("✅ Reconnection successful");
+                this._triggerMeetingUpdate(meetings);
+              } else {
+                attemptReconnection(attempt + 1, maxAttempts);
+              }
+            })
+            .catch(() => attemptReconnection(attempt + 1, maxAttempts));
+        }, delay);
+      };
+
+      attemptReconnection();
+    });
+
+    // Additional visibility change handler for tab focus/resume
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") {
+        console.log("🔄 Tab visible again, syncing latest data...");
+        this.loadMeetingsFromServer().then((meetings) => {
+          if (meetings && meetings.length > 0) {
+            // Force room status update
+            this._triggerRoomStatusUpdate(this.getTodayMeetings(meetings));
+          }
+        });
+      }
+    });
+
+    // Listen for storage changes from other tabs/windows
+    window.addEventListener("storage", (event) => {
+      if (event.key === "meetingDataUpdated") {
+        console.log(
+          "📢 Meeting data updated in another tab/window, refreshing"
+        );
+        this.loadMeetingsFromServer();
+      }
     });
   }
 
@@ -129,6 +376,8 @@ export class MeetingDataManager {
         meetingData.endTime
       ),
       purpose: meetingData.purpose,
+      department: meetingData.department || "",
+      title: meetingData.title || meetingData.content,
       content: meetingData.content,
       isEnded: false,
       forceEndedByUser: false,
@@ -150,25 +399,61 @@ export class MeetingDataManager {
       );
     }
 
+    try {
+      // Try to save to server first
+      if (dataService.isConnected) {
+        console.log("📤 Creating meeting on server:", newMeeting);
+        const savedMeeting = await dataService.createMeeting(newMeeting);
+        // If server save successful, update with server data
+        if (savedMeeting && savedMeeting.id) {
+          newMeeting.id = savedMeeting.id; // Use server-generated ID if available
+          console.log(
+            "✅ Meeting created successfully on server with ID:",
+            savedMeeting.id
+          );
+        }
+        this.lastSync = new Date();
+        this.isOnline = true;
+      } else {
+        console.warn(
+          "⚠️ Server not connected, will attempt to save locally only"
+        );
+      }
+    } catch (error) {
+      console.error("❌ Failed to save meeting to server:", error);
+      this.isOnline = false;
+      // Continue with local save on error
+    }
+
     // Add to current data
     const updatedData = [...currentData, newMeeting];
     this.setCachedMeetingData(updatedData);
 
+    console.log("🔄 Performing full data sync after creating meeting");
+
     try {
-      // Save to server if online
-      if (this.isOnline) {
-        await dataService.createMeeting(newMeeting);
-        this.lastSync = new Date();
-      } else {
-        console.warn("Server connection unavailable, saving locally only");
-      }
-    } catch (error) {
-      console.error("Failed to save meeting to server:", error);
-      this.isOnline = false;
+      // Always try to sync all data to ensure consistency
+      await this.saveMeetingsToServer();
+      console.log("✅ Full sync completed successfully");
+
+      // Force a refresh from server to ensure all clients have latest data
+      setTimeout(() => {
+        console.log(
+          "🔄 Performing additional data refresh to confirm synchronization"
+        );
+        this.loadMeetingsFromServer().catch((err) =>
+          console.warn("Post-creation data refresh failed:", err)
+        );
+      }, 2000);
+    } catch (err) {
+      console.warn("⚠️ Background sync failed after create:", err);
     }
 
-    // Trigger update event
+    // Trigger update event with explicit data refresh
     this._triggerMeetingUpdate(updatedData);
+
+    // Force UI refresh for room details
+    this._triggerRoomStatusUpdate(this.getTodayMeetings(updatedData));
 
     return newMeeting;
   }
@@ -200,7 +485,7 @@ export class MeetingDataManager {
   /**
    * Update an existing meeting
    */
-  updateMeeting(meetingId, updatedData) {
+  async updateMeeting(meetingId, updatedData) {
     const currentData = this.getCachedMeetingData();
     const meetingIndex = currentData.findIndex(
       (meeting) => meeting.id === meetingId
@@ -214,7 +499,7 @@ export class MeetingDataManager {
     const updatedMeeting = {
       ...existingMeeting,
       ...updatedData,
-      lastUpdated: new Date().getTime(),
+      lastUpdated: new Date().toISOString(),
     };
 
     // Validate the updated meeting
@@ -233,12 +518,34 @@ export class MeetingDataManager {
       );
     }
 
-    // Update the meeting
+    // Update the meeting locally first
     const newData = [...currentData];
     newData[meetingIndex] = updatedMeeting;
-
     this.setCachedMeetingData(newData);
+
+    try {
+      // Try to save to server
+      if (dataService.isConnected) {
+        await dataService.updateMeeting(meetingId, updatedMeeting);
+        this.lastSync = new Date();
+        this.isOnline = true;
+        console.log(`📤 Meeting ${meetingId} updated on server`);
+      } else {
+        console.warn("Server connection unavailable, updating locally only");
+      }
+    } catch (error) {
+      console.error("Failed to update meeting on server:", error);
+      this.isOnline = false;
+    }
+
+    // Always trigger local updates for immediate UI refresh
     this._triggerMeetingUpdate(newData);
+    this._triggerRoomStatusUpdate(this.getTodayMeetings(newData));
+
+    // Also try to sync all data to ensure server consistency
+    this.saveMeetingsToServer().catch((err) =>
+      console.warn("Background sync failed after update:", err)
+    );
 
     return updatedMeeting;
   }
@@ -497,6 +804,98 @@ export class MeetingDataManager {
         notification.parentNode.removeChild(notification);
       }
     }, 3000);
+  }
+
+  /**
+   * Show a warning about data issues
+   */
+  _showDataWarning(message) {
+    console.warn("⚠️ " + message);
+
+    // Create toast notification
+    const toast = document.createElement("div");
+    toast.className = "toast-notification";
+    toast.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <div style="color: #FFD700; font-size: 24px;">⚠️</div>
+        <div>${message}</div>
+      </div>
+    `;
+    document.body.appendChild(toast);
+
+    // Animate in
+    setTimeout(() => {
+      toast.style.opacity = "1";
+    }, 100);
+
+    // Remove after 8 seconds
+    setTimeout(() => {
+      toast.style.opacity = "0";
+      setTimeout(() => {
+        document.body.removeChild(toast);
+      }, 300);
+    }, 8000);
+  }
+
+  /**
+   * Force a complete refresh of all data and UI updates
+   */
+  async forceRefresh() {
+    console.log("🔄 Forcing complete data and UI refresh");
+
+    try {
+      // Clear any cached data first
+      const cachedData = this.getCachedMeetingData();
+
+      // Load fresh data from server
+      const meetings = await dataService.getMeetings();
+
+      if (Array.isArray(meetings)) {
+        this.setCachedMeetingData(meetings);
+        this.isOnline = true;
+        this.lastSync = new Date();
+
+        // Get today's meetings
+        const todayMeetings = this.getTodayMeetings(meetings);
+
+        console.log(
+          `Force refresh loaded ${meetings.length} meetings, ${todayMeetings.length} for today`
+        );
+
+        // Dispatch multiple events for different UI components
+        document.dispatchEvent(
+          new CustomEvent("meetingDataUpdated", {
+            detail: { meetings, todayMeetings },
+          })
+        );
+
+        document.dispatchEvent(
+          new CustomEvent("roomStatusUpdate", {
+            detail: { todayMeetings },
+          })
+        );
+
+        document.dispatchEvent(
+          new CustomEvent("dashboardUpdate", {
+            detail: { meetings, todayMeetings },
+          })
+        );
+
+        // Special event just for room refresh
+        document.dispatchEvent(
+          new CustomEvent("refreshRoomStatus", {
+            detail: { todayMeetings },
+          })
+        );
+
+        return meetings;
+      }
+
+      return cachedData;
+    } catch (error) {
+      console.error("Force refresh failed:", error);
+      return this.getCachedMeetingData();
+    }
   }
 }
 

@@ -459,7 +459,6 @@ export class DeviceManager {
 
       .people-status-text {
         font-size: 14px;
-        font-weight: bold;
         color: #333;
       }
 

@@ -59,6 +59,9 @@ class MeetingRoomApp {
         this.managers.meetingDataManager
       );
 
+      // Detect and configure rooms dynamically
+      await this._detectAndConfigureRooms();
+
       // Setup global error handling
       this._setupGlobalErrorHandling();
 
@@ -68,8 +71,20 @@ class MeetingRoomApp {
       // Add global styles
       this._addGlobalStyles();
 
+      // Set up periodic room detection and data refresh
+      setInterval(async () => {
+        console.log("🔄 Periodic room detection and data refresh");
+        await this._detectAndConfigureRooms();
+        this.managers.meetingDataManager.forceRefresh();
+      }, 3 * 60 * 1000); // Every 3 minutes
+
       this.initialized = true;
       console.log("✅ Application initialized successfully");
+
+      // Force an immediate data refresh after initialization
+      setTimeout(() => {
+        this.managers.meetingDataManager.forceRefresh();
+      }, 2000);
 
       // Dispatch initialization complete event
       document.dispatchEvent(
@@ -104,14 +119,32 @@ class MeetingRoomApp {
     try {
       console.log("🔄 Manually refreshing data...");
 
-      const cachedData =
-        this.managers.meetingDataManager.getCachedMeetingData();
+      // Force a new data fetch from server
+      const cachedData = await this.managers.meetingDataManager.forceRefresh();
+
       if (cachedData && cachedData.length > 0) {
         const todayMeetings =
           this.managers.meetingDataManager.getTodayMeetings(cachedData);
 
+        // Update schedule table
         this.managers.roomManager.updateScheduleTable(todayMeetings);
+
+        // Update room status with explicit refresh of all rooms
+        console.log("🔄 Explicitly refreshing room status for all rooms");
         this.managers.roomManager.updateRoomStatus(cachedData);
+
+        // Trigger events for complete UI refresh
+        document.dispatchEvent(
+          new CustomEvent("refreshRoomStatus", {
+            detail: { meetings: cachedData, todayMeetings },
+          })
+        );
+
+        document.dispatchEvent(
+          new CustomEvent("meetingDataUpdated", {
+            detail: { meetings: cachedData, todayMeetings },
+          })
+        );
 
         this.managers.uiManager.showNotification(
           "Data refreshed successfully",
@@ -175,6 +208,99 @@ class MeetingRoomApp {
         ).length,
       };
     });
+  }
+
+  /**
+   * Detect available rooms and update configuration
+   */
+  async _detectAndConfigureRooms() {
+    try {
+      console.log("🔍 Detecting available rooms...");
+
+      // Start with empty room configuration
+      const detectedRooms = {};
+
+      // Attempt to load meeting data to detect rooms in use
+      const meetings = await this.managers.meetingDataManager.forceRefresh();
+
+      if (Array.isArray(meetings) && meetings.length > 0) {
+        // Extract unique room names from meetings
+        const roomSet = new Set();
+        meetings.forEach((meeting) => {
+          if (meeting && meeting.room) {
+            roomSet.add(meeting.room.trim());
+          }
+        });
+
+        // Convert to room config format
+        let index = 1;
+        roomSet.forEach((roomName) => {
+          const key = `ROOM_${index}`;
+          detectedRooms[key] = roomName;
+          index++;
+        });
+
+        console.log(`🏢 Detected ${roomSet.size} rooms from meeting data:`, [
+          ...roomSet,
+        ]);
+      }
+
+      // If no rooms detected, use defaults from ROOM_CONFIG
+      if (Object.keys(detectedRooms).length === 0) {
+        console.log("⚠️ No rooms detected from meeting data, using defaults");
+
+        // Keep the default rooms from constants
+        Object.assign(detectedRooms, ROOM_CONFIG.ROOMS);
+      }
+
+      // Update the ROOM_CONFIG.ROOMS with detected rooms
+      ROOM_CONFIG.ROOMS = detectedRooms;
+
+      console.log("📋 Updated room configuration:", ROOM_CONFIG.ROOMS);
+
+      // Force room status update with enhanced error handling
+      if (this.managers.roomManager) {
+        try {
+          // First ensure room sections exist in the DOM
+          const roomsContainer = document.querySelector(".rooms-container");
+          if (
+            roomsContainer &&
+            typeof this.managers.roomManager._ensureRoomSections === "function"
+          ) {
+            console.log("🔧 Ensuring all room sections exist in DOM");
+            this.managers.roomManager._ensureRoomSections(roomsContainer);
+          }
+
+          // Get today's meetings for room status
+          const meetings =
+            this.managers.meetingDataManager.getCachedMeetingData();
+          const todayMeetings =
+            this.managers.meetingDataManager.getTodayMeetings(meetings);
+
+          // Update room status
+          console.log("🔄 Forcing room status update after room detection");
+          this.managers.roomManager.updateRoomStatus(meetings);
+
+          // Dispatch events for UI refresh
+          console.log("📢 Dispatching events for room UI refresh");
+          document.dispatchEvent(
+            new CustomEvent("refreshRoomStatus", {
+              detail: { meetings, todayMeetings },
+            })
+          );
+        } catch (roomError) {
+          console.error(
+            "❌ Error updating room status after configuration:",
+            roomError
+          );
+        }
+      }
+
+      return detectedRooms;
+    } catch (error) {
+      console.error("❌ Error detecting rooms:", error);
+      return ROOM_CONFIG.ROOMS; // Fall back to defaults
+    }
   }
 
   /**

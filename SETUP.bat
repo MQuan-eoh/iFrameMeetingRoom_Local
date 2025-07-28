@@ -74,7 +74,7 @@ echo - Từ máy tính hiện tại: http://localhost:3000
 echo - Từ máy tính khác: http://[IP_của_máy_tính_này]:3000
 echo.
 echo Địa chỉ IP của máy tính này:
-powershell -Command "Get-NetIPAddress | Where-Object {$_.AddressFamily -eq 'IPv4' -and $_.PrefixOrigin -ne 'WellKnown'} | ForEach-Object { $_.IPAddress }"
+powershell -Command "$addresses = Get-NetIPAddress | Where-Object {$_.AddressFamily -eq 'IPv4' -and $_.PrefixOrigin -ne 'WellKnown' -and $_.IPAddress -notlike '127.*' -and $_.IPAddress -notlike '169.254.*'}; foreach ($addr in $addresses) { Write-Output ('- ' + $addr.IPAddress + ' (' + $addr.InterfaceAlias + ')') }"
 echo.
 echo Bạn có muốn khởi động máy chủ ngay bây giờ không? (Y/N)
 set /p start_now=
