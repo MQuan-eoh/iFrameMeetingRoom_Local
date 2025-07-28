@@ -45,6 +45,22 @@ export class ScheduleBookingManager {
       }, 300);
     });
 
+    // Listen for room filter changes to re-apply filter after meeting data updates
+    document.addEventListener("roomFilterChanged", (event) => {
+      console.log("🎯 Room filter changed, applying filter to schedule view");
+      const filter = event.detail?.filter;
+      if (filter) {
+        // Small delay to ensure meetings are rendered first
+        setTimeout(() => {
+          // Trigger room manager to apply filter to schedule view
+          const roomFilterEvent = new CustomEvent("applyScheduleFilter", {
+            detail: { filter: filter },
+          });
+          document.dispatchEvent(roomFilterEvent);
+        }, 100);
+      }
+    });
+
     // Set up periodic updates for current time indicator and date
     setInterval(() => {
       this._renderTimeIndicator();
@@ -838,6 +854,22 @@ export class ScheduleBookingManager {
     });
 
     console.log(`📅 Rendered ${meetingsRendered} meetings in week view`);
+
+    // Auto-apply current room filter if one is active
+    if (
+      window.roomManager &&
+      window.roomManager.currentRoomFilter &&
+      window.roomManager.currentRoomFilter !== "all"
+    ) {
+      console.log(
+        `🎯 Auto-applying room filter: ${window.roomManager.currentRoomFilter}`
+      );
+      setTimeout(() => {
+        window.roomManager._filterScheduleViewMeetings(
+          window.roomManager.currentRoomFilter
+        );
+      }, 100);
+    }
   }
 
   /**

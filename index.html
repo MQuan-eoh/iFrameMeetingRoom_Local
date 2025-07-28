@@ -326,6 +326,41 @@
                     <!-- View Controls -->
                     <div class="schedule-view-controls">
                       <div class="schedule-view-title">Lịch Phòng Họp</div>
+
+                      <!-- Room Filter Button -->
+                      <div class="room-filter-container">
+                        <button class="room-filter-button" id="roomFilterBtn">
+                          <i class="fas fa-filter"></i>
+                          Lọc Phòng
+                          <i
+                            class="fas fa-chevron-down filter-dropdown-icon"
+                          ></i>
+                        </button>
+                        <div
+                          class="room-filter-dropdown"
+                          id="roomFilterDropdown"
+                        >
+                          <div class="filter-option active" data-room="all">
+                            <i class="fas fa-check filter-check"></i>
+                            Tất cả phòng
+                          </div>
+                          <div
+                            class="filter-option"
+                            data-room="Phòng họp lầu 3"
+                          >
+                            <i class="fas fa-check filter-check"></i>
+                            Phòng họp lầu 3
+                          </div>
+                          <div
+                            class="filter-option"
+                            data-room="Phòng họp lầu 4"
+                          >
+                            <i class="fas fa-check filter-check"></i>
+                            Phòng họp lầu 4
+                          </div>
+                        </div>
+                      </div>
+
                       <div class="schedule-view-selector">
                         <div class="view-option active" data-view="week">
                           Tuần

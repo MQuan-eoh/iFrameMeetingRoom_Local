@@ -12,20 +12,25 @@ export class DateTimeUtils {
   static getCurrentDate() {
     // Get current date in Vietnam time (UTC+7)
     const now = new Date();
-    
+
     // Check if we're already in Vietnam timezone (UTC+7)
     const timezoneOffsetHours = -now.getTimezoneOffset() / 60;
     let vietnamTime;
-    
+
     if (timezoneOffsetHours === TIME_CONFIG.TIMEZONE_OFFSET) {
       // Already in Vietnam timezone, use local time directly
       vietnamTime = now;
-      console.log(`📅 Using local time (already in Vietnam timezone UTC+${TIME_CONFIG.TIMEZONE_OFFSET})`);
+      console.log(
+        `📅 Using local time (already in Vietnam timezone UTC+${TIME_CONFIG.TIMEZONE_OFFSET})`
+      );
     } else {
       // Convert to Vietnam timezone
-      const offsetDifference = TIME_CONFIG.TIMEZONE_OFFSET - timezoneOffsetHours;
-      vietnamTime = new Date(now.getTime() + (offsetDifference * 60 * 60 * 1000));
-      console.log(`📅 Converting from UTC+${timezoneOffsetHours} to Vietnam time UTC+${TIME_CONFIG.TIMEZONE_OFFSET}`);
+      const offsetDifference =
+        TIME_CONFIG.TIMEZONE_OFFSET - timezoneOffsetHours;
+      vietnamTime = new Date(now.getTime() + offsetDifference * 60 * 60 * 1000);
+      console.log(
+        `📅 Converting from UTC+${timezoneOffsetHours} to Vietnam time UTC+${TIME_CONFIG.TIMEZONE_OFFSET}`
+      );
     }
 
     const date = String(vietnamTime.getDate()).padStart(2, "0");
@@ -39,13 +44,26 @@ export class DateTimeUtils {
   static getCurrentTime() {
     // Get current time in Vietnam time (UTC+7)
     const now = new Date();
-    // Create a date object representing Vietnam time (UTC+7)
-    // This accounts for the difference between local timezone and Vietnam timezone
-    const vietnamTime = new Date(
-      now.getTime() +
-        (TIME_CONFIG.TIMEZONE_OFFSET * 60 * 60 * 1000 -
-          now.getTimezoneOffset() * 60 * 1000)
-    );
+
+    // Check if we're already in Vietnam timezone (UTC+7)
+    const timezoneOffsetHours = -now.getTimezoneOffset() / 60;
+    let vietnamTime;
+
+    if (timezoneOffsetHours === TIME_CONFIG.TIMEZONE_OFFSET) {
+      // Already in Vietnam timezone, use local time directly
+      vietnamTime = now;
+      console.log(
+        `⏰ Using local time (already in Vietnam timezone UTC+${TIME_CONFIG.TIMEZONE_OFFSET})`
+      );
+    } else {
+      // Convert to Vietnam timezone
+      const offsetDifference =
+        TIME_CONFIG.TIMEZONE_OFFSET - timezoneOffsetHours;
+      vietnamTime = new Date(now.getTime() + offsetDifference * 60 * 60 * 1000);
+      console.log(
+        `⏰ Converting from UTC+${timezoneOffsetHours} to Vietnam time UTC+${TIME_CONFIG.TIMEZONE_OFFSET}`
+      );
+    }
 
     const hours = String(vietnamTime.getHours()).padStart(2, "0");
     const minutes = String(vietnamTime.getMinutes()).padStart(2, "0");
@@ -379,12 +397,25 @@ export class DateTimeUtils {
     ];
 
     const now = new Date();
-    now.setHours(now.getHours() + TIME_CONFIG.TIMEZONE_OFFSET);
 
-    const dayOfWeek = daysOfWeek[now.getDay()];
-    const day = now.getDate();
-    const month = months[now.getMonth()];
-    const year = now.getFullYear();
+    // Check if we're already in Vietnam timezone (UTC+7)
+    const timezoneOffsetHours = -now.getTimezoneOffset() / 60;
+    let vietnamTime;
+
+    if (timezoneOffsetHours === TIME_CONFIG.TIMEZONE_OFFSET) {
+      // Already in Vietnam timezone, use local time directly
+      vietnamTime = now;
+    } else {
+      // Convert to Vietnam timezone
+      const offsetDifference =
+        TIME_CONFIG.TIMEZONE_OFFSET - timezoneOffsetHours;
+      vietnamTime = new Date(now.getTime() + offsetDifference * 60 * 60 * 1000);
+    }
+
+    const dayOfWeek = daysOfWeek[vietnamTime.getDay()];
+    const day = vietnamTime.getDate();
+    const month = months[vietnamTime.getMonth()];
+    const year = vietnamTime.getFullYear();
 
     return `${dayOfWeek}, ${day} ${month} ${year}`;
   }

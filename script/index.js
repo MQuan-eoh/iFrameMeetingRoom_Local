@@ -48,6 +48,9 @@ class MeetingRoomApp {
       this.managers.roomManager = new RoomManager();
       this.managers.deviceManager = new DeviceManager();
 
+      // Expose roomManager globally for schedule filtering
+      window.roomManager = this.managers.roomManager;
+
       // Initialize booking manager
       this.managers.scheduleBookingManager = new ScheduleBookingManager();
 
@@ -424,24 +427,6 @@ class MeetingRoomApp {
       }
 
       /* Application Info Display */
-      .app-info {
-        position: fixed;
-        bottom: 10px;
-        left: 10px;
-        background: rgba(0, 0, 0, 0.7);
-        color: white;
-        padding: 5px 10px;
-        border-radius: 4px;
-        font-size: 12px;
-        z-index: 1000;
-        opacity: 0.7;
-        transition: opacity 0.3s ease;
-      }
-
-      .app-info:hover {
-        opacity: 1;
-      }
-
       /* Responsive Enhancements */
       @media (max-width: 768px) {
         .meeting-container {

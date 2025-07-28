@@ -97,6 +97,11 @@ export const CSS_CLASSES = {
   PEOPLE_STATUS_TEXT: "people-status-text",
   AC_CARD: "ac-card",
   STATUS_AIR_DOT: "status-air-dot",
+  // Room Filter Classes
+  ROOM_FILTER_BUTTON: "room-filter-button",
+  ROOM_FILTER_DROPDOWN: "room-filter-dropdown",
+  FILTER_OPTION: "filter-option",
+  FILTER_CHECK: "filter-check",
 };
 
 // API Configuration (if needed in future)

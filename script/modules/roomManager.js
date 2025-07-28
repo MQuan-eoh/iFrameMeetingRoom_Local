@@ -19,6 +19,7 @@ export class RoomManager {
   constructor() {
     this.previousStates = {};
     this.updateInterval = null;
+    this.currentRoomFilter = "all"; // Add room filter state
 
     // Ensure room sections are created when the DOM is ready
     document.addEventListener("DOMContentLoaded", () => {
@@ -29,6 +30,9 @@ export class RoomManager {
       } else {
         console.warn("⚠️ RoomManager: Cannot find .rooms-container element");
       }
+
+      // Initialize room filter functionality
+      this._initializeRoomFilter();
     });
   }
 
@@ -111,10 +115,13 @@ export class RoomManager {
         );
         this.updateSingleRoomStatus(roomName, todayMeetings, currentTime);
       }
-    });
-
-    // Update the data display after refreshing rooms
+    }); // Update the data display after refreshing rooms
     this.updateScheduleTable(todayMeetings);
+
+    // Apply current room filter to schedule view if filter is active
+    if (this.currentRoomFilter && this.currentRoomFilter !== "all") {
+      this._filterScheduleViewMeetings(this.currentRoomFilter);
+    }
   }
 
   /**
@@ -313,6 +320,217 @@ export class RoomManager {
 
     return template;
   }
+  _generateRoomPageTemplate(roomName, currentMeeting, upcomingMeetings) {
+    return `
+      <div class="container">
+        <div class="left-panel">
+          <div>
+            <div class="clock-container">
+              <div class="time-1" id="currentTime-1"></div>
+            </div>
+            <div class="currentDateElement-1" id="currentDate-1"></div>
+          </div>
+        </div>
+        
+        <div class="main-panel">
+          <h1>${roomName.toUpperCase()}</h1>
+          <div class="meeting-info">
+            <div class="meeting-title-1">
+              ${
+                currentMeeting
+                  ? currentMeeting.content || currentMeeting.purpose
+                  : "Không có cuộc họp"
+              }
+            </div>
+            <div class="meeting-time-1">
+              <span>Bắt đầu: ${
+                currentMeeting ? currentMeeting.startTime : "--:--"
+              }</span>
+              <span> - Kết thúc: ${
+                currentMeeting ? currentMeeting.endTime : "--:--"
+              }</span>
+            </div>
+          </div>
+          <div class="purpose">MỤC ĐÍCH SỬ DỤNG</div>
+          <div class="purpose-value">${
+            currentMeeting ? currentMeeting.purpose : "Chưa xác định"
+          }</div>
+          ${
+            currentMeeting
+              ? '<button class="end-meeting">END MEETING</button>'
+              : '<div class="no-meeting-placeholder">Không có cuộc họp đang diễn ra</div>'
+          }
+        </div>
+        
+        <div class="right-panel">
+          <h2>LỊCH HỌP PHÒNG ${roomName.toUpperCase()}</h2>
+          ${upcomingMeetings
+            .map(
+              (meeting) => `
+                <div class="upcoming-meeting">
+                  <div class="meeting-title">${
+                    meeting.content || meeting.purpose
+                  }</div>
+                  <div class="meeting-time-1">${meeting.startTime} - ${
+                meeting.endTime
+              }</div>
+                </div>
+              `
+            )
+            .join("")}
+          ${
+            upcomingMeetings.length === 0
+              ? '<div class="no-upcoming">Không có cuộc họp sắp tới</div>'
+              : ""
+          }
+        </div>
+      </div>
+    `;
+  }
+  /**
+   * Setup event handlers for room page
+   */
+  _setupRoomPageEventHandlers(roomName) {
+    console.log(`🔧 Setting up event handlers for room page: ${roomName}`);
+
+    // Add basic CSS for room detail page if not already added
+    if (!document.getElementById("room-detail-styles")) {
+      const style = document.createElement("style");
+      style.id = "room-detail-styles";
+      style.innerHTML = `
+        .room-detail-page {
+          padding: 20px;
+          max-width: 800px;
+          margin: 0 auto;
+          background: #fff;
+          border-radius: 8px;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .room-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 20px;
+          padding-bottom: 10px;
+          border-bottom: 2px solid #eee;
+        }
+        .room-status.busy {
+          background: #f44336;
+          color: white;
+          padding: 5px 15px;
+          border-radius: 20px;
+        }
+        .room-status.available {
+          background: #4caf50;
+          color: white;
+          padding: 5px 15px;
+          border-radius: 20px;
+        }
+        .back-btn {
+          background: #2196f3;
+          color: white;
+          border: none;
+          padding: 10px 20px;
+          border-radius: 5px;
+          cursor: pointer;
+        }
+        .back-btn:hover {
+          background: #1976d2;
+        }
+        .current-meeting, .upcoming-meetings {
+          margin: 20px 0;
+          padding: 15px;
+          background: #f9f9f9;
+          border-radius: 5px;
+        }
+        .meeting-item {
+          margin: 10px 0;
+          padding: 10px;
+          background: white;
+          border-radius: 5px;
+          border-left: 4px solid #2196f3;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    // End meeting button
+    const endMeetingBtn = document.querySelector(".end-meeting-btn");
+    if (endMeetingBtn) {
+      endMeetingBtn.addEventListener("click", (e) => {
+        const meetingId = e.target.dataset.meetingId;
+        this._handleEndMeeting(meetingId, roomName);
+      });
+    }
+
+    // Book room button
+    const bookRoomBtn = document.querySelector(".book-room-btn");
+    if (bookRoomBtn) {
+      bookRoomBtn.addEventListener("click", (e) => {
+        const room = e.target.dataset.room;
+        this._handleBookRoom(room);
+      });
+    }
+
+    // Refresh data button
+    const refreshBtn = document.querySelector(".refresh-data-btn");
+    if (refreshBtn) {
+      refreshBtn.addEventListener("click", () => {
+        this._handleRefreshData(roomName);
+      });
+    }
+  }
+
+  /**
+   * Handle end meeting action
+   */
+  _handleEndMeeting(meetingId, roomName) {
+    if (confirm("Bạn có chắc chắn muốn kết thúc cuộc họp này?")) {
+      console.log(`Ending meeting ${meetingId} in room ${roomName}`);
+
+      // Dispatch custom event for ending meeting
+      document.dispatchEvent(
+        new CustomEvent("endMeeting", {
+          detail: { meetingId, roomName },
+        })
+      );
+
+      // Refresh the page data
+      setTimeout(() => {
+        this._handleRefreshData(roomName);
+      }, 1000);
+    }
+  }
+
+  /**
+   * Handle book room action
+   */
+  _handleBookRoom(roomName) {
+    console.log(`Opening booking modal for room: ${roomName}`);
+
+    // Dispatch custom event for booking
+    document.dispatchEvent(
+      new CustomEvent("openBookingModal", {
+        detail: { roomName },
+      })
+    );
+  }
+
+  /**
+   * Handle refresh data action
+   */
+  _handleRefreshData(roomName) {
+    console.log(`Refreshing data for room: ${roomName}`);
+
+    // Get fresh data and re-render
+    if (window.meetingRoomApp && window.meetingRoomApp.instance) {
+      window.meetingRoomApp.instance.refreshData().then(() => {
+        // Re-render the room page with fresh data
+        const data = window.currentMeetingData || [];
+        this.renderRoomPage(data, roomName, roomName);
+      });
+    }
+  }
 
   /**
    * Setup auto-update for room statuses
@@ -358,6 +576,13 @@ export class RoomManager {
       this.updateRoomStatus(todayMeetings || allMeetings);
     });
 
+    // Listen for schedule filter application requests
+    document.addEventListener("applyScheduleFilter", (event) => {
+      console.log("🎯 Apply schedule filter event received");
+      const filter = event.detail?.filter || this.currentRoomFilter;
+      this._filterScheduleViewMeetings(filter);
+    });
+
     // Also listen for dashboard updates as they might contain fresh meeting data
     document.addEventListener("dashboardUpdate", (event) => {
       console.log(
@@ -391,17 +616,26 @@ export class RoomManager {
 
     if (!tableBody) return;
 
+    // Apply room filter to data
+    let filteredData = this._applyRoomFilter(data);
+
     // Remove old rows
     Array.from(tableBody.children)
       .filter((child) => child !== headerRow)
       .forEach((child) => child.remove());
 
     // If no data, show empty state
-    if (!data || data.length === 0) {
+    if (!filteredData || filteredData.length === 0) {
       const emptyRow = DOMUtils.createElement("div", "table-row empty-state");
       emptyRow.setAttribute("role", "row");
       emptyRow.innerHTML = `
-        <div role="cell" class="empty-message">No meetings scheduled for today.</div>
+        <div role="cell" class="empty-message">
+          ${
+            this.currentRoomFilter === "all"
+              ? "No meetings scheduled for today."
+              : `No meetings for ${this.currentRoomFilter} today.`
+          }
+        </div>
       `;
       tableBody.appendChild(emptyRow);
 
@@ -431,7 +665,7 @@ export class RoomManager {
     }
 
     // Add meeting rows
-    data.forEach((meeting) => {
+    filteredData.forEach((meeting) => {
       const row = DOMUtils.createElement("div", "table-row");
       row.setAttribute("role", "row");
       row.innerHTML = `
@@ -448,7 +682,7 @@ export class RoomManager {
       tableBody.appendChild(row);
     });
 
-    console.log("Schedule table updated with", data.length, "meetings");
+    console.log("Schedule table updated with", filteredData.length, "meetings");
   }
 
   /**
@@ -736,88 +970,256 @@ export class RoomManager {
     }
   }
 
-  _generateRoomPageTemplate(roomName, currentMeeting, upcomingMeetings) {
-    return `
-      <div class="container">
-        <div class="left-panel">
-          <div>
-            <div class="clock-container">
-              <div class="time-1" id="currentTime-1"></div>
-            </div>
-            <div class="currentDateElement-1" id="currentDate-1"></div>
-          </div>
-        </div>
-        
-        <div class="main-panel">
-          <h1>${roomName.toUpperCase()}</h1>
-          <div class="meeting-info">
-            <div class="meeting-title-1">
-              ${
-                currentMeeting
-                  ? currentMeeting.content || currentMeeting.purpose
-                  : "Không có cuộc họp"
-              }
-            </div>
-            <div class="meeting-time-1">
-              <span>Bắt đầu: ${
-                currentMeeting ? currentMeeting.startTime : "--:--"
-              }</span>
-              <span> - Kết thúc: ${
-                currentMeeting ? currentMeeting.endTime : "--:--"
-              }</span>
-            </div>
-          </div>
-          <div class="purpose">MỤC ĐÍCH SỬ DỤNG</div>
-          <div class="purpose-value">${
-            currentMeeting ? currentMeeting.purpose : "Chưa xác định"
-          }</div>
-          ${
-            currentMeeting
-              ? '<button class="end-meeting">END MEETING</button>'
-              : '<div class="no-meeting-placeholder">Không có cuộc họp đang diễn ra</div>'
-          }
-        </div>
-        
-        <div class="right-panel">
-          <h2>LỊCH HỌP PHÒNG ${roomName.toUpperCase()}</h2>
-          ${upcomingMeetings
-            .map(
-              (meeting) => `
-                <div class="upcoming-meeting">
-                  <div class="meeting-title">${
-                    meeting.content || meeting.purpose
-                  }</div>
-                  <div class="meeting-time-1">${meeting.startTime} - ${
-                meeting.endTime
-              }</div>
-                </div>
-              `
-            )
-            .join("")}
-          ${
-            upcomingMeetings.length === 0
-              ? '<div class="no-upcoming">Không có cuộc họp sắp tới</div>'
-              : ""
-          }
-        </div>
-      </div>
-    `;
+  /**
+   * Setup room filter functionality
+   * This will initialize the filter UI and load event handlers
+   */
+  _initializeRoomFilter() {
+    const filterButton = document.getElementById("roomFilterBtn");
+    const filterDropdown = document.getElementById("roomFilterDropdown");
+    const filterOptions = document.querySelectorAll(".filter-option");
+
+    if (!filterButton || !filterDropdown) return;
+
+    // Toggle dropdown visibility
+    filterButton.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isOpen = filterDropdown.classList.contains("show");
+
+      if (isOpen) {
+        this._closeRoomFilter();
+      } else {
+        this._openRoomFilter();
+      }
+    });
+
+    // Handle filter option selection
+    filterOptions.forEach((option) => {
+      option.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const roomFilter = option.dataset.room;
+        this._setRoomFilter(roomFilter);
+        this._closeRoomFilter();
+      });
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener("click", (e) => {
+      if (
+        !filterButton.contains(e.target) &&
+        !filterDropdown.contains(e.target)
+      ) {
+        this._closeRoomFilter();
+      }
+    });
+
+    console.log("✅ Room filter functionality initialized");
   }
 
-  _setupRoomPageEventHandlers(roomName) {
-    // Setup end meeting button handler
-    setTimeout(() => {
-      const endMeetingBtn = document.querySelector(".end-meeting");
-      if (endMeetingBtn) {
-        endMeetingBtn.addEventListener("click", (event) => {
-          // Dispatch event for meeting data manager to handle
-          const endEvent = new CustomEvent("endMeetingRequested", {
-            detail: { roomName, event },
-          });
-          document.dispatchEvent(endEvent);
-        });
+  /**
+   * Open room filter dropdown
+   */
+  _openRoomFilter() {
+    const filterButton = document.getElementById("roomFilterBtn");
+    const filterDropdown = document.getElementById("roomFilterDropdown");
+
+    if (filterButton && filterDropdown) {
+      filterButton.classList.add("active");
+      filterDropdown.classList.add("show");
+    }
+  }
+
+  /**
+   * Close room filter dropdown
+   */
+  _closeRoomFilter() {
+    const filterButton = document.getElementById("roomFilterBtn");
+    const filterDropdown = document.getElementById("roomFilterDropdown");
+
+    if (filterButton && filterDropdown) {
+      filterButton.classList.remove("active");
+      filterDropdown.classList.remove("show");
+    }
+  }
+
+  /**
+   * Set room filter and update displays
+   */
+  _setRoomFilter(roomFilter) {
+    console.log(`🔍 Setting room filter to: ${roomFilter}`);
+
+    this.currentRoomFilter = roomFilter;
+
+    // Update active filter option UI
+    const filterOptions = document.querySelectorAll(".filter-option");
+    filterOptions.forEach((option) => {
+      if (option.dataset.room === roomFilter) {
+        option.classList.add("active");
+      } else {
+        option.classList.remove("active");
       }
-    }, 100);
+    });
+
+    // Update filter button text
+    const filterButton = document.getElementById("roomFilterBtn");
+    if (filterButton) {
+      const buttonText = roomFilter === "all" ? "Tất cả phòng" : roomFilter;
+      filterButton.innerHTML = `
+        <i class="fas fa-filter"></i>
+        ${buttonText}
+        <i class="fas fa-chevron-down filter-dropdown-icon"></i>
+      `;
+    }
+
+    // Apply filter to schedule view meetings
+    this._filterScheduleViewMeetings(roomFilter);
+
+    // Apply filter to current data and update displays
+    const currentData = window.currentMeetingData || [];
+    const currentDate = DateTimeUtils.getCurrentDate();
+    const todayMeetings = currentData.filter(
+      (meeting) => meeting.date === currentDate
+    );
+
+    // Update schedule table with filtered data
+    this.updateScheduleTable(todayMeetings);
+
+    // Dispatch event for other components that might need to know about filter changes
+    document.dispatchEvent(
+      new CustomEvent("roomFilterChanged", {
+        detail: { filter: roomFilter, meetings: todayMeetings },
+      })
+    );
+  }
+
+  /**
+   * Apply room filter to meeting data
+   */
+  _applyRoomFilter(data) {
+    if (!data || !Array.isArray(data)) return [];
+
+    if (this.currentRoomFilter === "all") {
+      return data;
+    }
+
+    return data.filter((meeting) => {
+      if (!meeting || !meeting.room) return false;
+
+      const normalizedMeetingRoom = FormatUtils.normalizeRoomName(meeting.room);
+      const normalizedFilterRoom = FormatUtils.normalizeRoomName(
+        this.currentRoomFilter
+      );
+
+      return (
+        normalizedMeetingRoom === normalizedFilterRoom ||
+        normalizedMeetingRoom.includes(normalizedFilterRoom) ||
+        normalizedFilterRoom.includes(normalizedMeetingRoom)
+      );
+    });
+  }
+
+  /**
+   * Filter schedule view meetings based on room filter
+   */
+  _filterScheduleViewMeetings(roomFilter) {
+    console.log(`🎯 Filtering schedule view meetings for room: ${roomFilter}`);
+
+    // Get all meeting events in the schedule view
+    const meetingEvents = document.querySelectorAll(".meeting-event");
+
+    if (meetingEvents.length === 0) {
+      console.log("📅 No meeting events found in schedule view");
+      return;
+    }
+
+    let hiddenCount = 0;
+    let visibleCount = 0;
+
+    meetingEvents.forEach((meetingEvent) => {
+      const roomElement = meetingEvent.querySelector(".event-room");
+
+      if (!roomElement) {
+        console.warn("⚠️ Meeting event without room element found");
+        return;
+      }
+
+      const meetingRoom = roomElement.textContent.trim();
+
+      if (roomFilter === "all") {
+        // Show all meetings
+        meetingEvent.style.display = "";
+        meetingEvent.style.opacity = "1";
+        meetingEvent.classList.remove("filtered-out");
+        visibleCount++;
+      } else {
+        // Check if this meeting's room matches the filter
+        const normalizedMeetingRoom =
+          FormatUtils.normalizeRoomName(meetingRoom);
+        const normalizedFilterRoom = FormatUtils.normalizeRoomName(roomFilter);
+
+        const isMatch =
+          normalizedMeetingRoom === normalizedFilterRoom ||
+          normalizedMeetingRoom.includes(normalizedFilterRoom) ||
+          normalizedFilterRoom.includes(normalizedMeetingRoom);
+
+        if (isMatch) {
+          // Show matching meetings
+          meetingEvent.style.display = "";
+          meetingEvent.style.opacity = "1";
+          meetingEvent.classList.remove("filtered-out");
+          visibleCount++;
+        } else {
+          // Hide non-matching meetings
+          meetingEvent.style.display = "none";
+          meetingEvent.style.opacity = "0.3";
+          meetingEvent.classList.add("filtered-out");
+          hiddenCount++;
+        }
+      }
+    });
+
+    console.log(
+      `📊 Filter results: ${visibleCount} visible, ${hiddenCount} hidden`
+    );
+
+    // Add visual feedback for empty filter results
+    this._showFilterFeedback(roomFilter, visibleCount);
+  }
+
+  /**
+   * Show feedback when filter has no results
+   */
+  _showFilterFeedback(roomFilter, visibleCount) {
+    // Remove any existing feedback
+    const existingFeedback = document.querySelector(".filter-feedback");
+    if (existingFeedback) {
+      existingFeedback.remove();
+    }
+
+    if (roomFilter !== "all" && visibleCount === 0) {
+      // Create feedback message for empty filter results
+      const weekView = document.getElementById("weekView");
+      if (weekView) {
+        const feedback = document.createElement("div");
+        feedback.className = "filter-feedback";
+        feedback.innerHTML = `
+          <div class="filter-feedback-content">
+            <i class="fas fa-search"></i>
+            <p>Không tìm thấy cuộc họp nào cho <strong>${roomFilter}</strong></p>
+            <p class="filter-suggestion">Thử chọn "Tất cả phòng" hoặc phòng khác</p>
+          </div>
+        `;
+
+        weekView.appendChild(feedback);
+
+        // Auto remove feedback after 5 seconds
+        setTimeout(() => {
+          if (feedback.parentNode) {
+            feedback.remove();
+          }
+        }, 5000);
+      }
+    }
   }
 
   /**
