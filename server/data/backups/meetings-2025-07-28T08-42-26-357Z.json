@@ -158,21 +158,5 @@
     "createdAt": "2025-07-28T08:26:32.518Z",
     "isEnded": false,
     "forceEndedByUser": false
-  },
-  {
-    "id": "meeting_1753692146330",
-    "room": "Phòng họp lầu 4",
-    "date": "28/07/2025",
-    "dayOfWeek": "2",
-    "startTime": "16:00",
-    "endTime": "16:30",
-    "duration": "30m",
-    "purpose": "Thảo luận",
-    "department": "",
-    "title": "test8",
-    "content": "tets9\n",
-    "createdAt": "2025-07-28T08:42:26.330Z",
-    "isEnded": false,
-    "forceEndedByUser": false
   }
 ]
