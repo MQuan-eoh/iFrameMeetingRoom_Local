@@ -174,21 +174,5 @@
     "createdAt": "2025-07-28T08:42:26.330Z",
     "isEnded": false,
     "forceEndedByUser": false
-  },
-  {
-    "id": "meeting_1753695364420",
-    "room": "Phòng họp lầu 4",
-    "date": "28/07/2025",
-    "dayOfWeek": "2",
-    "startTime": "16:30",
-    "endTime": "17:00",
-    "duration": "30m",
-    "purpose": "Báo cáo",
-    "department": "Kế toán",
-    "title": "test client",
-    "content": "test client",
-    "createdAt": "2025-07-28T09:36:04.420Z",
-    "isEnded": false,
-    "forceEndedByUser": false
   }
 ]

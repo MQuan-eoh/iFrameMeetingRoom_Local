@@ -62,6 +62,9 @@ class MeetingRoomApp {
         this.managers.meetingDataManager
       );
 
+      // Setup navigation event listeners
+      this._setupNavigationHandlers();
+
       // Detect and configure rooms dynamically
       await this._detectAndConfigureRooms();
 
@@ -98,6 +101,317 @@ class MeetingRoomApp {
     } catch (error) {
       console.error("❌ Failed to initialize application:", error);
       this._handleInitializationError(error);
+    }
+  }
+
+  /**
+   * Get application status
+   */
+  getStatus() {
+    return {
+      version: this.version,
+      initialized: this.initialized,
+      currentMeetingData:
+        this.managers.meetingDataManager?.getCachedMeetingData() || [],
+      roomStatuses: this._getRoomStatuses(),
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  /**
+   * Manually trigger data refresh
+   */
+  async refreshData() {
+    try {
+      console.log("🔄 Manually refreshing data...");
+
+      // Force a new data fetch from server
+      const cachedData = await this.managers.meetingDataManager.forceRefresh();
+
+      if (cachedData && cachedData.length > 0) {
+        const todayMeetings =
+          this.managers.meetingDataManager.getTodayMeetings(cachedData);
+
+        // Update schedule table
+        this.managers.roomManager.updateScheduleTable(todayMeetings);
+
+        // Update room status with explicit refresh of all rooms
+        console.log("🔄 Explicitly refreshing room status for all rooms");
+        this.managers.roomManager.updateRoomStatus(cachedData);
+
+        // Trigger events for complete UI refresh
+        document.dispatchEvent(
+          new CustomEvent("refreshRoomStatus", {
+            detail: { meetings: cachedData, todayMeetings },
+          })
+        );
+
+        document.dispatchEvent(
+          new CustomEvent("meetingDataUpdated", {
+            detail: { meetings: cachedData, todayMeetings },
+          })
+        );
+
+        this.managers.uiManager.showNotification(
+          "Data refreshed successfully",
+          "success"
+        );
+        console.log("✅ Data refresh completed");
+      } else {
+        console.log("ℹ️ No cached data available to refresh");
+        this.managers.uiManager.showNotification(
+          "No data available to refresh",
+          "info"
+        );
+      }
+    } catch (error) {
+      console.error("❌ Error refreshing data:", error);
+      this.managers.uiManager.showNotification(
+        "Failed to refresh data",
+        "error"
+      );
+    }
+  }
+
+  /**
+   * Get current room statuses
+   */
+  _getRoomStatuses() {
+    const rooms = Object.values(ROOM_CONFIG.ROOMS);
+    const currentTime = DateTimeUtils.getCurrentTime();
+    const cachedData =
+      this.managers.meetingDataManager?.getCachedMeetingData() || [];
+    const todayMeetings =
+      this.managers.meetingDataManager?.getTodayMeetings(cachedData) || [];
+
+    return rooms.map((roomName) => {
+      const roomMeetings =
+        this.managers.meetingDataManager?.getRoomMeetings(
+          roomName,
+          todayMeetings
+        ) || [];
+      const activeMeeting = roomMeetings.find(
+        (meeting) =>
+          DateTimeUtils.isTimeInRangeWithSeconds(
+            currentTime,
+            meeting.startTime,
+            meeting.endTime
+          ) &&
+          !meeting.isEnded &&
+          !meeting.forceEndedByUser
+      );
+
+      return {
+        roomName,
+        status: activeMeeting ? "occupied" : "available",
+        currentMeeting: activeMeeting || null,
+        upcomingMeetings: roomMeetings.filter(
+          (meeting) =>
+            DateTimeUtils.timeToMinutes(meeting.startTime) >
+              DateTimeUtils.timeToMinutes(currentTime) &&
+            !meeting.isEnded &&
+            !meeting.forceEndedByUser
+        ).length,
+      };
+    });
+  }
+
+  /**
+   * Detect available rooms and update configuration
+   */
+  async _detectAndConfigureRooms() {
+    try {
+      console.log("🔍 Detecting available rooms...");
+
+      // Start with empty room configuration
+      const detectedRooms = {};
+
+      // Attempt to load meeting data to detect rooms in use
+      const meetings = await this.managers.meetingDataManager.forceRefresh();
+
+      if (Array.isArray(meetings) && meetings.length > 0) {
+        // Extract unique room names from meetings
+        const roomSet = new Set();
+        meetings.forEach((meeting) => {
+          if (meeting && meeting.room) {
+            roomSet.add(meeting.room.trim());
+          }
+        });
+
+        // Convert to room config format
+        let index = 1;
+        roomSet.forEach((roomName) => {
+          const key = `ROOM_${index}`;
+          detectedRooms[key] = roomName;
+          index++;
+        });
+
+        console.log(`🏢 Detected ${roomSet.size} rooms from meeting data:`, [
+          ...roomSet,
+        ]);
+      }
+
+      // If no rooms detected, use defaults from ROOM_CONFIG
+      if (Object.keys(detectedRooms).length === 0) {
+        console.log("⚠️ No rooms detected from meeting data, using defaults");
+
+        // Keep the default rooms from constants
+        Object.assign(detectedRooms, ROOM_CONFIG.ROOMS);
+      }
+
+      // Update the ROOM_CONFIG.ROOMS with detected rooms
+      ROOM_CONFIG.ROOMS = detectedRooms;
+
+      console.log("📋 Updated room configuration:", ROOM_CONFIG.ROOMS);
+
+      // Force room status update with enhanced error handling
+      if (this.managers.roomManager) {
+        try {
+          // First ensure room sections exist in the DOM
+          const roomsContainer = document.querySelector(".rooms-container");
+          if (
+            roomsContainer &&
+            typeof this.managers.roomManager._ensureRoomSections === "function"
+          ) {
+            console.log("🔧 Ensuring all room sections exist in DOM");
+            this.managers.roomManager._ensureRoomSections(roomsContainer);
+          }
+
+          // Get today's meetings for room status
+          const meetings =
+            this.managers.meetingDataManager.getCachedMeetingData();
+          const todayMeetings =
+            this.managers.meetingDataManager.getTodayMeetings(meetings);
+
+          // Update room status
+          console.log("🔄 Forcing room status update after room detection");
+          this.managers.roomManager.updateRoomStatus(meetings);
+
+          // Dispatch events for UI refresh
+          console.log("📢 Dispatching events for room UI refresh");
+          document.dispatchEvent(
+            new CustomEvent("refreshRoomStatus", {
+              detail: { meetings, todayMeetings },
+            })
+          );
+        } catch (roomError) {
+          console.error(
+            "❌ Error updating room status after configuration:",
+            roomError
+          );
+        }
+      }
+
+      return detectedRooms;
+    } catch (error) {
+      console.error("❌ Error detecting rooms:", error);
+      return ROOM_CONFIG.ROOMS; // Fall back to defaults
+    }
+  }
+
+  /**
+   * Setup navigation event handlers
+   */
+  _setupNavigationHandlers() {
+    console.log("🧭 Setting up navigation handlers");
+
+    // Listen for back to home navigation events
+    document.addEventListener("navigateToHome", (event) => {
+      console.log("🏠 Navigation to home requested:", event.detail);
+      this._handleBackToHome(event.detail);
+    });
+
+    // Listen for room navigation events
+    document.addEventListener("navigateToRoom", (event) => {
+      console.log("🚪 Navigation to room requested:", event.detail);
+      this._handleRoomNavigation(event.detail);
+    });
+
+    console.log("✅ Navigation handlers set up successfully");
+  }
+
+  /**
+   * Handle navigation back to home
+   */
+  _handleBackToHome(detail = {}) {
+    console.log("🏠 Handling back to home navigation");
+
+    try {
+      // Clear any room-specific content
+      const meetingContainer = document.querySelector(".meeting-container");
+      if (meetingContainer) {
+        // Reset to main dashboard view
+        meetingContainer.innerHTML = "";
+
+        // Trigger main dashboard re-render
+        if (this.managers.uiManager) {
+          this.managers.uiManager.renderMainDashboard();
+        }
+      }
+
+      // Refresh data to ensure we have the latest information
+      if (this.managers.meetingDataManager) {
+        this.managers.meetingDataManager.forceRefresh();
+      }
+
+      // Update URL if needed (without page reload)
+      if (
+        window.history &&
+        window.location.hash &&
+        window.location.hash !== "#home"
+      ) {
+        window.history.pushState(null, null, window.location.pathname);
+      }
+
+      // Dispatch event to notify other components
+      document.dispatchEvent(
+        new CustomEvent("homeNavigationComplete", {
+          detail: { from: detail.from || "unknown" },
+        })
+      );
+
+      console.log("✅ Back to home navigation completed");
+    } catch (error) {
+      console.error("❌ Error during back to home navigation:", error);
+
+      // Fallback: reload the page
+      window.location.reload();
+    }
+  }
+
+  /**
+   * Handle room navigation
+   */
+  _handleRoomNavigation(detail = {}) {
+    console.log("🚪 Handling room navigation:", detail);
+
+    const { roomName, roomKey } = detail;
+
+    if (!roomName && !roomKey) {
+      console.warn("⚠️ Room navigation called without room identifier");
+      return;
+    }
+
+    try {
+      // Use room manager to render room page
+      if (this.managers.roomManager) {
+        const data =
+          this.managers.meetingDataManager?.getCachedMeetingData() || [];
+        const targetRoom = roomName || roomKey;
+        this.managers.roomManager.renderRoomPage(data, targetRoom, targetRoom);
+      }
+
+      // Update URL if needed
+      if (window.history) {
+        const newHash = `#room-${(roomKey || roomName)
+          .toLowerCase()
+          .replace(/\s+/g, "-")}`;
+        window.history.pushState(null, null, newHash);
+      }
+
+      console.log("✅ Room navigation completed");
+    } catch (error) {
+      console.error("❌ Error during room navigation:", error);
     }
   }
 

@@ -322,6 +322,12 @@ export class RoomManager {
   }
   _generateRoomPageTemplate(roomName, currentMeeting, upcomingMeetings) {
     return `
+      <!-- Back to Home Button -->
+      <button class="back-to-home-btn" id="backToHomeBtn">
+        <i class="home-icon">🏠</i>
+        <span>Back to Home</span>
+      </button>
+      
       <div class="container">
         <div class="left-panel">
           <div>
@@ -393,65 +399,12 @@ export class RoomManager {
   _setupRoomPageEventHandlers(roomName) {
     console.log(`🔧 Setting up event handlers for room page: ${roomName}`);
 
-    // Add basic CSS for room detail page if not already added
-    if (!document.getElementById("room-detail-styles")) {
-      const style = document.createElement("style");
-      style.id = "room-detail-styles";
-      style.innerHTML = `
-        .room-detail-page {
-          padding: 20px;
-          max-width: 800px;
-          margin: 0 auto;
-          background: #fff;
-          border-radius: 8px;
-          box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .room-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 20px;
-          padding-bottom: 10px;
-          border-bottom: 2px solid #eee;
-        }
-        .room-status.busy {
-          background: #f44336;
-          color: white;
-          padding: 5px 15px;
-          border-radius: 20px;
-        }
-        .room-status.available {
-          background: #4caf50;
-          color: white;
-          padding: 5px 15px;
-          border-radius: 20px;
-        }
-        .back-btn {
-          background: #2196f3;
-          color: white;
-          border: none;
-          padding: 10px 20px;
-          border-radius: 5px;
-          cursor: pointer;
-        }
-        .back-btn:hover {
-          background: #1976d2;
-        }
-        .current-meeting, .upcoming-meetings {
-          margin: 20px 0;
-          padding: 15px;
-          background: #f9f9f9;
-          border-radius: 5px;
-        }
-        .meeting-item {
-          margin: 10px 0;
-          padding: 10px;
-          background: white;
-          border-radius: 5px;
-          border-left: 4px solid #2196f3;
-        }
-      `;
-      document.head.appendChild(style);
+    // Back to Home button
+    const backToHomeBtn = document.getElementById("backToHomeBtn");
+    if (backToHomeBtn) {
+      backToHomeBtn.addEventListener("click", () => {
+        this._handleBackToHome();
+      });
     }
 
     // End meeting button
@@ -529,6 +482,47 @@ export class RoomManager {
         const data = window.currentMeetingData || [];
         this.renderRoomPage(data, roomName, roomName);
       });
+    }
+  }
+
+  /**
+   * Handle back to home action
+   */
+  _handleBackToHome() {
+    console.log("🏠 Navigating back to home page");
+
+    // Dispatch custom event for navigation
+    document.dispatchEvent(
+      new CustomEvent("navigateToHome", {
+        detail: { from: "roomDetail" },
+      })
+    );
+
+    // Try to navigate using window history if available
+    if (window.history && window.history.length > 1) {
+      window.history.back();
+    } else {
+      // Fallback: reload the main page
+      window.location.reload();
+    }
+
+    // Alternative: If there's a specific app router, we can use it
+    if (
+      window.meetingRoomApp &&
+      window.meetingRoomApp.instance &&
+      window.meetingRoomApp.instance.router
+    ) {
+      window.meetingRoomApp.instance.router.navigateToHome();
+    }
+
+    // Additional fallback: try to find and click a home navigation element
+    const homeNavElement =
+      document.querySelector('[data-action="home"]') ||
+      document.querySelector(".nav-home") ||
+      document.querySelector("#homeBtn");
+
+    if (homeNavElement && typeof homeNavElement.click === "function") {
+      homeNavElement.click();
     }
   }
 
