@@ -85,11 +85,6 @@ export function initTeamsTimeDropdown() {
 
   // Hide dropdowns when clicking anywhere else
   document.addEventListener("click", (e) => {
-    // Safety check for event.target
-    if (!e || !e.target || typeof e.target.closest !== "function") {
-      return;
-    }
-
     const isTimeInput = e.target.closest("#bookingStartTime, #bookingEndTime");
     const isDropdown = e.target.closest(".custom-time-dropdown");
     const isFormGroup = e.target.closest(".form-group");

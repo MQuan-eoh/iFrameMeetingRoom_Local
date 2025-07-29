@@ -229,15 +229,6 @@ export class UIManager {
 
     // Close settings when clicking outside
     document.addEventListener("click", (event) => {
-      // Safety check for event.target
-      if (
-        !event ||
-        !event.target ||
-        typeof event.target.closest !== "function"
-      ) {
-        return;
-      }
-
       if (!event.target.closest(".background-management")) {
         settingsHandlers.closeMenu();
       }

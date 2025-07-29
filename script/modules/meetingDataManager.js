@@ -897,6 +897,135 @@ export class MeetingDataManager {
       return this.getCachedMeetingData();
     }
   }
+
+  /**
+   * Update a meeting (for tooltip edit functionality)
+   * @param {Object} meetingData - Complete meeting data with id
+   * @returns {Promise<Object>} Updated meeting data
+   */
+  async updateMeeting(meetingData) {
+    try {
+      console.log("🔄 Updating meeting:", meetingData.id);
+
+      // Validate meeting data
+      if (!meetingData.id) {
+        throw new Error("Meeting ID is required for update");
+      }
+
+      // Get current data
+      const currentData = this.getCachedMeetingData();
+      const meetingIndex = currentData.findIndex(
+        (m) => m.id === meetingData.id
+      );
+
+      if (meetingIndex === -1) {
+        throw new Error("Meeting not found");
+      }
+
+      // Preserve original creation data and update
+      const existingMeeting = currentData[meetingIndex];
+      const updatedMeeting = {
+        ...existingMeeting,
+        ...meetingData,
+        id: meetingData.id, // Ensure ID doesn't change
+        createdAt: existingMeeting.createdAt, // Preserve creation time
+        updatedAt: new Date().toISOString(), // Add update timestamp
+      };
+
+      // Validate the updated meeting
+      if (!this.validateMeetingData(updatedMeeting)) {
+        throw new Error("Invalid meeting data");
+      }
+
+      // Check for conflicts (excluding the current meeting)
+      const otherMeetings = currentData.filter((m) => m.id !== meetingData.id);
+      const conflicts = this.checkMeetingConflicts(
+        updatedMeeting,
+        otherMeetings
+      );
+      if (conflicts.length > 0) {
+        throw new Error(
+          `Meeting conflicts with existing meeting(s): ${conflicts
+            .map((m) => `${m.content} (${m.startTime}-${m.endTime})`)
+            .join(", ")}`
+        );
+      }
+
+      // Update local cache
+      const newData = [...currentData];
+      newData[meetingIndex] = updatedMeeting;
+      this.setCachedMeetingData(newData);
+
+      // Try to save to server
+      try {
+        const serverIP =
+          localStorage.getItem("serverIP") ||
+          window.location.hostname ||
+          "localhost";
+        const response = await fetch(
+          `http://${serverIP}:3000/api/meetings/${meetingData.id}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(updatedMeeting),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const serverResponse = await response.json();
+        console.log("✅ Meeting updated on server:", serverResponse);
+
+        this.lastSync = new Date();
+        this.isOnline = true;
+      } catch (serverError) {
+        console.warn(
+          "Failed to update meeting on server, keeping local changes:",
+          serverError
+        );
+        this.isOnline = false;
+      }
+
+      // Always trigger local UI updates
+      this._triggerMeetingUpdate(newData);
+      this._triggerRoomStatusUpdate(this.getTodayMeetings(newData));
+
+      // Broadcast update to other clients
+      this._broadcastMeetingUpdate(updatedMeeting);
+
+      console.log("✅ Meeting updated successfully:", updatedMeeting);
+      return updatedMeeting;
+    } catch (error) {
+      console.error("❌ Error updating meeting:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Broadcast meeting update to other clients
+   */
+  _broadcastMeetingUpdate(meetingData) {
+    // Dispatch custom event for local components
+    document.dispatchEvent(
+      new CustomEvent("meetingUpdated", {
+        detail: { meeting: meetingData },
+      })
+    );
+
+    // If using WebSockets or other real-time communication, add here
+    // For now, we rely on periodic refresh by other clients
+  }
+
+  /**
+   * Get all meetings (for tooltip access)
+   */
+  getAllMeetings() {
+    return this.getCachedMeetingData();
+  }
 }
 
 export default MeetingDataManager;

@@ -49,8 +49,9 @@ class MeetingRoomApp {
       this.managers.roomManager = new RoomManager();
       this.managers.deviceManager = new DeviceManager();
 
-      // Expose roomManager globally for schedule filtering
+      // Expose managers globally for cross-component access
       window.roomManager = this.managers.roomManager;
+      window.meetingDataManager = this.managers.meetingDataManager;
 
       // Initialize booking manager
       this.managers.scheduleBookingManager = new ScheduleBookingManager();

@@ -277,12 +277,6 @@ class MeetingDetailTooltipManager {
         };
       }
 
-      // Get actual room status from meeting-info status-text
-      const actualStatus = this.getRoomStatus(meetingData.room);
-      if (actualStatus) {
-        meetingData.actualRoomStatus = actualStatus;
-      }
-
       return meetingData;
     } catch (error) {
       console.error("Error extracting meeting data:", error);
@@ -311,37 +305,8 @@ class MeetingDetailTooltipManager {
 
   buildTooltipContent(meetingData) {
     const purposeClass = this.getPurposeClass(meetingData.purpose);
-
-    // Use actual room status if available, otherwise fallback to default logic
-    let statusText = "Sắp diễn ra"; // default
-    let statusClass = "status-dot inactive"; // default
-
-    if (meetingData.actualRoomStatus) {
-      // Use the actual status from the room's meeting-info
-      statusText = meetingData.actualRoomStatus;
-
-      // Determine status class based on actual status text
-      switch (meetingData.actualRoomStatus.toLowerCase()) {
-        case "đang họp":
-          statusClass = "status-dot";
-          break;
-        case "sắp họp":
-          statusClass = "status-dot inactive";
-          break;
-        case "trống":
-          statusClass = "status-dot inactive";
-          statusText = "Đã họp";
-          break;
-        default:
-          statusClass = "status-dot inactive";
-      }
-    } else {
-      // Fallback to old logic if room status is not available
-      statusClass =
-        meetingData.status === "active" ? "status-dot" : "status-dot inactive";
-      statusText =
-        meetingData.status === "active" ? "Đang diễn ra" : "Sắp diễn ra";
-    }
+    const statusDot =
+      meetingData.status === "active" ? "status-dot" : "status-dot inactive";
 
     this.currentTooltip.innerHTML = `
       <div class="tooltip-header">
@@ -350,8 +315,8 @@ class MeetingDetailTooltipManager {
           ${meetingData.title}
         </h3>
         <div class="tooltip-meeting-status">
-          <div class="${statusClass}"></div>
-          ${statusText}
+          <div class="${statusDot}"></div>
+          ${meetingData.status === "active" ? "Đang diễn ra" : "Sắp diễn ra"}
         </div>
       </div>
       
@@ -366,7 +331,7 @@ class MeetingDetailTooltipManager {
     }</div>
             </div>
           </div>
-          
+
           <div class="tooltip-info-row">
             <i class="fas fa-door-open info-icon"></i>
             <div class="info-content">
@@ -603,74 +568,6 @@ class MeetingDetailTooltipManager {
     this.hideTooltip();
   }
 
-  getRoomStatus(roomName) {
-    try {
-      if (!roomName) return null;
-
-      // Normalize room name for searching
-      const normalizedRoomName = roomName.toLowerCase().trim();
-
-      // Find all room sections
-      const roomSections = document.querySelectorAll(".room-section");
-
-      for (const roomSection of roomSections) {
-        const roomNumberElement = roomSection.querySelector(".room-number");
-        if (!roomNumberElement) continue;
-
-        const sectionRoomName = roomNumberElement.textContent
-          .toLowerCase()
-          .trim();
-
-        // Check if this room section matches the meeting's room
-        if (
-          sectionRoomName.includes(normalizedRoomName) ||
-          normalizedRoomName.includes(sectionRoomName) ||
-          this.isRoomNameMatch(normalizedRoomName, sectionRoomName)
-        ) {
-          // Find the status-text element in this room's meeting-info
-          const statusTextElement = roomSection.querySelector(
-            ".meeting-info .status-text"
-          );
-          if (statusTextElement) {
-            const statusText = statusTextElement.textContent.trim();
-            console.log(`🔍 Found room status for ${roomName}: ${statusText}`);
-            return statusText;
-          }
-        }
-      }
-
-      console.warn(`⚠️ Could not find room status for: ${roomName}`);
-      return null;
-    } catch (error) {
-      console.error("Error getting room status:", error);
-      return null;
-    }
-  }
-
-  isRoomNameMatch(roomName1, roomName2) {
-    // Helper method to match room names more flexibly
-    // Extract numbers and key words for matching
-    const extractRoomInfo = (name) => {
-      const match = name.match(/(\d+)/);
-      const floor = match ? match[0] : "";
-      return { floor, original: name };
-    };
-
-    const room1Info = extractRoomInfo(roomName1);
-    const room2Info = extractRoomInfo(roomName2);
-
-    // Match by floor number if both have numbers
-    if (room1Info.floor && room2Info.floor) {
-      return room1Info.floor === room2Info.floor;
-    }
-
-    // Fallback to partial string matching
-    return (
-      room1Info.original.includes(room2Info.original) ||
-      room2Info.original.includes(room1Info.original)
-    );
-  }
-
   // Public methods for tooltip actions
   viewDetails(meetingId) {
     console.log("View details for meeting:", meetingId);
@@ -681,8 +578,566 @@ class MeetingDetailTooltipManager {
   editMeeting(meetingId) {
     console.log("Edit meeting:", meetingId);
     this.hideTooltip();
-    // Implement edit meeting logic here
-    // You can integrate with existing booking modal
+
+    // Find meeting data
+    const meetingData = this.findMeetingData(meetingId);
+    if (!meetingData) {
+      console.error("Meeting data not found for ID:", meetingId);
+      return;
+    }
+
+    // Open edit modal with pre-populated data
+    this.openEditModal(meetingData);
+  }
+
+  /**
+   * Find meeting data by ID from various sources
+   */
+  findMeetingData(meetingId) {
+    // Try global meeting data first
+    if (window.currentMeetingData && window.currentMeetingData.length > 0) {
+      const meeting = window.currentMeetingData.find((m) => m.id === meetingId);
+      if (meeting) return meeting;
+    }
+
+    // Try to find from meeting data manager
+    if (window.meetingDataManager) {
+      const allMeetings = window.meetingDataManager.getAllMeetings();
+      const meeting = allMeetings.find((m) => m.id === meetingId);
+      if (meeting) return meeting;
+    }
+
+    // Try to extract from DOM element
+    const meetingElement = document.querySelector(`[data-id="${meetingId}"]`);
+    if (meetingElement) {
+      return this.extractMeetingData(meetingElement);
+    }
+
+    return null;
+  }
+
+  /**
+   * Open edit modal with pre-populated meeting data
+   */
+  openEditModal(meetingData) {
+    // Get or create edit modal
+    let editModal = document.getElementById("editMeetingModal");
+
+    if (!editModal) {
+      this.createEditModal();
+      editModal = document.getElementById("editMeetingModal");
+    }
+
+    // Pre-populate form fields
+    this.populateEditForm(meetingData);
+
+    // Show modal
+    editModal.style.display = "flex"; // Use flex for centering
+    editModal.classList.add("active"); // Use 'active' class for proper styling
+
+    // Store current meeting ID for save operation
+    editModal.dataset.editingMeetingId = meetingData.id;
+  }
+
+  /**
+   * Create edit modal (reusing booking modal structure)
+   */
+  createEditModal() {
+    const modalHTML = `
+      <div id="editMeetingModal" class="booking-modal">
+        <div class="booking-modal-content">
+          <div class="booking-modal-header">
+            <h2 class="booking-modal-title">Chỉnh Sửa Cuộc Họp</h2>
+            <button class="modal-close" id="closeEditModal">&times;</button>
+          </div>
+
+          <div class="booking-modal-body">
+            <form id="editMeetingForm" class="booking-form">
+              <!-- Room Selection -->
+              <div class="form-group">
+                <label for="editBookingRoom">Phòng Họp:</label>
+                <select id="editBookingRoom" class="form-control" required>
+                  <option value="">-- Chọn phòng họp --</option>
+                  <option value="Phòng họp lầu 3">Phòng họp lầu 3</option>
+                  <option value="Phòng họp lầu 4">Phòng họp lầu 4</option>
+                </select>
+              </div>
+
+              <!-- Date Picker -->
+              <div class="form-group">
+                <label for="editBookingDate">Ngày:</label>
+                <input type="date" id="editBookingDate" class="form-control" required />
+              </div>
+
+              <!-- Time Selection -->
+              <div class="form-group">
+                <label for="editBookingStartTime">Thời gian bắt đầu:</label>
+                <input type="text" id="editBookingStartTime" class="form-control" 
+                       placeholder="HH:MM (VD: 09:30)" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" required />
+                <div id="editStartTimeOptions" class="custom-time-dropdown"></div>
+                <small class="form-text text-muted">Nhập thời gian (HH:MM) hoặc chọn từ gợi ý</small>
+              </div>
+
+              <div class="form-group">
+                <label for="editBookingEndTime">Thời gian kết thúc:</label>
+                <input type="text" id="editBookingEndTime" class="form-control" 
+                       placeholder="HH:MM (VD: 10:30)" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" required />
+                <div id="editEndTimeOptions" class="custom-time-dropdown"></div>
+                <small class="form-text text-muted">Nhập thời gian (HH:MM) hoặc chọn từ gợi ý</small>
+              </div>
+
+              <!-- Purpose Selection -->
+              <div class="form-group">
+                <label for="editBookingPurpose">Mục đích:</label>
+                <select id="editBookingPurpose" class="form-control" required>
+                  <option value="">-- Chọn mục đích --</option>
+                  <option value="Họp">Họp</option>
+                  <option value="Đào tạo">Đào tạo</option>
+                  <option value="Phỏng vấn">Phỏng vấn</option>
+                  <option value="Thảo luận">Thảo luận</option>
+                  <option value="Báo cáo">Báo cáo</option>
+                  <option value="Khác">Khác</option>
+                </select>
+              </div>
+
+              <!-- Department Selection -->
+              <div class="form-group">
+                <label for="editBookingDepartment">Phòng/Ban:</label>
+                <select id="editBookingDepartment" class="form-control">
+                  <option value="">-- Chọn phòng ban --</option>
+                  <option value="Kỹ thuật">Phòng Kỹ thuật</option>
+                  <option value="Kinh doanh">Phòng Kinh doanh</option>
+                  <option value="Nhân sự">Phòng Nhân sự</option>
+                  <option value="Kế toán">Phòng Kế toán</option>
+                  <option value="Marketing">Phòng Marketing</option>
+                  <option value="Ban Giám đốc">Ban Giám đốc</option>
+                  <option value="Khác">Khác</option>
+                </select>
+              </div>
+
+              <!-- Meeting Title -->
+              <div class="form-group form-full-width">
+                <label for="editBookingTitle">Tiêu đề cuộc họp:</label>
+                <input type="text" id="editBookingTitle" class="form-control" 
+                       placeholder="Nhập tiêu đề cuộc họp" required />
+              </div>
+
+              <!-- Meeting Description -->
+              <div class="form-group form-full-width">
+                <label for="editBookingDescription">Nội dung chi tiết:</label>
+                <textarea id="editBookingDescription" class="form-control" rows="4" 
+                          placeholder="Nhập nội dung chi tiết cuộc họp"></textarea>
+              </div>
+            </form>
+          </div>
+
+          <div class="booking-modal-footer">
+            <button class="btn btn-cancel" id="cancelEditMeeting">Hủy</button>
+            <button class="btn btn-save" id="saveEditMeeting">Cập Nhật</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.insertAdjacentHTML("beforeend", modalHTML);
+
+    // Attach event listeners
+    this.attachEditModalEventListeners();
+  }
+
+  /**
+   * Attach event listeners to edit modal
+   */
+  attachEditModalEventListeners() {
+    const editModal = document.getElementById("editMeetingModal");
+    const closeBtn = document.getElementById("closeEditModal");
+    const cancelBtn = document.getElementById("cancelEditMeeting");
+    const saveBtn = document.getElementById("saveEditMeeting");
+
+    // Close modal handlers
+    [closeBtn, cancelBtn].forEach((btn) => {
+      btn.addEventListener("click", () => {
+        this.closeEditModal();
+      });
+    });
+
+    // Click outside to close
+    editModal.addEventListener("click", (e) => {
+      if (e.target === editModal) {
+        this.closeEditModal();
+      }
+    });
+
+    // Save button handler
+    saveBtn.addEventListener("click", () => {
+      this.saveEditedMeeting();
+    });
+
+    // Initialize time dropdowns for edit modal
+    this.initializeEditTimeDropdowns();
+  }
+
+  /**
+   * Close edit modal
+   */
+  closeEditModal() {
+    const editModal = document.getElementById("editMeetingModal");
+    if (editModal) {
+      editModal.style.display = "none";
+      editModal.classList.remove("show");
+      delete editModal.dataset.editingMeetingId;
+    }
+  }
+
+  /**
+   * Populate edit form with meeting data
+   */
+  populateEditForm(meetingData) {
+    // Parse date from meeting data
+    let dateValue = "";
+    if (meetingData.date) {
+      // Convert DD/MM/YYYY to YYYY-MM-DD for input[type="date"]
+      const dateParts = meetingData.date.split("/");
+      if (dateParts.length === 3) {
+        dateValue = `${dateParts[2]}-${dateParts[1].padStart(
+          2,
+          "0"
+        )}-${dateParts[0].padStart(2, "0")}`;
+      }
+    } else {
+      // Use today's date as fallback
+      dateValue = new Date().toISOString().split("T")[0];
+    }
+
+    // Populate form fields
+    document.getElementById("editBookingRoom").value = meetingData.room || "";
+    document.getElementById("editBookingDate").value = dateValue;
+    document.getElementById("editBookingStartTime").value =
+      meetingData.startTime || "";
+    document.getElementById("editBookingEndTime").value =
+      meetingData.endTime || "";
+    document.getElementById("editBookingPurpose").value =
+      meetingData.purpose || "";
+    document.getElementById("editBookingDepartment").value =
+      meetingData.department || "";
+    document.getElementById("editBookingTitle").value =
+      meetingData.title || meetingData.content || "";
+    document.getElementById("editBookingDescription").value =
+      meetingData.description || meetingData.content || "";
+  }
+
+  /**
+   * Initialize time dropdowns for edit modal
+   */
+  initializeEditTimeDropdowns() {
+    // Create time options for edit modal
+    const startTimeInput = document.getElementById("editBookingStartTime");
+    const endTimeInput = document.getElementById("editBookingEndTime");
+    const startTimeOptions = document.getElementById("editStartTimeOptions");
+    const endTimeOptions = document.getElementById("editEndTimeOptions");
+
+    // Generate time options
+    const timeOptions = this.generateTimeOptions();
+
+    startTimeOptions.innerHTML = timeOptions;
+    endTimeOptions.innerHTML = timeOptions;
+
+    // Add event listeners for time selection
+    this.attachTimeDropdownListeners(startTimeInput, startTimeOptions);
+    this.attachTimeDropdownListeners(endTimeInput, endTimeOptions);
+  }
+
+  /**
+   * Generate time options HTML
+   */
+  generateTimeOptions() {
+    const times = [];
+    for (let hour = 7; hour <= 19; hour++) {
+      for (let minute = 0; minute < 60; minute += 30) {
+        const timeString = `${hour.toString().padStart(2, "0")}:${minute
+          .toString()
+          .padStart(2, "0")}`;
+        times.push(
+          `<div class="time-option" data-time="${timeString}">${timeString}</div>`
+        );
+      }
+    }
+    return times.join("");
+  }
+
+  /**
+   * Attach time dropdown listeners
+   */
+  attachTimeDropdownListeners(input, dropdown) {
+    input.addEventListener("focus", () => {
+      dropdown.classList.add("show");
+    });
+
+    input.addEventListener("blur", () => {
+      setTimeout(() => {
+        dropdown.classList.remove("show");
+      }, 200);
+    });
+
+    dropdown.addEventListener("click", (e) => {
+      if (e.target.classList.contains("time-option")) {
+        input.value = e.target.dataset.time;
+        dropdown.classList.remove("show");
+      }
+    });
+  }
+
+  /**
+   * Save edited meeting
+   */
+  async saveEditedMeeting() {
+    const editModal = document.getElementById("editMeetingModal");
+    const meetingId = editModal.dataset.editingMeetingId;
+
+    if (!meetingId) {
+      console.error("No meeting ID found for editing");
+      return;
+    }
+
+    // Collect form data
+    const formData = this.collectEditFormData();
+    if (!formData) return; // Validation failed
+
+    // Add the meeting ID and timestamp
+    formData.id = meetingId;
+    formData.updatedAt = new Date().toISOString();
+
+    try {
+      // Show loading state
+      const saveBtn = document.getElementById("saveEditMeeting");
+      const originalText = saveBtn.textContent;
+      saveBtn.textContent = "Đang cập nhật...";
+      saveBtn.disabled = true;
+
+      // Update meeting via data manager
+      await this.updateMeetingData(formData);
+
+      // Close modal
+      this.closeEditModal();
+
+      // Show success message
+      this.showSuccessMessage("Cuộc họp đã được cập nhật thành công!");
+
+      // Refresh UI
+      this.refreshMeetingDisplay();
+    } catch (error) {
+      console.error("Error updating meeting:", error);
+      this.showErrorMessage(
+        "Có lỗi xảy ra khi cập nhật cuộc họp. Vui lòng thử lại."
+      );
+    } finally {
+      // Reset button state
+      const saveBtn = document.getElementById("saveEditMeeting");
+      if (saveBtn) {
+        saveBtn.textContent = originalText;
+        saveBtn.disabled = false;
+      }
+    }
+  }
+
+  /**
+   * Collect and validate edit form data
+   */
+  collectEditFormData() {
+    const room = document.getElementById("editBookingRoom").value.trim();
+    const date = document.getElementById("editBookingDate").value;
+    const startTime = document
+      .getElementById("editBookingStartTime")
+      .value.trim();
+    const endTime = document.getElementById("editBookingEndTime").value.trim();
+    const purpose = document.getElementById("editBookingPurpose").value;
+    const department = document.getElementById("editBookingDepartment").value;
+    const title = document.getElementById("editBookingTitle").value.trim();
+    const description = document
+      .getElementById("editBookingDescription")
+      .value.trim();
+
+    // Validation
+    if (!room || !date || !startTime || !endTime || !purpose || !title) {
+      this.showErrorMessage("Vui lòng điền đầy đủ thông tin bắt buộc.");
+      return null;
+    }
+
+    // Time validation
+    if (
+      !this.isValidTimeFormat(startTime) ||
+      !this.isValidTimeFormat(endTime)
+    ) {
+      this.showErrorMessage(
+        "Định dạng thời gian không hợp lệ. Vui lòng sử dụng định dạng HH:MM."
+      );
+      return null;
+    }
+
+    // Time range validation
+    if (this.timeToMinutes(endTime) <= this.timeToMinutes(startTime)) {
+      this.showErrorMessage("Thời gian kết thúc phải sau thời gian bắt đầu.");
+      return null;
+    }
+
+    // Working hours validation
+    if (
+      !this.isWithinWorkingHours(startTime) ||
+      !this.isWithinWorkingHours(endTime)
+    ) {
+      this.showErrorMessage("Thời gian phải trong khoảng 07:00 - 19:00.");
+      return null;
+    }
+
+    // Format date for display
+    const [year, month, day] = date.split("-");
+    const formattedDate = `${day}/${month}/${year}`;
+
+    return {
+      room,
+      date: formattedDate,
+      startTime,
+      endTime,
+      purpose,
+      department,
+      title,
+      content: description || title,
+      description,
+    };
+  }
+
+  /**
+   * Validate time format (HH:MM)
+   */
+  isValidTimeFormat(time) {
+    const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+    return timeRegex.test(time);
+  }
+
+  /**
+   * Convert time to minutes for comparison
+   */
+  timeToMinutes(time) {
+    const [hours, minutes] = time.split(":").map(Number);
+    return hours * 60 + minutes;
+  }
+
+  /**
+   * Check if time is within working hours (07:00 - 19:00)
+   */
+  isWithinWorkingHours(time) {
+    const minutes = this.timeToMinutes(time);
+    return minutes >= 420 && minutes <= 1140; // 7:00 to 19:00
+  }
+
+  /**
+   * Update meeting data via data manager and sync
+   */
+  async updateMeetingData(meetingData) {
+    // Update via meeting data manager
+    if (window.meetingDataManager) {
+      return await window.meetingDataManager.updateMeeting(meetingData);
+    }
+
+    // Fallback: direct API call
+    const serverIP =
+      localStorage.getItem("serverIP") ||
+      window.location.hostname ||
+      "localhost";
+    const response = await fetch(
+      `http://${serverIP}:3000/api/meetings/${meetingData.id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(meetingData),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  }
+
+  /**
+   * Refresh meeting display after update
+   */
+  refreshMeetingDisplay() {
+    // Trigger UI refresh
+    if (window.scheduleBookingManager) {
+      window.scheduleBookingManager._renderWeekView();
+    }
+
+    // Refresh room status
+    if (window.roomManager) {
+      window.roomManager.forceUpdateRoomStatus();
+    }
+
+    // Trigger custom refresh event
+    document.dispatchEvent(new CustomEvent("meetingDataUpdated"));
+  }
+
+  /**
+   * Show success message
+   */
+  showSuccessMessage(message) {
+    // Create and show success notification
+    const notification = document.createElement("div");
+    notification.className = "toast-notification success";
+    notification.innerHTML = `
+      <i class="fas fa-check-circle"></i>
+      <span>${message}</span>
+    `;
+
+    document.body.appendChild(notification);
+
+    // Show with animation
+    setTimeout(() => {
+      notification.style.opacity = "1";
+    }, 10);
+
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+      notification.style.opacity = "0";
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      }, 300);
+    }, 3000);
+  }
+
+  /**
+   * Show error message
+   */
+  showErrorMessage(message) {
+    // Create and show error notification
+    const notification = document.createElement("div");
+    notification.className = "toast-notification error";
+    notification.innerHTML = `
+      <i class="fas fa-exclamation-circle"></i>
+      <span>${message}</span>
+    `;
+
+    document.body.appendChild(notification);
+
+    // Show with animation
+    setTimeout(() => {
+      notification.style.opacity = "1";
+    }, 10);
+
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+      notification.style.opacity = "0";
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      }, 300);
+    }, 5000);
   }
 
   // Cleanup method

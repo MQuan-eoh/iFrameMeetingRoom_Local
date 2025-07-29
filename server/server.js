@@ -130,34 +130,58 @@ app.post("/api/meetings", (req, res) => {
  */
 app.put("/api/meetings/:id", (req, res) => {
   try {
+    const meetingId = req.params.id;
+    const updateData = req.body;
+    
+    console.log(`📝 Updating meeting ${meetingId}:`, updateData);
+    
     // Read existing meetings
     const meetings = JSON.parse(fs.readFileSync(MEETINGS_FILE, "utf8"));
 
     // Find meeting index
-    const index = meetings.findIndex((m) => m.id === req.params.id);
+    const index = meetings.findIndex((m) => m.id === meetingId);
 
     if (index === -1) {
-      return res.status(404).json({ error: "Meeting not found" });
+      return res.status(404).json({ 
+        success: false,
+        error: "Meeting not found" 
+      });
     }
 
     // Create backup before updating
     createBackup();
 
-    // Update meeting
-    meetings[index] = {
-      ...meetings[index],
-      ...req.body,
-      id: req.params.id, // Ensure ID doesn't change
-      updatedAt: new Date().toISOString(),
+    // Preserve original creation data and update
+    const originalMeeting = meetings[index];
+    const updatedMeeting = {
+      ...originalMeeting,
+      ...updateData,
+      id: meetingId, // Ensure ID doesn't change
+      createdAt: originalMeeting.createdAt, // Preserve creation time
+      updatedAt: new Date().toISOString() // Add update timestamp
     };
+
+    // Update meeting in array
+    meetings[index] = updatedMeeting;
 
     // Save updated meetings
     fs.writeFileSync(MEETINGS_FILE, JSON.stringify(meetings, null, 2));
 
-    res.json(meetings[index]);
+    console.log(`✅ Meeting ${meetingId} updated successfully`);
+
+    res.json({
+      success: true,
+      meeting: updatedMeeting,
+      message: 'Meeting updated successfully'
+    });
+    
   } catch (error) {
-    console.error("Error updating meeting:", error);
-    res.status(500).json({ error: "Failed to update meeting" });
+    console.error("❌ Error updating meeting:", error);
+    res.status(500).json({ 
+      success: false,
+      error: "Failed to update meeting",
+      message: error.message 
+    });
   }
 });
 

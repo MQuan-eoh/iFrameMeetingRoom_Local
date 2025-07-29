@@ -150,15 +150,6 @@ export class EventHandlers {
    */
   _setupACControlHandlers() {
     document.addEventListener("click", (event) => {
-      // Safety check for event.target
-      if (
-        !event ||
-        !event.target ||
-        typeof event.target.closest !== "function"
-      ) {
-        return;
-      }
-
       const acCard = event.target.closest(".ac-card");
       if (!acCard) return;
 
