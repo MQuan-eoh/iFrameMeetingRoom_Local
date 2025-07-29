@@ -671,8 +671,8 @@
   }
 
   .schedule-content {
-    max-height: 60vh; /* Giới hạn chiều cao */
-    overflow-y: auto; /* Cho phép cuộn dọc */
+    max-height: none; /* Remove height restriction to allow full scrolling */
+    overflow-y: visible; /* Allow natural scrolling */
     padding-right: 10px; /* Thêm padding để tránh che thanh cuộn */
   }
 
@@ -760,7 +760,7 @@
 }
 @media (min-width: 1024px) and (max-width: 1190px) {
   .schedule-content {
-    max-height: 50%;
+    max-height: none; /* Remove height restriction for full scrolling */
   }
 }
 /* Giữ nguyên layout dọc trên màn hình nhỏ */
@@ -835,7 +835,7 @@
   }
 
   .schedule-content {
-    max-height: 50vh;
+    max-height: none; /* Remove height restriction for full scrolling */
     margin-bottom: 20px;
     padding: 15px;
   }
