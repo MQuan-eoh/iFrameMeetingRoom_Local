@@ -305,8 +305,12 @@ class MeetingDetailTooltipManager {
 
   buildTooltipContent(meetingData) {
     const purposeClass = this.getPurposeClass(meetingData.purpose);
-    const statusDot =
-      meetingData.status === "active" ? "status-dot" : "status-dot inactive";
+
+    // Get meeting status based on time comparison (NOT room status)
+    const meetingStatus = this.getMeetingStatus(meetingData);
+    const statusDot = meetingStatus.isActive
+      ? "status-dot"
+      : "status-dot inactive";
 
     this.currentTooltip.innerHTML = `
       <div class="tooltip-header">
@@ -316,7 +320,7 @@ class MeetingDetailTooltipManager {
         </h3>
         <div class="tooltip-meeting-status">
           <div class="${statusDot}"></div>
-          ${meetingData.status === "active" ? "Đang diễn ra" : "Sắp diễn ra"}
+          ${meetingStatus.text}
         </div>
       </div>
       
@@ -423,6 +427,67 @@ class MeetingDetailTooltipManager {
       Khác: "khac",
     };
     return purposeMap[purpose] || "khac";
+  }
+
+  /**
+   * Get meeting status based on time comparison
+   * Returns: Đã họp | Đang họp | Sắp họp
+   */
+  getMeetingStatus(meetingData) {
+    try {
+      // Get current time
+      const now = new Date();
+      const currentHour = now.getHours();
+      const currentMinute = now.getMinutes();
+      const currentTimeInMinutes = currentHour * 60 + currentMinute;
+
+      // Parse meeting times
+      const startTime = meetingData.startTime || "";
+      const endTime = meetingData.endTime || "";
+
+      if (!startTime || !endTime) {
+        return {
+          isActive: false,
+          text: "Sắp họp",
+        };
+      }
+
+      // Convert meeting times to minutes
+      const [startHour, startMin] = startTime.split(":").map(Number);
+      const [endHour, endMin] = endTime.split(":").map(Number);
+      const startTimeInMinutes = startHour * 60 + startMin;
+      const endTimeInMinutes = endHour * 60 + endMin;
+
+      // Compare times to determine status
+      if (currentTimeInMinutes >= endTimeInMinutes) {
+        // Meeting has ended
+        return {
+          isActive: false,
+          text: "Đã họp",
+        };
+      } else if (
+        currentTimeInMinutes >= startTimeInMinutes &&
+        currentTimeInMinutes < endTimeInMinutes
+      ) {
+        // Meeting is currently happening
+        return {
+          isActive: true,
+          text: "Đang họp",
+        };
+      } else {
+        // Meeting hasn't started yet
+        return {
+          isActive: false,
+          text: "Sắp họp",
+        };
+      }
+    } catch (error) {
+      console.error("Error getting meeting status:", error);
+      return {
+        isActive: false,
+        text: "Sắp họp",
+      };
+    }
   }
 
   positionTooltipBeside(meetingElement) {
