@@ -1044,18 +1044,3 @@
   max-width: 300px;
   display: none;
 }
-
-.meeting-event:hover .meeting-tooltip {
-  display: block;
-}
-
-.tooltip-title {
-  font-weight: bold;
-  margin-bottom: 5px;
-  color: #333;
-}
-
-.tooltip-content {
-  color: #555;
-  font-size: 12px;
-}

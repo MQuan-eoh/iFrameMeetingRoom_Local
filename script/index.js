@@ -15,6 +15,7 @@ import DeviceManager from "./modules/deviceManager.js";
 import EventHandlers from "./modules/eventHandlers.js";
 import ScheduleBookingManager from "./modules/scheduleBookingManager.js";
 import ConnectionStatusManager from "./modules/connectionStatusManager.js";
+import MeetingDetailTooltipManager from "./modules/meetingDetailTooltip.js";
 
 // Import utilities and constants
 import { DateTimeUtils } from "./utils/core.js";
@@ -53,6 +54,13 @@ class MeetingRoomApp {
 
       // Initialize booking manager
       this.managers.scheduleBookingManager = new ScheduleBookingManager();
+
+      // Initialize meeting detail tooltip manager
+      this.managers.meetingDetailTooltipManager =
+        new MeetingDetailTooltipManager();
+
+      // Expose tooltip manager globally for action buttons
+      window.meetingTooltip = this.managers.meetingDetailTooltipManager;
 
       // Initialize event handlers (must be last as it depends on other managers)
       this.managers.eventHandlers = new EventHandlers(this.managers);

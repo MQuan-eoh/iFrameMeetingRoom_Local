@@ -1,0 +1,543 @@
+/*
+ * Meeting Detail Tooltip CSS
+ * Professional tooltip modal for displaying meeting details on hover
+ * Follows system design patterns and color scheme - Independent Modal Style
+ */
+
+/* Main tooltip container - Independent modal positioned beside meeting event */
+.meeting-detail-tooltip {
+  position: fixed;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 0 8px 32px rgba(0, 0, 0, 0.12),
+    0 4px 16px rgba(0, 0, 0, 0.08);
+  z-index: 2500;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-20px) scale(0.9);
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  pointer-events: none;
+  min-width: 350px;
+  max-width: 420px;
+  border: 2px solid rgba(24, 146, 121, 0.2);
+  backdrop-filter: blur(12px);
+  overflow: hidden;
+  font-family: "Inter", "Roboto", sans-serif;
+}
+
+/* Show state - slides in from left */
+.meeting-detail-tooltip.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0) scale(1);
+  pointer-events: auto;
+  animation: slideInFromLeft 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+@keyframes slideInFromLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(-30px) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+/* Tooltip header - enhanced gradient matching system */
+.tooltip-header {
+  padding: 20px 24px;
+  background: linear-gradient(
+    135deg,
+    rgba(6, 63, 51, 0.95),
+    rgb(24 146 121 / 92%),
+    rgba(1, 101, 82, 0.88)
+  );
+  color: #ffffff;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tooltip-header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1),
+    transparent 50%,
+    rgba(24, 146, 121, 0.05)
+  );
+  pointer-events: none;
+}
+
+.tooltip-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  color: #ffffff;
+  position: relative;
+  z-index: 1;
+  line-height: 1.3;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.tooltip-title-icon {
+  font-size: 16px;
+  opacity: 0.95;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+}
+
+.tooltip-meeting-status {
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 6px;
+  opacity: 0.95;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.3),
+    0 2px 8px rgba(74, 222, 128, 0.4);
+  animation: statusPulse 2.5s ease-in-out infinite;
+}
+
+@keyframes statusPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.3);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 4px rgba(74, 222, 128, 0.2);
+  }
+}
+
+/* Tooltip body - enhanced layout */
+.tooltip-body {
+  padding: 24px;
+  background: #ffffff;
+}
+
+.tooltip-info-grid {
+  display: grid;
+  gap: 18px;
+}
+
+.tooltip-info-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px;
+  background: linear-gradient(
+    135deg,
+    rgba(248, 250, 252, 0.9),
+    rgba(241, 245, 249, 0.8)
+  );
+  border-radius: 12px;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.tooltip-info-row::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    rgba(24, 146, 121, 0.8),
+    rgba(24, 146, 121, 0.4)
+  );
+  transform: scaleY(0);
+  transition: transform 0.3s ease;
+}
+
+.tooltip-info-row:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(24, 146, 121, 0.08),
+    rgba(24, 146, 121, 0.05)
+  );
+  border-color: rgba(24, 146, 121, 0.3);
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(24, 146, 121, 0.15);
+}
+
+.tooltip-info-row:hover::before {
+  transform: scaleY(1);
+}
+
+.info-icon {
+  font-size: 16px;
+  color: rgb(24 146 121);
+  margin-top: 3px;
+  min-width: 20px;
+  text-align: center;
+  background: rgba(24, 146, 121, 0.1);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.tooltip-info-row:hover .info-icon {
+  background: rgba(24, 146, 121, 0.2);
+  transform: scale(1.1);
+}
+
+.info-content {
+  flex: 1;
+}
+
+.info-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.info-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1e293b;
+  line-height: 1.5;
+}
+
+.info-value.time {
+  font-family: "SF Mono", "Monaco", "Inconsolata", "Roboto Mono", monospace;
+  font-weight: 700;
+  color: rgb(24 146 121);
+  font-size: 16px;
+  letter-spacing: 0.5px;
+}
+
+.info-value.room {
+  color: #7c3aed;
+  font-weight: 700;
+  font-weight: 600;
+}
+
+.info-value.purpose {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: inline-block;
+}
+
+/* Purpose color coding - matches meeting event colors */
+.info-value.purpose.hop {
+  background: rgba(33, 150, 243, 0.15);
+  color: #1565c0;
+}
+
+.info-value.purpose.daotao {
+  background: rgba(76, 175, 80, 0.15);
+  color: #2e7d32;
+}
+
+.info-value.purpose.phongvan {
+  background: rgba(255, 152, 0, 0.15);
+  color: #ef6c00;
+}
+
+.info-value.purpose.thaoluan {
+  background: rgba(156, 39, 176, 0.15);
+  color: #7b1fa2;
+}
+
+.info-value.purpose.baocao {
+  background: rgba(244, 67, 54, 0.15);
+  color: #c62828;
+}
+
+.info-value.purpose.khac {
+  background: rgba(96, 125, 139, 0.15);
+  color: #455a64;
+}
+
+/* Tooltip arrow */
+.tooltip-arrow {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+}
+
+.tooltip-arrow.top {
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 8px solid #ffffff;
+  filter: drop-shadow(0 -2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.tooltip-arrow.bottom {
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid #ffffff;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.tooltip-arrow.left {
+  left: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-right: 8px solid #ffffff;
+  filter: drop-shadow(-2px 0 4px rgba(0, 0, 0, 0.1));
+}
+
+.tooltip-arrow.right {
+  right: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-left: 8px solid #ffffff;
+  filter: drop-shadow(2px 0 4px rgba(0, 0, 0, 0.1));
+}
+
+/* Tooltip footer with actions */
+.tooltip-footer {
+  padding: 16px 24px;
+  background: linear-gradient(
+    135deg,
+    rgba(248, 250, 252, 0.9),
+    rgba(241, 245, 249, 0.8)
+  );
+  border-top: 1px solid rgba(226, 232, 240, 0.8);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.tooltip-action-btn {
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 90px;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.tooltip-action-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.tooltip-action-btn:hover::before {
+  left: 100%;
+}
+
+.tooltip-action-btn.primary {
+  background: linear-gradient(135deg, rgb(24 146 121), rgb(16 122 101));
+  color: #ffffff;
+  box-shadow: 0 3px 12px rgba(24, 146, 121, 0.3);
+}
+
+.tooltip-action-btn.primary:hover {
+  background: linear-gradient(135deg, rgb(16 122 101), rgb(12 97 81));
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(24, 146, 121, 0.4);
+}
+
+.tooltip-action-btn.secondary {
+  background: #ffffff;
+  color: #64748b;
+  border: 2px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.tooltip-action-btn.secondary:hover {
+  background: rgba(248, 250, 252, 1);
+  color: rgb(24 146 121);
+  border-color: rgba(24, 146, 121, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(24, 146, 121, 0.15);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .meeting-detail-tooltip {
+    min-width: 280px;
+    max-width: 320px;
+    margin: 10px;
+  }
+
+  .tooltip-footer {
+    padding: 12px 16px;
+    gap: 8px;
+  }
+
+  .tooltip-action-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+    min-width: 70px;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .meeting-detail-tooltip {
+    border: 3px solid #000;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  }
+
+  .tooltip-header {
+    background: #000;
+    color: #fff;
+  }
+
+  .tooltip-action-btn.primary {
+    background: #000;
+    color: #fff;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .meeting-detail-tooltip {
+    transition: opacity 0.2s ease;
+  }
+
+  .tooltip-action-btn::before {
+    display: none;
+  }
+
+  .tooltip-action-btn {
+    transition: background-color 0.2s ease;
+  }
+}
+
+.tooltip-action-btn.secondary:hover {
+  background: rgba(248, 250, 252, 0.8);
+  color: #475569;
+  border-color: rgba(203, 213, 225, 0.8);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .meeting-detail-tooltip {
+    min-width: 280px;
+    max-width: 320px;
+  }
+
+  .tooltip-header {
+    padding: 12px 16px;
+  }
+
+  .tooltip-body {
+    padding: 16px;
+  }
+
+  .tooltip-title {
+    font-size: 14px;
+  }
+
+  .tooltip-info-row {
+    padding: 10px;
+  }
+
+  .info-value {
+    font-size: 13px;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .meeting-detail-tooltip {
+    border: 2px solid #000;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .tooltip-header {
+    background: #000;
+    color: #fff;
+  }
+
+  .tooltip-info-row {
+    border: 1px solid #ccc;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .meeting-detail-tooltip {
+    transition: opacity 0.1s ease;
+  }
+
+  .status-dot {
+    animation: none;
+  }
+
+  .tooltip-action-btn:hover {
+    transform: none;
+  }
+}
+
+/* Print styles */
+@media print {
+  .meeting-detail-tooltip {
+    display: none !important;
+  }
+}

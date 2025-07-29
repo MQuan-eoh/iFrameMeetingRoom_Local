@@ -207,6 +207,15 @@ export class ScheduleBookingManager {
     const dayCells = document.querySelectorAll(".day-cell");
     dayCells.forEach((cell) => {
       cell.addEventListener("click", (event) => {
+        // Safety check for event.target
+        if (
+          !event ||
+          !event.target ||
+          typeof event.target.closest !== "function"
+        ) {
+          return;
+        }
+
         // Skip if cell contains a meeting already or click was on a meeting
         if (
           cell.querySelector(".meeting-event") ||
