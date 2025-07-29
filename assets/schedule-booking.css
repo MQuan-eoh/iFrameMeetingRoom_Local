@@ -851,3 +851,166 @@
 #endTimeOptions::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
 }
+
+/* Current Time Indicator */
+.current-time-indicator {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #ff4444, #ff6b6b, #ff4444);
+  z-index: 50;
+  box-shadow: 0 0 8px rgba(255, 68, 68, 0.6), 0 2px 4px rgba(255, 68, 68, 0.3);
+  border-radius: 2px;
+  animation: currentTimePulse 2s ease-in-out infinite;
+}
+
+.current-time-indicator::before {
+  content: "";
+  position: absolute;
+  left: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 12px;
+  background: #ff4444;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.9),
+    0 0 0 6px rgba(255, 68, 68, 0.3), 0 2px 8px rgba(255, 68, 68, 0.4);
+  animation: currentTimeDot 3s ease-in-out infinite;
+}
+
+.current-time-indicator::after {
+  content: "";
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid #ff4444;
+  border-top: 3px solid transparent;
+  border-bottom: 3px solid transparent;
+  filter: drop-shadow(0 2px 4px rgba(255, 68, 68, 0.3));
+}
+
+.current-time-label {
+  position: absolute;
+  left: -85px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: linear-gradient(135deg, #ff4444, #ff6b6b);
+  color: white;
+  font-size: 7px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 16px;
+  white-space: nowrap;
+  box-shadow: 0 3px 7px rgba(255, 68, 68, 0.3), 0 1px 4px rgba(0, 0, 0, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(4px);
+  z-index: 51;
+  animation: currentTimeLabel 2s ease-in-out infinite;
+}
+
+.current-time-label::before {
+  content: "";
+  position: absolute;
+  right: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-left: 5px solid #ff4444;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+}
+
+/* Enhanced animations for current time */
+@keyframes currentTimePulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scaleY(1.1);
+  }
+}
+
+@keyframes currentTimeDot {
+  0%,
+  100% {
+    transform: translateY(-50%) scale(1);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.9),
+      0 0 0 6px rgba(255, 68, 68, 0.3), 0 2px 8px rgba(255, 68, 68, 0.4);
+  }
+  50% {
+    transform: translateY(-50%) scale(1.2);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.9),
+      0 0 0 8px rgba(255, 68, 68, 0.5), 0 4px 12px rgba(255, 68, 68, 0.6);
+  }
+}
+
+@keyframes currentTimeLabel {
+  0%,
+  100% {
+    transform: translateY(-50%) scale(1);
+    box-shadow: 0 3px 12px rgba(255, 68, 68, 0.3), 0 1px 4px rgba(0, 0, 0, 0.1);
+  }
+  50% {
+    transform: translateY(-50%) scale(1.05);
+    box-shadow: 0 4px 16px rgba(255, 68, 68, 0.4), 0 2px 6px rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* Current time indicator for mobile */
+@media (max-width: 768px) {
+  .current-time-label {
+    left: -70px;
+    font-size: 10px;
+    padding: 4px 8px;
+    border-radius: 12px;
+  }
+
+  .current-time-label::before {
+    right: -6px;
+    border-left: 6px solid #ff4444;
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+  }
+}
+
+/* Available Slot Hover */
+.day-cell:not(.occupied):hover {
+  background-color: rgba(25, 118, 210, 0.1);
+  cursor: pointer;
+}
+
+/* Tooltip for events */
+.meeting-tooltip {
+  position: absolute;
+  background-color: #fff;
+  border-radius: 4px;
+  padding: 10px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+  z-index: 100;
+  max-width: 300px;
+  display: none;
+}
+
+.meeting-event:hover .meeting-tooltip {
+  display: block;
+}
+
+.tooltip-title {
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.tooltip-content {
+  color: #555;
+  font-size: 12px;
+}
