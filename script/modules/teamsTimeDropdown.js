@@ -21,6 +21,9 @@ export function initTeamsTimeDropdown() {
     // Toggle dropdown visibility when clicking on the input
     startTimeInput.addEventListener("click", (e) => {
       e.preventDefault();
+      e.stopPropagation();
+      console.log("🕐 Start time input clicked");
+
       // Hide all other dropdowns first
       hideAllDropdowns();
       // Show the start time dropdown
@@ -28,11 +31,22 @@ export function initTeamsTimeDropdown() {
       startTimeInput.focus();
     });
 
-    // Hide dropdown when clicking outside
-    startTimeInput.addEventListener("blur", () => {
+    // Also handle focus event to show dropdown
+    startTimeInput.addEventListener("focus", (e) => {
+      console.log("🕐 Start time input focused");
+      hideAllDropdowns();
+      toggleTimeDropdown(startTimeDropdown, true);
+    });
+
+    // Hide dropdown when clicking outside (with longer delay)
+    startTimeInput.addEventListener("blur", (e) => {
+      console.log("🕐 Start time input blur");
       setTimeout(() => {
-        toggleTimeDropdown(startTimeDropdown, false);
-      }, 200);
+        // Only hide if no option was clicked
+        if (!startTimeDropdown.classList.contains("option-clicked")) {
+          toggleTimeDropdown(startTimeDropdown, false);
+        }
+      }, 300);
     });
   }
 
@@ -40,6 +54,9 @@ export function initTeamsTimeDropdown() {
     // Toggle dropdown visibility when clicking on the input
     endTimeInput.addEventListener("click", (e) => {
       e.preventDefault();
+      e.stopPropagation();
+      console.log("🕐 End time input clicked");
+
       // Hide all other dropdowns first
       hideAllDropdowns();
       // Show the end time dropdown
@@ -47,17 +64,33 @@ export function initTeamsTimeDropdown() {
       endTimeInput.focus();
     });
 
-    // Hide dropdown when clicking outside
-    endTimeInput.addEventListener("blur", () => {
+    // Also handle focus event to show dropdown
+    endTimeInput.addEventListener("focus", (e) => {
+      console.log("🕐 End time input focused");
+      hideAllDropdowns();
+      toggleTimeDropdown(endTimeDropdown, true);
+    });
+
+    // Hide dropdown when clicking outside (with longer delay)
+    endTimeInput.addEventListener("blur", (e) => {
+      console.log("🕐 End time input blur");
       setTimeout(() => {
-        toggleTimeDropdown(endTimeDropdown, false);
-      }, 200);
+        // Only hide if no option was clicked
+        if (!endTimeDropdown.classList.contains("option-clicked")) {
+          toggleTimeDropdown(endTimeDropdown, false);
+        }
+      }, 300);
     });
   }
 
   // Hide dropdowns when clicking anywhere else
   document.addEventListener("click", (e) => {
-    if (!e.target.closest(".form-group")) {
+    const isTimeInput = e.target.closest("#bookingStartTime, #bookingEndTime");
+    const isDropdown = e.target.closest(".custom-time-dropdown");
+    const isFormGroup = e.target.closest(".form-group");
+
+    if (!isTimeInput && !isDropdown) {
+      console.log("🕐 Clicking outside, hiding all dropdowns");
       hideAllDropdowns();
     }
   });
@@ -70,11 +103,20 @@ export function createFullDayTimeOptions() {
   const startTimeDropdown = document.getElementById("startTimeOptions");
   const endTimeDropdown = document.getElementById("endTimeOptions");
 
-  if (!startTimeDropdown || !endTimeDropdown) return;
+  console.log("🕐 Creating full day time options...");
+  console.log("🕐 startTimeDropdown:", startTimeDropdown);
+  console.log("🕐 endTimeDropdown:", endTimeDropdown);
+
+  if (!startTimeDropdown || !endTimeDropdown) {
+    console.error("🕐 Could not find dropdown elements!");
+    return;
+  }
 
   // Clear existing options
   startTimeDropdown.innerHTML = "";
   endTimeDropdown.innerHTML = "";
+
+  let optionsCreated = 0;
 
   // Create time options for every 30 minutes throughout the day
   for (let hour = 0; hour < 24; hour++) {
@@ -90,19 +132,41 @@ export function createFullDayTimeOptions() {
       startOption.setAttribute("data-time", timeValue);
 
       // Add click handler for start time option
-      startOption.addEventListener("click", () => {
+      startOption.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log(`🕐 Start time option clicked: ${timeValue}`);
+
+        // Mark that an option was clicked to prevent blur from hiding dropdown
+        startTimeDropdown.classList.add("option-clicked");
+
         const startTimeInput = document.getElementById("bookingStartTime");
         startTimeInput.value = timeValue;
-        toggleTimeDropdown(startTimeDropdown, false);
+        console.log(
+          `🕐 Set start time input value to: ${startTimeInput.value}`
+        );
 
-        // Update end time options based on new start time
-        updateEndTimeOptions();
+        // Small delay to ensure value is set
+        setTimeout(() => {
+          toggleTimeDropdown(startTimeDropdown, false);
+          startTimeDropdown.classList.remove("option-clicked");
 
-        // Focus the end time input after selecting start time
-        const endTimeInput = document.getElementById("bookingEndTime");
-        if (endTimeInput) {
-          endTimeInput.focus();
-        }
+          // Update end time options based on new start time
+          updateEndTimeOptions();
+
+          // Focus the end time input after selecting start time
+          const endTimeInput = document.getElementById("bookingEndTime");
+          if (endTimeInput) {
+            endTimeInput.focus();
+            // Show end time dropdown
+            const endTimeDropdown = document.getElementById("endTimeOptions");
+            if (endTimeDropdown) {
+              setTimeout(() => {
+                toggleTimeDropdown(endTimeDropdown, true);
+              }, 100);
+            }
+          }
+        }, 50);
       });
 
       startTimeDropdown.appendChild(startOption);
@@ -114,15 +178,37 @@ export function createFullDayTimeOptions() {
       endOption.setAttribute("data-time", timeValue);
 
       // Add click handler for end time option
-      endOption.addEventListener("click", () => {
+      endOption.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log(`🕐 End time option clicked: ${timeValue}`);
+
+        // Mark that an option was clicked to prevent blur from hiding dropdown
+        endTimeDropdown.classList.add("option-clicked");
+
         const endTimeInput = document.getElementById("bookingEndTime");
         endTimeInput.value = timeValue;
-        toggleTimeDropdown(endTimeDropdown, false);
+        console.log(`🕐 Set end time input value to: ${endTimeInput.value}`);
+
+        // Small delay to ensure value is set
+        setTimeout(() => {
+          toggleTimeDropdown(endTimeDropdown, false);
+          endTimeDropdown.classList.remove("option-clicked");
+        }, 50);
       });
 
       endTimeDropdown.appendChild(endOption);
+      optionsCreated++;
     }
   }
+
+  console.log(`🕐 Created ${optionsCreated} time options for each dropdown`);
+  console.log(
+    `🕐 Start dropdown children count: ${startTimeDropdown.children.length}`
+  );
+  console.log(
+    `🕐 End dropdown children count: ${endTimeDropdown.children.length}`
+  );
 
   // Get current time to highlight suggested options
   const now = new Date();
@@ -151,11 +237,14 @@ export function createFullDayTimeOptions() {
     .toString()
     .padStart(2, "0")}:${suggestedMinute.toString().padStart(2, "0")}`;
 
+  console.log(`🕐 Suggested time: ${suggestedTime}`);
+
   // Find and highlight suggested option
   const startOptions = startTimeDropdown.querySelectorAll(".time-option");
   startOptions.forEach((option) => {
     if (option.getAttribute("data-time") === suggestedTime) {
       option.classList.add("selected");
+      console.log(`🕐 Highlighted suggested start time: ${suggestedTime}`);
     }
   });
 }
@@ -243,9 +332,28 @@ export function hideAllDropdowns() {
  * @param {boolean} show Whether to show or hide the dropdown
  */
 export function toggleTimeDropdown(dropdown, show) {
+  if (!dropdown) {
+    console.warn("🕐 toggleTimeDropdown: dropdown element not found");
+    return;
+  }
+
+  console.log(
+    `🕐 toggleTimeDropdown: ${show ? "showing" : "hiding"} dropdown`,
+    dropdown.id
+  );
+
   if (show) {
     dropdown.classList.add("show");
+    console.log(
+      `🕐 Dropdown ${dropdown.id} now has classes:`,
+      dropdown.className
+    );
   } else {
     dropdown.classList.remove("show");
+    dropdown.classList.remove("option-clicked");
+    console.log(
+      `🕐 Dropdown ${dropdown.id} now has classes:`,
+      dropdown.className
+    );
   }
 }

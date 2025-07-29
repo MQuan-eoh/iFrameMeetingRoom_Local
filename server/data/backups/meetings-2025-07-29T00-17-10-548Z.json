@@ -190,21 +190,5 @@
     "createdAt": "2025-07-28T09:36:04.420Z",
     "isEnded": false,
     "forceEndedByUser": false
-  },
-  {
-    "id": "meeting_1753756353996",
-    "room": "Phòng họp lầu 3",
-    "date": "29/07/2025",
-    "dayOfWeek": "3",
-    "startTime": "08:00",
-    "endTime": "10:00",
-    "duration": "2h",
-    "purpose": "Phỏng vấn",
-    "department": "Kế toán",
-    "title": "E",
-    "content": "R",
-    "createdAt": "2025-07-29T02:32:33.996Z",
-    "isEnded": false,
-    "forceEndedByUser": false
   }
 ]

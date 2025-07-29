@@ -183,12 +183,11 @@ export class ScheduleBookingManager {
     const endTimeInput = document.getElementById("bookingEndTime");
 
     if (startTimeInput) {
-      startTimeInput.addEventListener("input", () =>
-        this._updateEndTimeOptions()
-      );
-      startTimeInput.addEventListener("focus", () =>
-        this._populateStartTimeOptions()
-      );
+      startTimeInput.addEventListener("input", () => updateEndTimeOptions());
+      // Remove the focus event that was conflicting with the dropdown
+      // startTimeInput.addEventListener("focus", () =>
+      //   this._populateStartTimeOptions()
+      // );
       // Validate time format on blur
       startTimeInput.addEventListener("blur", (e) =>
         this._validateTimeFormat(e.target)
@@ -196,9 +195,8 @@ export class ScheduleBookingManager {
     }
 
     if (endTimeInput) {
-      endTimeInput.addEventListener("focus", () =>
-        this._updateEndTimeOptions()
-      );
+      // Remove the focus event that was conflicting
+      // endTimeInput.addEventListener("focus", () => updateEndTimeOptions());
       // Validate time format on blur
       endTimeInput.addEventListener("blur", (e) =>
         this._validateTimeFormat(e.target)
@@ -462,75 +460,14 @@ export class ScheduleBookingManager {
   }
 
   /**
-   * Update end time options based on selected start time
-   */
-  _updateEndTimeOptions() {
-    const startTimeInput = document.getElementById("bookingStartTime");
-    const endTimeDatalist = document.getElementById("endTimeOptions");
-
-    if (!startTimeInput || !endTimeDatalist) return;
-
-    // Use full day options from _createFullDayTimeOptions instead
-    this._createFullDayTimeOptions();
-
-    const startTimeValue = startTimeInput.value.trim();
-    if (!startTimeValue) return;
-
-    // Validate start time format first
-    if (!this._validateTimeFormat(startTimeInput)) return;
-
-    // Get start time value
-    const [startHour, startMinute] = startTimeValue.split(":").map(Number);
-
-    // Calculate minimum end time (start time + 30 minutes)
-    let minEndHour = startHour;
-    let minEndMinute = startMinute + 30;
-
-    if (minEndMinute >= 60) {
-      minEndHour += 1;
-      minEndMinute -= 60;
-    }
-
-    // The minimum end time to highlight
-    const minEndTime = `${minEndHour.toString().padStart(2, "0")}:${minEndMinute
-      .toString()
-      .padStart(2, "0")}`;
-
-    // Highlight and scroll to the suggested minimum end time
-    Array.from(endTimeDatalist.querySelectorAll("option")).forEach((option) => {
-      // Get the time value of this option
-      const optionTime = option.value;
-      const [optionHour, optionMinute] = optionTime.split(":").map(Number);
-      const optionMinutes = optionHour * 60 + optionMinute;
-      const minEndMinutes = minEndHour * 60 + minEndMinute;
-
-      if (optionTime === minEndTime) {
-        // This is the suggested minimum end time - highlight it
-        option.setAttribute("selected", "selected");
-        option.style.backgroundColor = "#e6f0ff";
-        option.style.fontWeight = "bold";
-
-        // Scroll to this option when dropdown opens
-        setTimeout(() => {
-          option.scrollIntoView({ behavior: "smooth", block: "center" });
-        }, 100);
-      } else if (optionMinutes < minEndMinutes) {
-        // These times are before the minimum end time - dim them
-        option.style.opacity = "0.5";
-        option.style.color = "#999";
-      }
-    });
-  }
-
-  /**
    * Populate start time options with smart suggestions from current time
    */
   _populateStartTimeOptions() {
     const startTimeDatalist = document.getElementById("startTimeOptions");
     if (!startTimeDatalist) return;
 
-    // Let the _createFullDayTimeOptions handle populating all the options
-    this._createFullDayTimeOptions();
+    // Let the createFullDayTimeOptions handle populating all the options
+    createFullDayTimeOptions();
 
     // Get current Vietnam time to highlight or scroll to
     const vietnamTime = DateTimeUtils.getCurrentTime(); // Returns "HH:MM:SS"
