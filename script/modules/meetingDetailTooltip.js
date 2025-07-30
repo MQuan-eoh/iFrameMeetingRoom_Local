@@ -435,13 +435,24 @@ class MeetingDetailTooltipManager {
    */
   getMeetingStatus(meetingData) {
     try {
-      // Get current time
+      // Get current date and time
       const now = new Date();
       const currentHour = now.getHours();
       const currentMinute = now.getMinutes();
       const currentTimeInMinutes = currentHour * 60 + currentMinute;
 
-      // Parse meeting times
+      // Get current date in DD/MM/YYYY format for comparison
+      const currentDay = now.getDate();
+      const currentMonth = now.getMonth() + 1; // getMonth() returns 0-11
+      const currentYear = now.getFullYear();
+      const currentDateString = `${currentDay
+        .toString()
+        .padStart(2, "0")}/${currentMonth
+        .toString()
+        .padStart(2, "0")}/${currentYear}`;
+
+      // Parse meeting date and times
+      const meetingDate = meetingData.date || "";
       const startTime = meetingData.startTime || "";
       const endTime = meetingData.endTime || "";
 
@@ -458,9 +469,41 @@ class MeetingDetailTooltipManager {
       const startTimeInMinutes = startHour * 60 + startMin;
       const endTimeInMinutes = endHour * 60 + endMin;
 
-      // Compare times to determine status
+      // Compare dates first
+      if (meetingDate && meetingDate !== currentDateString) {
+        // Parse meeting date to compare with current date
+        const [meetingDay, meetingMonth, meetingYear] = meetingDate
+          .split("/")
+          .map(Number);
+        const meetingDateObj = new Date(
+          meetingYear,
+          meetingMonth - 1,
+          meetingDay
+        );
+        const currentDateObj = new Date(
+          currentYear,
+          currentMonth - 1,
+          currentDay
+        );
+
+        if (meetingDateObj < currentDateObj) {
+          // Meeting was on a previous date - always "Đã họp"
+          return {
+            isActive: false,
+            text: "Đã họp",
+          };
+        } else if (meetingDateObj > currentDateObj) {
+          // Meeting is on a future date - always "Sắp họp"
+          return {
+            isActive: false,
+            text: "Sắp họp",
+          };
+        }
+      }
+
+      // If meeting is today (or no date specified), compare times
       if (currentTimeInMinutes >= endTimeInMinutes) {
-        // Meeting has ended
+        // Meeting has ended today
         return {
           isActive: false,
           text: "Đã họp",
@@ -469,13 +512,13 @@ class MeetingDetailTooltipManager {
         currentTimeInMinutes >= startTimeInMinutes &&
         currentTimeInMinutes < endTimeInMinutes
       ) {
-        // Meeting is currently happening
+        // Meeting is currently happening today
         return {
           isActive: true,
           text: "Đang họp",
         };
       } else {
-        // Meeting hasn't started yet
+        // Meeting hasn't started yet today
         return {
           isActive: false,
           text: "Sắp họp",

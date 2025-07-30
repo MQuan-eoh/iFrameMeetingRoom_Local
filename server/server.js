@@ -132,9 +132,9 @@ app.put("/api/meetings/:id", (req, res) => {
   try {
     const meetingId = req.params.id;
     const updateData = req.body;
-    
+
     console.log(`📝 Updating meeting ${meetingId}:`, updateData);
-    
+
     // Read existing meetings
     const meetings = JSON.parse(fs.readFileSync(MEETINGS_FILE, "utf8"));
 
@@ -142,9 +142,9 @@ app.put("/api/meetings/:id", (req, res) => {
     const index = meetings.findIndex((m) => m.id === meetingId);
 
     if (index === -1) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        error: "Meeting not found" 
+        error: "Meeting not found",
       });
     }
 
@@ -158,7 +158,7 @@ app.put("/api/meetings/:id", (req, res) => {
       ...updateData,
       id: meetingId, // Ensure ID doesn't change
       createdAt: originalMeeting.createdAt, // Preserve creation time
-      updatedAt: new Date().toISOString() // Add update timestamp
+      updatedAt: new Date().toISOString(), // Add update timestamp
     };
 
     // Update meeting in array
@@ -172,15 +172,14 @@ app.put("/api/meetings/:id", (req, res) => {
     res.json({
       success: true,
       meeting: updatedMeeting,
-      message: 'Meeting updated successfully'
+      message: "Meeting updated successfully",
     });
-    
   } catch (error) {
     console.error("❌ Error updating meeting:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
       error: "Failed to update meeting",
-      message: error.message 
+      message: error.message,
     });
   }
 });
