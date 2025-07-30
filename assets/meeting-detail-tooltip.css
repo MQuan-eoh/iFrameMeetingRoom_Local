@@ -261,33 +261,33 @@
 
 /* Purpose color coding - matches meeting event colors */
 .info-value.purpose.hop {
-  background: rgba(33, 150, 243, 0.15);
-  color: #1565c0;
+  background: rgba(143, 202, 202, 0.25);
+  color: #4a9b9b;
 }
 
 .info-value.purpose.daotao {
-  background: rgba(76, 175, 80, 0.15);
-  color: #2e7d32;
+  background: rgba(168, 216, 168, 0.25);
+  color: #5db85d;
 }
 
 .info-value.purpose.phongvan {
-  background: rgba(255, 152, 0, 0.15);
-  color: #ef6c00;
+  background: rgba(245, 195, 154, 0.25);
+  color: #e0995e;
 }
 
 .info-value.purpose.thaoluan {
-  background: rgba(156, 39, 176, 0.15);
-  color: #7b1fa2;
+  background: rgba(212, 179, 217, 0.25);
+  color: #b383c7;
 }
 
 .info-value.purpose.baocao {
-  background: rgba(244, 67, 54, 0.15);
-  color: #c62828;
+  background: rgba(245, 165, 165, 0.25);
+  color: #e07373;
 }
 
 .info-value.purpose.khac {
-  background: rgba(96, 125, 139, 0.15);
-  color: #455a64;
+  background: rgba(188, 198, 209, 0.25);
+  color: #8ea3b5;
 }
 
 /* Tooltip arrow */
@@ -586,7 +586,11 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: linear-gradient(
+    298deg,
+    rgb(0 68 54 / 80%),
+    rgb(2 103 84 / 80%)
+  );
   z-index: 1000;
   justify-content: center;
   align-items: center;
@@ -597,20 +601,23 @@
 }
 
 #editMeetingModal .booking-modal-title {
-  color: #1976d2;
+  color: #ffffff;
 }
 
 #editMeetingModal .btn-save {
-  background: linear-gradient(135deg, #1976d2, #1565c0);
+  background: linear-gradient(298deg, rgb(0 68 54 / 80%), rgb(2 103 84 / 80%));
 }
 
 #editMeetingModal .btn-save:hover {
-  background: linear-gradient(135deg, #1565c0, #0d47a1);
+  background: linear-gradient(
+    298deg,
+    rgba(110, 255, 226, rgba(58, 114, 104, 0.8) / 80%)
+  );
   transform: translateY(-1px);
 }
 
 #editMeetingModal .btn-save:disabled {
-  background: #ccc;
+  background: linear-gradient(298deg, rgb(0 68 54 / 80%), rgb(2 103 84 / 80%));
   cursor: not-allowed;
   transform: none;
 }

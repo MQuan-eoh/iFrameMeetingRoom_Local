@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Room Detail Design</title>
+    <link rel="stylesheet" href="assets/styles.css" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --secondary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --panel-spacing: 20px;
+        --font-xlarge: 3rem;
+        --font-large: 2rem;
+        --font-medium: 1.2rem;
+        --font-small: 1rem;
+      }
+
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        background: var(--secondary-gradient);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Back to Home Button -->
+    <button class="back-to-home-btn" id="backToHomeBtn">
+      <i class="home-icon">🏠</i>
+      <span>Back to Home</span>
+    </button>
+
+    <div class="room-detail-container">
+      <!-- Header Section with Room Status -->
+      <div class="room-header-section">
+        <div class="room-title-card">
+          <h1 class="room-name">PHÒNG HỌP LẦU 3</h1>
+          <div class="room-status-indicator busy">
+            <span class="status-dot"></span>
+            <span class="status-text">ĐANG SỬ DỤNG</span>
+          </div>
+        </div>
+
+        <div class="time-and-date-display">
+          <div class="current-time" id="currentTime-1">14:30</div>
+          <div class="current-date" id="currentDate-1">
+            Thứ Ba, 30 Tháng 7, 2025
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content Grid -->
+      <div class="room-content-grid">
+        <!-- Current Meeting Panel -->
+        <div class="current-meeting-panel">
+          <div class="panel-header">
+            <i class="fas fa-calendar-check"></i>
+            <h3>CUỘC HỌP HIỆN TẠI</h3>
+          </div>
+          <div class="meeting-content">
+            <div class="meeting-info-card">
+              <div class="meeting-title-main">
+                Họp Review Sprint và Planning Q3 2025
+              </div>
+              <div class="meeting-time-display">
+                <div class="time-badge start-time">
+                  <i class="fas fa-play"></i>
+                  <span>Bắt đầu: 14:00</span>
+                </div>
+                <div class="time-badge end-time">
+                  <i class="fas fa-stop"></i>
+                  <span>Kết thúc: 15:30</span>
+                </div>
+              </div>
+              <div class="meeting-purpose-section">
+                <label class="purpose-label">MỤC ĐÍCH SỬ DỤNG</label>
+                <div class="purpose-content">Họp Review Sprint và Planning</div>
+              </div>
+              <div class="meeting-actions">
+                <button class="end-meeting-btn">
+                  <i class="fas fa-stop-circle"></i>
+                  KẾT THÚC CUỘC HỌP
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upcoming Meetings Panel -->
+        <div class="upcoming-meetings-panel">
+          <div class="panel-header">
+            <i class="fas fa-clock"></i>
+            <h3>LỊCH HỌP SẮP TỚI</h3>
+          </div>
+          <div class="upcoming-content">
+            <div class="upcoming-meetings-list">
+              <div class="upcoming-meeting-item">
+                <div class="meeting-time-badge">
+                  <span class="time-text">16:00</span>
+                  <span class="duration">- 17:00</span>
+                </div>
+                <div class="meeting-details">
+                  <div class="meeting-title">Họp Team Building Q3</div>
+                  <div class="meeting-purpose">Thảo luận</div>
+                </div>
+                <div class="meeting-priority next">
+                  <i class="fas fa-arrow-right"></i>
+                </div>
+              </div>
+
+              <div class="upcoming-meeting-item">
+                <div class="meeting-time-badge">
+                  <span class="time-text">17:30</span>
+                  <span class="duration">- 18:30</span>
+                </div>
+                <div class="meeting-details">
+                  <div class="meeting-title">Họp Ban Giám Đốc</div>
+                  <div class="meeting-purpose">Báo cáo</div>
+                </div>
+                <div class="meeting-priority">
+                  <i class="fas fa-clock"></i>
+                </div>
+              </div>
+
+              <div class="upcoming-meeting-item">
+                <div class="meeting-time-badge">
+                  <span class="time-text">19:00</span>
+                  <span class="duration">- 20:00</span>
+                </div>
+                <div class="meeting-details">
+                  <div class="meeting-title">Training Nhân viên mới</div>
+                  <div class="meeting-purpose">Đào tạo</div>
+                </div>
+                <div class="meeting-priority">
+                  <i class="fas fa-clock"></i>
+                </div>
+              </div>
+
+              <div class="more-meetings-indicator">
+                <i class="fas fa-ellipsis-h"></i>
+                <span>Còn 2 cuộc họp khác</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Room Information Panel -->
+        <div class="room-info-panel">
+          <div class="panel-header">
+            <i class="fas fa-info-circle"></i>
+            <h3>THÔNG TIN PHÒNG</h3>
+          </div>
+          <div class="room-info-content">
+            <div class="info-item">
+              <i class="fas fa-users"></i>
+              <span class="info-label">Sức chứa:</span>
+              <span class="info-value">10-15 người</span>
+            </div>
+            <div class="info-item">
+              <i class="fas fa-tv"></i>
+              <span class="info-label">Thiết bị:</span>
+              <span class="info-value">Projector, TV, Wifi</span>
+            </div>
+            <div class="info-item">
+              <i class="fas fa-map-marker-alt"></i>
+              <span class="info-label">Vị trí:</span>
+              <span class="info-value">Phòng họp lầu 3</span>
+            </div>
+            <div class="quick-actions">
+              <button class="action-btn book-btn">
+                <i class="fas fa-calendar-plus"></i>
+                <span>Đặt phòng</span>
+              </button>
+              <button class="action-btn refresh-btn">
+                <i class="fas fa-sync-alt"></i>
+                <span>Làm mới</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Test time update
+      function updateTime() {
+        const timeElement = document.getElementById("currentTime-1");
+        const dateElement = document.getElementById("currentDate-1");
+
+        const now = new Date();
+
+        if (timeElement) {
+          const timeString = now.toLocaleTimeString("vi-VN", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+          });
+          timeElement.textContent = timeString;
+        }
+
+        if (dateElement) {
+          const dateString = now.toLocaleDateString("vi-VN", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          });
+          dateElement.textContent = dateString;
+        }
+      }
+
+      // Update time immediately and then every second
+      updateTime();
+      setInterval(updateTime, 1000);
+
+      // Test button interactions
+      document.querySelectorAll("button").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          console.log("Button clicked:", e.target.textContent.trim());
+        });
+      });
+    </script>
+  </body>
+</html>

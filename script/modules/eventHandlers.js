@@ -139,7 +139,19 @@ export class EventHandlers {
       // Back to main view handlers
       document.addEventListener("click", (event) => {
         if (event.target.classList.contains("back-to-main")) {
-          location.reload(); // Simple way to return to main view
+          // Use proper navigation instead of reload
+          console.log("🏠 Back to main view requested");
+
+          // Dispatch navigation event for proper handling
+          document.dispatchEvent(
+            new CustomEvent("navigateToHome", {
+              detail: { from: "backToMainHandler" },
+            })
+          );
+
+          // Prevent default behavior
+          event.preventDefault();
+          event.stopPropagation();
         }
       });
     });

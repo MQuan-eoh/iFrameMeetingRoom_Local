@@ -346,15 +346,49 @@ class MeetingRoomApp {
     console.log("🏠 Handling back to home navigation");
 
     try {
-      // Clear any room-specific content
+      // Don't clear meeting-container blindly - let renderMainDashboard handle it
       const meetingContainer = document.querySelector(".meeting-container");
       if (meetingContainer) {
-        // Reset to main dashboard view
-        meetingContainer.innerHTML = "";
+        console.log(
+          "📦 Found meeting-container, delegating to renderMainDashboard"
+        );
 
-        // Trigger main dashboard re-render
-        if (this.managers.uiManager) {
-          this.managers.uiManager.renderMainDashboard();
+        // Trigger main dashboard re-render using the new method
+        if (
+          this.managers.uiManager &&
+          this.managers.uiManager.renderMainDashboard
+        ) {
+          const success = this.managers.uiManager.renderMainDashboard();
+
+          if (!success) {
+            console.warn(
+              "⚠️ Main dashboard render failed, trying alternative approach"
+            );
+            // Try alternative approach - show main elements manually
+            const mainElements = document.querySelectorAll(
+              ".left-column, .right-column"
+            );
+            mainElements.forEach((element) => {
+              if (element) {
+                element.style.display = "";
+                element.style.visibility = "visible";
+              }
+            });
+          }
+        } else {
+          console.warn(
+            "⚠️ renderMainDashboard method not available, using fallback"
+          );
+          // Show main dashboard elements manually
+          const mainElements = document.querySelectorAll(
+            ".left-column, .right-column"
+          );
+          mainElements.forEach((element) => {
+            if (element) {
+              element.style.display = "";
+              element.style.visibility = "visible";
+            }
+          });
         }
       }
 
@@ -383,7 +417,29 @@ class MeetingRoomApp {
     } catch (error) {
       console.error("❌ Error during back to home navigation:", error);
 
-      // Fallback: reload the page
+      // Check if we're in an iframe - if so, avoid reload
+      if (window.self !== window.top) {
+        console.warn(
+          "🚫 In iframe context - avoiding page reload to prevent crash"
+        );
+
+        // Try manual recovery without clearing meeting-container
+        const mainElements = document.querySelectorAll(
+          ".left-column, .right-column"
+        );
+        mainElements.forEach((element) => {
+          if (element) {
+            element.style.display = "";
+            element.style.visibility = "visible";
+          }
+        });
+
+        console.log("✅ Manual recovery completed");
+        return;
+      }
+
+      // Fallback: only reload if not in iframe
+      console.warn("⚠️ Using page reload as last resort");
       window.location.reload();
     }
   }
@@ -827,7 +883,14 @@ class MeetingRoomApp {
       <h3>🚨 Application Failed to Start</h3>
       <p>There was an error initializing the meeting room system.</p>
       <p><small>Error: ${error.message}</small></p>
-      <button onclick="location.reload()" style="
+      <button onclick="
+        if (window.self !== window.top) {
+          console.warn('In iframe - attempting recovery without reload');
+          location.href = location.pathname;
+        } else {
+          location.reload();
+        }
+      " style="
         background: white;
         color: #dc3545;
         border: none;

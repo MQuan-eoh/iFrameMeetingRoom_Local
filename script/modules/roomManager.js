@@ -309,10 +309,28 @@ export class RoomManager {
       upcomingMeetings
     );
 
-    // Update DOM
+    // Update DOM by creating a room page wrapper instead of replacing all content
     const container = document.querySelector(".meeting-container");
     if (container) {
-      container.innerHTML = template;
+      // Hide main dashboard content
+      const mainContent = container.querySelector(".content-wrapper");
+      if (mainContent) {
+        mainContent.style.display = "none";
+        console.log("🙈 Hidden main dashboard content");
+      }
+
+      // Create or update room page wrapper
+      let roomPageWrapper = container.querySelector(".room-page-wrapper");
+      if (!roomPageWrapper) {
+        roomPageWrapper = document.createElement("div");
+        roomPageWrapper.className = "room-page-wrapper";
+        container.appendChild(roomPageWrapper);
+        console.log("📄 Created room page wrapper");
+      }
+
+      roomPageWrapper.innerHTML = template;
+      roomPageWrapper.style.display = "block";
+      console.log("✅ Room page content updated");
     }
 
     // Setup event handlers for this room page
@@ -328,67 +346,223 @@ export class RoomManager {
         <span>Back to Home</span>
       </button>
       
-      <div class="container">
-        <div class="left-panel">
-          <div>
-            <div class="clock-container">
-              <div class="time-1" id="currentTime-1"></div>
-            </div>
-            <div class="currentDateElement-1" id="currentDate-1"></div>
-          </div>
-        </div>
-        
-        <div class="main-panel">
-          <h1>${roomName.toUpperCase()}</h1>
-          <div class="meeting-info">
-            <div class="meeting-title-1">
-              ${
-                currentMeeting
-                  ? currentMeeting.content || currentMeeting.purpose
-                  : "Không có cuộc họp"
-              }
-            </div>
-            <div class="meeting-time-1">
-              <span>Bắt đầu: ${
-                currentMeeting ? currentMeeting.startTime : "--:--"
-              }</span>
-              <span> - Kết thúc: ${
-                currentMeeting ? currentMeeting.endTime : "--:--"
+      <!-- Room Detail Container - Following Page 1 Structure -->
+      <div class="room-detail-container">
+        <!-- Header Section - Similar to Page 1 Header -->
+        <div class="room-header-section">
+          <div class="room-title-card">
+            <h1 class="room-name">${roomName.toUpperCase()}</h1>
+            <div class="room-status-indicator ${
+              currentMeeting ? "busy" : "available"
+            }">
+              <span class="status-dot"></span>
+              <span class="status-text">${
+                currentMeeting ? "ĐANG SỬ DỤNG" : "SẴN SÀNG"
               }</span>
             </div>
           </div>
-          <div class="purpose">MỤC ĐÍCH SỬ DỤNG</div>
-          <div class="purpose-value">${
-            currentMeeting ? currentMeeting.purpose : "Chưa xác định"
-          }</div>
-          ${
-            currentMeeting
-              ? '<button class="end-meeting">END MEETING</button>'
-              : '<div class="no-meeting-placeholder">Không có cuộc họp đang diễn ra</div>'
-          }
+          
+          <div class="time-and-date-display">
+            <div class="current-time" id="currentTime-1"></div>
+            <div class="current-date" id="currentDate-1"></div>
+          </div>
         </div>
-        
-        <div class="right-panel">
-          <h2>LỊCH HỌP PHÒNG ${roomName.toUpperCase()}</h2>
-          ${upcomingMeetings
-            .map(
-              (meeting) => `
-                <div class="upcoming-meeting">
-                  <div class="meeting-title">${
-                    meeting.content || meeting.purpose
-                  }</div>
-                  <div class="meeting-time-1">${meeting.startTime} - ${
-                meeting.endTime
-              }</div>
+
+        <!-- Content Wrapper - Following Page 1 Content Layout -->
+        <div class="room-content-wrapper">
+          <!-- Left Column - Room Info (Following Page 1 Left Column) -->
+          <div class="room-left-column">
+            <!-- Room Information Panel -->
+            <div class="room-info-panel">
+              <div class="panel-header">
+                <i class="fas fa-info-circle"></i>
+                <h3>THÔNG TIN PHÒNG</h3>
+              </div>
+              <div class="room-info-content">
+                <div class="info-item">
+                  <i class="fas fa-users"></i>
+                  <span class="info-label">Sức chứa:</span>
+                  <span class="info-value">${
+                    roomName.includes("3") ? "10-15 người" : "8-12 người"
+                  }</span>
                 </div>
-              `
-            )
-            .join("")}
-          ${
-            upcomingMeetings.length === 0
-              ? '<div class="no-upcoming">Không có cuộc họp sắp tới</div>'
-              : ""
-          }
+                <div class="info-item">
+                  <i class="fas fa-tv"></i>
+                  <span class="info-label">Thiết bị:</span>
+                  <span class="info-value">Projector, TV, Wifi</span>
+                </div>
+                <div class="info-item">
+                  <i class="fas fa-map-marker-alt"></i>
+                  <span class="info-label">Vị trí:</span>
+                  <span class="info-value">${roomName}</span>
+                </div>
+                <div class="quick-actions">
+                  <button class="action-btn book-btn">
+                    <i class="fas fa-calendar-plus"></i>
+                    <span>Đặt phòng</span>
+                  </button>
+                  <button class="action-btn refresh-btn">
+                    <i class="fas fa-sync-alt"></i>
+                    <span>Làm mới</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Device Control Panel - New Panel for Light Control -->
+            <div class="device-control-panel">
+              <div class="panel-header">
+                <i class="fas fa-lightbulb"></i>
+                <h3>ĐIỀU KHIỂN THIẾT BỊ</h3>
+              </div>
+              <div class="device-control-content">
+                <div class="light-control-container">
+                  <img 
+                    src="assets/imgs/background1.jpg" 
+                    alt="Light Control" 
+                    class="light-control-image" 
+                    id="lightControlImage"
+                    title="Nhấn để bật/tắt đèn"
+                  />
+                  <div class="light-status-display">
+                    <div class="light-status-text">Trạng thái đèn</div>
+                    <div class="light-status-indicator off" id="lightStatusIndicator">
+                      <span class="status-dot"></span>
+                      <span id="lightStatusText">TẮT</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column - Meeting Content (Following Page 1 Right Column) -->
+          <div class="room-right-column">
+            <!-- Current Meeting Panel - Priority Display -->
+            <div class="current-meeting-panel">
+              <div class="panel-header">
+                <i class="fas fa-calendar-check"></i>
+                <h3>CUỘC HỌP HIỆN TẠI</h3>
+              </div>
+              <div class="meeting-content">
+                ${
+                  currentMeeting
+                    ? `
+                  <div class="meeting-info-card">
+                    <div class="meeting-title-main">${
+                      currentMeeting.content || currentMeeting.purpose
+                    }</div>
+                    <div class="meeting-time-display">
+                      <div class="time-badge start-time">
+                        <i class="fas fa-play"></i>
+                        <span>Bắt đầu: ${currentMeeting.startTime}</span>
+                      </div>
+                      <div class="time-badge end-time">
+                        <i class="fas fa-stop"></i>
+                        <span>Kết thúc: ${currentMeeting.endTime}</span>
+                      </div>
+                    </div>
+                    <div class="meeting-purpose-section">
+                      <label class="purpose-label">MỤC ĐÍCH SỬ DỤNG</label>
+                      <div class="purpose-content">${
+                        currentMeeting.purpose
+                      }</div>
+                    </div>
+                    <div class="meeting-actions">
+                      <button class="end-meeting-btn">
+                        <i class="fas fa-stop-circle"></i>
+                        KẾT THÚC CUỘC HỌP
+                      </button>
+                    </div>
+                  </div>
+                `
+                    : `
+                  <div class="no-meeting-state">
+                    <div class="no-meeting-icon">
+                      <i class="fas fa-calendar-times"></i>
+                    </div>
+                    <div class="no-meeting-text">
+                      <h4>Không có cuộc họp</h4>
+                      <p>Phòng này hiện tại đang trống</p>
+                    </div>
+                    <button class="book-room-btn">
+                      <i class="fas fa-plus-circle"></i>
+                      ĐẶT PHÒNG NGAY
+                    </button>
+                  </div>
+                `
+                }
+              </div>
+            </div>
+
+            <!-- Upcoming Meetings Panel - Scrollable -->
+            <div class="upcoming-meetings-panel">
+              <div class="panel-header">
+                <i class="fas fa-clock"></i>
+                <h3>LỊCH HỌP SẮP TỚI</h3>
+              </div>
+              <div class="upcoming-content">
+                ${
+                  upcomingMeetings.length > 0
+                    ? `
+                  <div class="upcoming-meetings-list">
+                    ${upcomingMeetings
+                      .slice(0, 6)
+                      .map(
+                        (meeting, index) => `
+                      <div class="upcoming-meeting-item">
+                        <div class="meeting-time-badge">
+                          <span class="time-text">${meeting.startTime}</span>
+                          <span class="duration">- ${meeting.endTime}</span>
+                        </div>
+                        <div class="meeting-details">
+                          <div class="meeting-title">${
+                            meeting.content || meeting.purpose
+                          }</div>
+                          <div class="meeting-purpose">${meeting.purpose}</div>
+                        </div>
+                        <div class="meeting-priority ${
+                          index === 0 ? "next" : ""
+                        }">
+                          ${
+                            index === 0
+                              ? '<i class="fas fa-arrow-right"></i>'
+                              : '<i class="fas fa-clock"></i>'
+                          }
+                        </div>
+                      </div>
+                    `
+                      )
+                      .join("")}
+                    ${
+                      upcomingMeetings.length > 6
+                        ? `
+                      <div class="more-meetings-indicator">
+                        <i class="fas fa-ellipsis-h"></i>
+                        <span>Còn ${
+                          upcomingMeetings.length - 6
+                        } cuộc họp khác</span>
+                      </div>
+                    `
+                        : ""
+                    }
+                  </div>
+                `
+                    : `
+                  <div class="no-upcoming-state">
+                    <div class="no-upcoming-icon">
+                      <i class="fas fa-calendar-plus"></i>
+                    </div>
+                    <div class="no-upcoming-text">
+                      <h4>Không có lịch hẹn</h4>
+                      <p>Chưa có cuộc họp nào được lên lịch</p>
+                    </div>
+                  </div>
+                `
+                }
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     `;
@@ -416,21 +590,78 @@ export class RoomManager {
       });
     }
 
-    // Book room button
-    const bookRoomBtn = document.querySelector(".book-room-btn");
-    if (bookRoomBtn) {
-      bookRoomBtn.addEventListener("click", (e) => {
-        const room = e.target.dataset.room;
+    // Book room buttons (multiple)
+    const bookRoomBtns = document.querySelectorAll(".book-room-btn, .book-btn");
+    bookRoomBtns.forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const room = e.target.dataset.room || roomName;
         this._handleBookRoom(room);
+      });
+    });
+
+    // Refresh data button
+    const refreshBtns = document.querySelectorAll(".refresh-btn");
+    refreshBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        this._handleRefreshData(roomName);
+      });
+    });
+
+    // Light Control Image Click Event
+    const lightControlImage = document.getElementById("lightControlImage");
+    if (lightControlImage) {
+      lightControlImage.addEventListener("click", () => {
+        this._handleLightControl();
       });
     }
 
-    // Refresh data button
-    const refreshBtn = document.querySelector(".refresh-data-btn");
-    if (refreshBtn) {
-      refreshBtn.addEventListener("click", () => {
-        this._handleRefreshData(roomName);
-      });
+    // Update time display
+    this._updateTimeDisplay();
+
+    // Set up time update interval
+    this.timeUpdateInterval = setInterval(() => {
+      this._updateTimeDisplay();
+    }, 1000);
+  }
+
+  /**
+   * Update time display on room page
+   */
+  _updateTimeDisplay() {
+    const currentTimeElement = document.getElementById("currentTime-1");
+    const currentDateElement = document.getElementById("currentDate-1");
+
+    if (currentTimeElement || currentDateElement) {
+      const now = new Date();
+
+      if (currentTimeElement) {
+        const timeString = now.toLocaleTimeString("vi-VN", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        });
+        currentTimeElement.textContent = timeString;
+      }
+
+      if (currentDateElement) {
+        const dateString = now.toLocaleDateString("vi-VN", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        });
+        currentDateElement.textContent = dateString;
+      }
+    }
+  }
+
+  /**
+   * Clean up time interval when leaving room page
+   */
+  _cleanupRoomPage() {
+    if (this.timeUpdateInterval) {
+      clearInterval(this.timeUpdateInterval);
+      this.timeUpdateInterval = null;
     }
   }
 
@@ -491,6 +722,9 @@ export class RoomManager {
   _handleBackToHome() {
     console.log("🏠 Navigating back to home page");
 
+    // Clean up room page resources
+    this._cleanupRoomPage();
+
     // Dispatch custom event for navigation
     document.dispatchEvent(
       new CustomEvent("navigateToHome", {
@@ -498,32 +732,81 @@ export class RoomManager {
       })
     );
 
-    // Try to navigate using window history if available
-    if (window.history && window.history.length > 1) {
-      window.history.back();
-    } else {
-      // Fallback: reload the main page
-      window.location.reload();
-    }
-
-    // Alternative: If there's a specific app router, we can use it
+    // Try to navigate using proper app navigation first
     if (
       window.meetingRoomApp &&
       window.meetingRoomApp.instance &&
-      window.meetingRoomApp.instance.router
+      window.meetingRoomApp.instance.managers &&
+      window.meetingRoomApp.instance.managers.uiManager
     ) {
-      window.meetingRoomApp.instance.router.navigateToHome();
+      console.log("🔄 Using app navigation to render main dashboard");
+      const success =
+        window.meetingRoomApp.instance.managers.uiManager.renderMainDashboard();
+
+      if (success) {
+        // Clear URL hash without page reload
+        if (window.history && window.location.hash) {
+          window.history.pushState(null, null, window.location.pathname);
+        }
+        console.log("✅ Successfully navigated to home via app navigation");
+        return;
+      }
     }
 
-    // Additional fallback: try to find and click a home navigation element
+    // Try to navigate using window history if available (but be more careful)
+    if (window.history && window.history.length > 2) {
+      console.log("🔄 Using browser history navigation");
+      window.history.back();
+      return;
+    }
+
+    // Try to find and click a home navigation element as safer alternative
     const homeNavElement =
       document.querySelector('[data-action="home"]') ||
       document.querySelector(".nav-home") ||
       document.querySelector("#homeBtn");
 
     if (homeNavElement && typeof homeNavElement.click === "function") {
+      console.log("🔄 Using home navigation element click");
       homeNavElement.click();
+      return;
     }
+
+    // Last resort - only reload if we're in an iframe or if explicitly needed
+    console.warn(
+      "⚠️ No other navigation methods available, checking if reload is safe"
+    );
+
+    // Check if we're in an iframe - if so, avoid reload
+    if (window.self !== window.top) {
+      console.warn(
+        "🚫 In iframe context - avoiding page reload to prevent crash"
+      );
+
+      // Try to reset view manually without reload
+      const meetingContainer = document.querySelector(".meeting-container");
+      if (meetingContainer) {
+        meetingContainer.innerHTML = "";
+      }
+
+      // Show main dashboard elements
+      const mainElements = document.querySelectorAll(
+        ".left-column, .right-column"
+      );
+      mainElements.forEach((element) => {
+        if (element) {
+          element.style.display = "";
+          element.style.visibility = "visible";
+        }
+      });
+
+      console.log("✅ Manually reset view without page reload");
+      return;
+    }
+
+    // Only reload as absolute last resort for non-iframe contexts
+    console.warn("⚠️ Using page reload as last resort");
+    window.location.reload();
   }
 
   /**
@@ -1289,6 +1572,77 @@ export class RoomManager {
         console.log(`✅ Added room section for "${roomName}"`);
       }
     });
+  }
+
+  /**
+   * Handle light control toggle
+   */
+  _handleLightControl() {
+    console.log("🔅 Light control button clicked");
+
+    const lightControlImage = document.getElementById("lightControlImage");
+    const lightStatusIndicator = document.getElementById(
+      "lightStatusIndicator"
+    );
+    const lightStatusText = document.getElementById("lightStatusText");
+
+    if (!lightStatusIndicator || !lightStatusText || !lightControlImage) {
+      console.error("❌ Light control elements not found");
+      return;
+    }
+
+    // Toggle light status
+    const isCurrentlyOn = lightStatusIndicator.classList.contains("on");
+
+    if (isCurrentlyOn) {
+      // Turn off
+      lightStatusIndicator.classList.remove("on");
+      lightStatusIndicator.classList.add("off");
+      lightStatusText.textContent = "TẮT";
+      lightControlImage.classList.remove("active");
+      console.log("💡 Light turned OFF");
+    } else {
+      // Turn on
+      lightStatusIndicator.classList.remove("off");
+      lightStatusIndicator.classList.add("on");
+      lightStatusText.textContent = "BẬT";
+      lightControlImage.classList.add("active");
+      console.log("💡 Light turned ON");
+    }
+
+    // Add visual feedback
+    lightControlImage.style.transform = "scale(0.95)";
+    setTimeout(() => {
+      lightControlImage.style.transform = "";
+    }, 150);
+
+    // Simulate API call (you can replace this with actual API call)
+    this._simulateLightControlAPI(!isCurrentlyOn);
+  }
+
+  /**
+   * Simulate API call for light control
+   * @param {boolean} turnOn - Whether to turn the light on or off
+   */
+  _simulateLightControlAPI(turnOn) {
+    console.log(
+      `🌐 Simulating API call to ${turnOn ? "turn ON" : "turn OFF"} the light`
+    );
+
+    // Here you can add actual API call
+    // Example:
+    // fetch('/api/light-control', {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify({ action: turnOn ? 'on' : 'off' })
+    // });
+
+    // For now, just log the action
+    setTimeout(() => {
+      console.log(
+        `✅ Light control API call completed: ${turnOn ? "ON" : "OFF"}`
+      );
+    }, 500);
   }
 }
 

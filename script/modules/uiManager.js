@@ -3,7 +3,7 @@
  * Handles progress bars, notifications, modals, settings, and general UI interactions
  */
 
-import { UI_CONFIG, STORAGE_KEYS } from "../config/constants.js";
+import { UI_CONFIG, STORAGE_KEYS, API_BASE_URL } from "../config/constants.js";
 import { DOMUtils, DateTimeUtils } from "../utils/core.js";
 
 export class UIManager {
@@ -17,7 +17,6 @@ export class UIManager {
   init() {
     this._initializeProgressBar();
     this._initializeSettings();
-    this._addUIStyles();
   }
 
   /**
@@ -79,14 +78,23 @@ export class UIManager {
       notification.classList.add("show");
     }, 10);
 
-    // Auto remove
+    // Auto remove after duration
     if (duration > 0) {
       setTimeout(() => {
-        this._removeNotification(notification);
+        notification.remove();
       }, duration);
     }
 
     return notification;
+  }
+
+  // Alias for internal use
+  _showNotification(
+    message,
+    type = "info",
+    duration = UI_CONFIG.NOTIFICATION_DURATION
+  ) {
+    this.showNotification(message, type, duration);
   }
 
   showNoMeetingsNotification() {
@@ -179,7 +187,6 @@ export class UIManager {
       settingsIcon: document.querySelector(".settings-icon"),
       settingsContent: document.querySelector(".settings-content"),
       mainBgContainer: document.querySelector(".main-bg-container"),
-      scheduleBgContainer: document.querySelector(".schedule-bg-container"),
       resetBackgroundButton: document.querySelector(".reset-background-button"),
       changeNameContainer: document.querySelector(".change-name-container"),
       welcomeMessage: document.querySelector(".welcome-message"),
@@ -194,7 +201,6 @@ export class UIManager {
         const classes = [
           elements.settingsContent,
           elements.mainBgContainer,
-          elements.scheduleBgContainer,
           elements.resetBackgroundButton,
           elements.changeNameContainer,
         ];
@@ -211,7 +217,6 @@ export class UIManager {
         const classes = [
           elements.settingsContent,
           elements.mainBgContainer,
-          elements.scheduleBgContainer,
           elements.resetBackgroundButton,
           elements.changeNameContainer,
         ];
@@ -247,31 +252,20 @@ export class UIManager {
     const mainBackgroundUploadBtn = document.querySelector(
       ".main-background-btn"
     );
-    const scheduleBackgroundUploadBtn = document.querySelector(
-      ".schedule-background-btn"
-    );
     const mainBackgroundUploadInput = document.getElementById(
       "mainBackgroundUpload"
-    );
-    const scheduleBackgroundUploadInput = document.getElementById(
-      "scheduleBackgroundUpload"
     );
     const resetBackgroundButton = document.querySelector(
       ".reset-background-button"
     );
 
     const meetingScreen = document.querySelector(".meeting-screen");
-    const scheduleContent = document.querySelector(".schedule-content");
 
-    if (!mainBackgroundUploadBtn || !scheduleBackgroundUploadBtn) return;
+    if (!mainBackgroundUploadBtn) return;
 
     // Upload handlers
     mainBackgroundUploadBtn.addEventListener("click", () => {
       mainBackgroundUploadInput?.click();
-    });
-
-    scheduleBackgroundUploadBtn.addEventListener("click", () => {
-      scheduleBackgroundUploadInput?.click();
     });
 
     mainBackgroundUploadInput?.addEventListener("change", (event) => {
@@ -281,19 +275,12 @@ export class UIManager {
       }
     });
 
-    scheduleBackgroundUploadInput?.addEventListener("change", (event) => {
-      const file = event.target.files[0];
-      if (file) {
-        this._handleBackgroundUpload(file, "schedule", scheduleContent);
-      }
-    });
-
     resetBackgroundButton?.addEventListener("click", () => {
-      this._showResetBackgroundModal(meetingScreen, scheduleContent);
+      this._showResetBackgroundModal(meetingScreen);
     });
 
     // Apply stored backgrounds
-    this._applyStoredBackgrounds(meetingScreen, scheduleContent);
+    this._applyStoredBackgrounds(meetingScreen);
   }
 
   /**
@@ -539,6 +526,29 @@ export class UIManager {
   }
 
   _handleBackgroundUpload(file, type, targetElement) {
+    // Validate file size (10MB limit)
+    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    if (file.size > maxSize) {
+      this._showNotification(
+        `Tệp hình ảnh quá lớn. Vui lòng chọn hình ảnh nhỏ hơn 10MB. (Kích thước hiện tại: ${(
+          file.size /
+          1024 /
+          1024
+        ).toFixed(2)}MB)`,
+        "error"
+      );
+      return;
+    }
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      this._showNotification(
+        "Vui lòng chọn tệp hình ảnh hợp lệ (JPG, PNG, GIF, etc.)",
+        "error"
+      );
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = (e) => {
       this._createBackgroundPreviewModal(e.target.result, type, targetElement);
@@ -567,17 +577,113 @@ export class UIManager {
     const applyBtn = modal.querySelector(".apply-btn");
     const cancelBtn = modal.querySelector(".cancel-btn");
 
-    applyBtn.addEventListener("click", () => {
-      if (type === "main") {
-        localStorage.setItem(STORAGE_KEYS.MAIN_BACKGROUND, imageDataUrl);
-        targetElement.style.backgroundImage = `url(${imageDataUrl})`;
-      } else if (type === "schedule") {
-        localStorage.setItem(STORAGE_KEYS.SCHEDULE_BACKGROUND, imageDataUrl);
-        targetElement.style.backgroundImage = `url(${imageDataUrl})`;
-      }
+    applyBtn.addEventListener("click", async () => {
+      try {
+        console.log(" Starting background upload...");
+        console.log(" API_BASE_URL:", API_BASE_URL);
+        console.log(" Upload type:", type);
+        console.log(" Image data size:", imageDataUrl.length, "characters");
 
-      targetElement.style.backgroundSize = "cover";
-      targetElement.style.backgroundPosition = "center";
+        const uploadUrl = `${API_BASE_URL}/api/backgrounds/upload`;
+        console.log(" Upload URL:", uploadUrl);
+
+        const payload = {
+          type: type,
+          imageData: imageDataUrl,
+        };
+
+        console.log(" Payload prepared, starting fetch...");
+
+        // Upload to server instead of localStorage
+        const response = await fetch(uploadUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+
+        console.log("📡 Response received:");
+        console.log("   Status:", response.status);
+        console.log("   Status Text:", response.statusText);
+        console.log(
+          "   Headers:",
+          Object.fromEntries(response.headers.entries())
+        );
+
+        // Get response text first to debug what we're receiving
+        const responseText = await response.text();
+        console.log(" Raw response text:", responseText.substring(0, 500));
+
+        // Check if response failed
+        if (!response.ok) {
+          console.error(
+            `❌ Server error: ${response.status} ${response.statusText}`
+          );
+
+          // Try to parse error from HTML if it's an Express error page
+          if (responseText.includes("PayloadTooLargeError")) {
+            throw new Error(
+              "Tệp hình ảnh quá lớn. Vui lòng chọn hình ảnh nhỏ hơn 10MB."
+            );
+          } else if (responseText.includes("<!DOCTYPE html>")) {
+            // Extract error message from HTML if possible
+            const errorMatch = responseText.match(/<pre>([^<]+)<br>/);
+            const errorMsg = errorMatch
+              ? errorMatch[1]
+              : "Lỗi máy chủ không xác định";
+            throw new Error(`Lỗi máy chủ: ${errorMsg}`);
+          } else {
+            throw new Error(
+              `Lỗi máy chủ: ${response.status} ${response.statusText}`
+            );
+          }
+        }
+
+        // Check if response is JSON
+        let result;
+        try {
+          result = JSON.parse(responseText);
+          console.log(" Successfully parsed JSON:", result);
+        } catch (parseError) {
+          console.error(" JSON Parse Error:", parseError);
+          console.error(" Full response text:", responseText);
+          throw new Error(
+            `Máy chủ trả về phản hồi không hợp lệ. Vui lòng thử lại.`
+          );
+        }
+
+        if (result.success) {
+          // Apply background immediately
+          targetElement.style.backgroundImage = `url(${imageDataUrl})`;
+          targetElement.style.backgroundSize = "cover";
+          targetElement.style.backgroundPosition = "center";
+
+          console.log(
+            ` ${type} background uploaded successfully:`,
+            result.filename
+          );
+
+          // Show success notification
+          this._showNotification(
+            `Hình nền ${type === "main" ? "chính" : "lịch"} đã được cập nhật!`,
+            "success"
+          );
+        } else {
+          throw new Error(result.error || "Upload failed");
+        }
+      } catch (error) {
+        console.error(`❌ Failed to upload ${type} background:`, error);
+        console.error("🔍 Error details:", {
+          name: error.name,
+          message: error.message,
+          stack: error.stack,
+        });
+        this._showNotification(
+          `Lỗi khi tải hình nền: ${error.message}`,
+          "error"
+        );
+      }
 
       this._removeModal(modal);
     });
@@ -587,17 +693,16 @@ export class UIManager {
     });
   }
 
-  _showResetBackgroundModal(meetingScreen, scheduleContent) {
+  _showResetBackgroundModal(meetingScreen) {
     const modal = DOMUtils.createElement(
       "div",
       "reset-background-modal show",
       `
       <div class="modal-content">
         <h3>Reset hình nền</h3>
-        <p>Chọn hình nền muốn reset:</p>
+        <p>Bạn có muốn reset hình nền chính không?</p>
         <div class="modal-buttons">
           <button class="modal-button reset-main-btn">Reset hình nền chính</button>
-          <button class="modal-button reset-schedule-btn">Reset hình nền lịch</button>
           <button class="modal-button cancel-btn">Hủy</button>
         </div>
       </div>
@@ -607,19 +712,58 @@ export class UIManager {
     document.body.appendChild(modal);
 
     const resetMainBtn = modal.querySelector(".reset-main-btn");
-    const resetScheduleBtn = modal.querySelector(".reset-schedule-btn");
     const cancelBtn = modal.querySelector(".cancel-btn");
 
-    resetMainBtn.addEventListener("click", () => {
-      localStorage.removeItem(STORAGE_KEYS.MAIN_BACKGROUND);
-      meetingScreen.style.backgroundImage = "url(assets/imgs/background.jpg)";
-      this._removeModal(modal);
-    });
+    resetMainBtn.addEventListener("click", async () => {
+      try {
+        console.log("🗑️ Starting main background reset...");
+        const resetUrl = `${API_BASE_URL}/api/backgrounds/main`;
+        console.log("🌐 Reset URL:", resetUrl);
 
-    resetScheduleBtn.addEventListener("click", () => {
-      localStorage.removeItem(STORAGE_KEYS.SCHEDULE_BACKGROUND);
-      scheduleContent.style.backgroundImage =
-        "url(assets/imgs/default-schedule-background.jpg)";
+        const response = await fetch(resetUrl, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        console.log("   Reset response received:");
+        console.log("   Status:", response.status);
+        console.log("   Status Text:", response.statusText);
+
+        const responseText = await response.text();
+        console.log(" Raw response text:", responseText);
+
+        let result;
+        try {
+          result = JSON.parse(responseText);
+          console.log(" Successfully parsed JSON:", result);
+        } catch (parseError) {
+          console.error("❌ JSON Parse Error in reset:", parseError);
+          throw new Error(
+            `Server returned non-JSON response: ${responseText.substring(
+              0,
+              100
+            )}...`
+          );
+        }
+
+        if (result.success) {
+          meetingScreen.style.backgroundImage =
+            "url(assets/imgs/background.jpg)";
+          console.log(" Main background reset successfully");
+          this._showNotification("Hình nền chính đã được reset!", "success");
+        } else {
+          throw new Error(result.error || "Reset failed");
+        }
+      } catch (error) {
+        console.error("❌ Failed to reset main background:", error);
+        this._showNotification(
+          `Lỗi khi reset hình nền: ${error.message}`,
+          "error"
+        );
+      }
+
       this._removeModal(modal);
     });
 
@@ -628,24 +772,78 @@ export class UIManager {
     });
   }
 
-  _applyStoredBackgrounds(meetingScreen, scheduleContent) {
+  async _applyStoredBackgrounds(meetingScreen) {
+    try {
+      console.log("🔄 Loading stored backgrounds...");
+      const backgroundsUrl = `${API_BASE_URL}/api/backgrounds`;
+      console.log("🌐 Backgrounds URL:", backgroundsUrl);
+
+      const response = await fetch(backgroundsUrl);
+
+      console.log("📡 Backgrounds response received:");
+      console.log("   Status:", response.status);
+      console.log("   Status Text:", response.statusText);
+
+      const responseText = await response.text();
+      console.log("📄 Raw response text:", responseText);
+
+      let result;
+      try {
+        result = JSON.parse(responseText);
+        console.log("✅ Successfully parsed JSON:", result);
+      } catch (parseError) {
+        console.error(
+          "❌ JSON Parse Error in _applyStoredBackgrounds:",
+          parseError
+        );
+        throw new Error(
+          `Server returned non-JSON response: ${responseText.substring(
+            0,
+            100
+          )}...`
+        );
+      }
+
+      if (result.success) {
+        const { backgrounds } = result;
+        console.log("📷 Current backgrounds config:", backgrounds);
+
+        // Apply main background if exists
+        if (backgrounds.mainBackground && meetingScreen) {
+          const imageUrl = `${API_BASE_URL}/api/backgrounds/${backgrounds.mainBackground}`;
+          meetingScreen.style.backgroundImage = `url(${imageUrl})`;
+          meetingScreen.style.backgroundSize = "cover";
+          meetingScreen.style.backgroundPosition = "center";
+          console.log(
+            "✅ Applied stored main background:",
+            backgrounds.mainBackground
+          );
+        }
+      } else {
+        console.log("📷 No stored backgrounds found, using defaults");
+      }
+    } catch (error) {
+      console.error("❌ Failed to load stored backgrounds:", error);
+      console.error("🔍 Error details:", {
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+      });
+      // Fallback to localStorage for backwards compatibility
+      console.log("🔄 Falling back to localStorage...");
+      this._applyStoredBackgroundsFromLocalStorage(meetingScreen);
+    }
+  }
+
+  _applyStoredBackgroundsFromLocalStorage(meetingScreen) {
     const savedMainBackground = localStorage.getItem(
       STORAGE_KEYS.MAIN_BACKGROUND
-    );
-    const savedScheduleBackground = localStorage.getItem(
-      STORAGE_KEYS.SCHEDULE_BACKGROUND
     );
 
     if (savedMainBackground && meetingScreen) {
       meetingScreen.style.backgroundImage = `url(${savedMainBackground})`;
       meetingScreen.style.backgroundSize = "cover";
       meetingScreen.style.backgroundPosition = "center";
-    }
-
-    if (savedScheduleBackground && scheduleContent) {
-      scheduleContent.style.backgroundImage = `url(${savedScheduleBackground})`;
-      scheduleContent.style.backgroundSize = "cover";
-      scheduleContent.style.backgroundPosition = "center";
     }
   }
 
@@ -669,277 +867,208 @@ export class UIManager {
     }, UI_CONFIG.MODAL_ANIMATION_DELAY);
   }
 
-  _addUIStyles() {
-    const styles = `
-      /* Progress Bar Styles */
-      #progressContainer {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: rgba(0, 0, 0, 0.8);
-        color: white;
-        padding: 20px;
-        border-radius: 10px;
-        z-index: 10000;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-      }
+  /**
+   * Main Dashboard Management
+   * Renders the main dashboard view without page reload
+   */
+  renderMainDashboard() {
+    console.log("🏠 Rendering main dashboard view");
 
-      /* Notification Styles */
-      .notification {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        z-index: 9999;
-        opacity: 0;
-        transform: translateX(100%);
-        transition: all 0.3s ease;
-        min-width: 300px;
-        max-width: 500px;
-      }
-
-      .notification.show {
-        opacity: 1;
-        transform: translateX(0);
-      }
-
-      .notification.hiding {
-        opacity: 0;
-        transform: translateX(100%);
-      }
-
-      .notification-info {
-        border-left: 4px solid #007bff;
-      }
-
-      .notification-success {
-        border-left: 4px solid #28a745;
-      }
-
-      .notification-warning {
-        border-left: 4px solid #ffc107;
-      }
-
-      .notification-error {
-        border-left: 4px solid #dc3545;
-      }
-
-      .notification-content {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 15px;
-      }
-
-      .notification-close {
-        background: none;
-        border: none;
-        font-size: 18px;
-        cursor: pointer;
-        color: #666;
-        margin-left: 10px;
-      }
-
-      /* No Meetings Notification */
-      .no-meetings-notification {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 30px;
-        border-radius: 15px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        z-index: 9999;
-        opacity: 0;
-        transform: translate(-50%, -50%) scale(0.8);
-        transition: all 0.3s ease;
-        text-align: center;
-        min-width: 400px;
-      }
-
-      .no-meetings-notification.show {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
-      }
-
-      .no-meetings-notification.hiding {
-        opacity: 0;
-        transform: translate(-50%, -50%) scale(0.8);
-      }
-
-      .no-meetings-notification .notification-icon {
-        font-size: 48px;
-        margin-bottom: 15px;
-      }
-
-      .no-meetings-notification h3 {
-        margin: 0 0 10px 0;
-        font-size: 1.5em;
-      }
-
-      .no-meetings-notification p {
-        margin: 0;
-        opacity: 0.9;
-      }
-
-      /* Error Modal Styles */
-      .error-modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 10000;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-      }
-
-      .error-modal-overlay.show {
-        opacity: 1;
-      }
-
-      .error-modal {
-        background: white;
-        border-radius: 10px;
-        max-width: 600px;
-        width: 90%;
-        max-height: 80vh;
-        overflow: hidden;
-        transform: scale(0.8);
-        transition: transform 0.3s ease;
-      }
-
-      .error-modal-overlay.show .error-modal {
-        transform: scale(1);
-      }
-
-      .error-modal-header {
-        background: #dc3545;
-        color: white;
-        padding: 15px 20px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-
-      .error-modal-body {
-        padding: 20px;
-        max-height: 400px;
-        overflow-y: auto;
-      }
-
-      .error-modal-body pre {
-        white-space: pre-wrap;
-        word-wrap: break-word;
-        font-family: monospace;
-        font-size: 14px;
-      }
-
-      .error-modal-footer {
-        padding: 15px 20px;
-        text-align: right;
-        border-top: 1px solid #eee;
-      }
-
-      .error-modal-close,
-      .error-modal-ok {
-        background: #dc3545;
-        color: white;
-        border: none;
-        padding: 8px 16px;
-        border-radius: 4px;
-        cursor: pointer;
-      }
-
-      /* Background Preview Modal */
-      .background-preview-modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 10000;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-      }
-
-      .background-preview-modal.show {
-        opacity: 1;
-      }
-
-      .background-preview-modal .modal-content {
-        background: white;
-        border-radius: 10px;
-        padding: 20px;
-        text-align: center;
-        max-width: 500px;
-        width: 90%;
-      }
-
-      /* End Meeting Success */
-      .end-meeting-success {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: linear-gradient(135deg, #28a745, #20c997);
-        color: white;
-        padding: 15px 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        z-index: 9999;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        animation: slideInRight 0.3s ease, fadeOut 0.3s ease 2.7s;
-      }
-
-      .success-icon {
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 50%;
-        width: 30px;
-        height: 30px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-      }
-
-      @keyframes slideInRight {
-        from {
-          transform: translateX(100%);
-          opacity: 0;
+    try {
+      // Check if meeting-container has room-specific content that needs to be cleared
+      const meetingContainer = document.querySelector(".meeting-container");
+      if (meetingContainer) {
+        // Hide or remove room page wrapper if it exists
+        const roomPageWrapper =
+          meetingContainer.querySelector(".room-page-wrapper");
+        if (roomPageWrapper) {
+          console.log("� Hiding room page wrapper");
+          roomPageWrapper.style.display = "none";
         }
-        to {
-          transform: translateX(0);
-          opacity: 1;
+
+        // Show main dashboard content if it was hidden
+        const contentWrapper =
+          meetingContainer.querySelector(".content-wrapper");
+        if (contentWrapper) {
+          contentWrapper.style.display = "";
+          console.log("👁️ Showing main dashboard content");
+        } else {
+          console.log(
+            "⚠️ content-wrapper missing, meeting-container may have been cleared incorrectly"
+          );
+
+          // If the main structure is missing, we need to reload the page
+          // But check iframe context first
+          if (window.self !== window.top) {
+            console.log(
+              "🔄 In iframe - redirecting to index.html to restore structure"
+            );
+            window.location.href = "index.html";
+            return false;
+          } else {
+            console.log("🔄 Reloading page to restore main structure");
+            window.location.reload();
+            return false;
+          }
         }
+
+        console.log("✅ Meeting container structure preserved");
       }
 
-      @keyframes fadeOut {
-        from {
-          opacity: 1;
-        }
-        to {
-          opacity: 0;
-        }
-      }
-    `;
+      // Ensure main dashboard elements are visible
+      const mainDashboardElements = [
+        ".left-column",
+        ".right-column",
+        ".rooms-container",
+        ".schedule-section",
+      ];
 
-    DOMUtils.addCSS(styles);
+      mainDashboardElements.forEach((selector) => {
+        const element = document.querySelector(selector);
+        if (element) {
+          element.style.display = "";
+          element.style.visibility = "visible";
+          element.style.opacity = "1";
+          console.log(`✅ Restored visibility for: ${selector}`);
+        } else {
+          console.warn(`⚠️ Element not found: ${selector}`);
+        }
+      });
+
+      // Hide any room-specific UI elements
+      const roomSpecificElements = [".back-to-home-btn", ".room-detail-page"];
+
+      roomSpecificElements.forEach((selector) => {
+        const elements = document.querySelectorAll(selector);
+        elements.forEach((element) => {
+          element.style.display = "none";
+        });
+      });
+
+      // Ensure room sections exist in rooms-container
+      const roomsContainer = document.querySelector(".rooms-container");
+      if (roomsContainer) {
+        console.log("🏢 Found rooms-container, checking room sections...");
+
+        // Check if room sections exist
+        const existingRoomSections =
+          roomsContainer.querySelectorAll(".room-section");
+        console.log(
+          `🔍 Found ${existingRoomSections.length} existing room sections`
+        );
+
+        // If no room sections exist, trigger room manager to recreate them
+        if (existingRoomSections.length === 0) {
+          console.log("🔧 No room sections found, triggering recreation...");
+
+          // Use room manager to ensure room sections
+          if (window.roomManager && window.roomManager._ensureRoomSections) {
+            window.roomManager._ensureRoomSections(roomsContainer);
+          } else {
+            console.warn(
+              "⚠️ Room manager not available, creating basic room sections"
+            );
+            this._createBasicRoomSections(roomsContainer);
+          }
+        }
+
+        // Trigger room status updates
+        this._triggerRoomStatusRefresh();
+      } else {
+        console.error("❌ rooms-container element not found!");
+      }
+
+      // Re-initialize main dashboard components if needed
+      this.initializeClock();
+      this.initializeFullscreen();
+
+      // Dispatch event to notify other components that main dashboard is rendered
+      document.dispatchEvent(
+        new CustomEvent("mainDashboardRendered", {
+          detail: { timestamp: new Date().toISOString() },
+        })
+      );
+
+      console.log("✅ Main dashboard rendered successfully");
+      return true;
+    } catch (error) {
+      console.error("❌ Error rendering main dashboard:", error);
+      return false;
+    }
+  }
+
+  /**
+   * Create basic room sections as fallback
+   */
+  _createBasicRoomSections(roomsContainer) {
+    console.log("🔧 Creating basic room sections");
+
+    const rooms = ["PHÒNG HỌP LẦU 3", "PHÒNG HỌP LẦU 4"];
+
+    rooms.forEach((roomName) => {
+      const roomSection = document.createElement("div");
+      roomSection.className = "room-section";
+      roomSection.innerHTML = `
+        <div class="room-number">${roomName}</div>
+        <div class="room-details">
+          <div class="meeting-info">
+            <div class="meeting-header">
+              <div class="meeting-title">
+                <span>Thông tin cuộc họp:</span> Trống
+              </div>
+              <div class="meeting-time">
+                <div class="time-spacer"></div>
+                <div class="start-time">
+                  <span>Thời gian bắt đầu:</span> --:--
+                </div>
+                <div class="end-time">
+                  <span>Thời gian kết thúc:</span> --:--
+                </div>
+              </div>
+            </div>
+            <div class="meeting-stats">
+              <div class="stats-row indicators-container">
+                <div class="status-group">
+                  <div class="status-indicator">
+                    <div class="indicator-dot available"></div>
+                    <div class="status-text">Trống</div>
+                  </div>
+                  <div class="people-indicator">
+                    <div class="people-dot"></div>
+                    <div class="people-status-text">Đang kiểm tra...</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      roomsContainer.appendChild(roomSection);
+      console.log(`✅ Created room section for: ${roomName}`);
+    });
+  }
+
+  /**
+   * Trigger room status refresh
+   */
+  _triggerRoomStatusRefresh() {
+    console.log("🔄 Triggering room status refresh");
+
+    // Use the global meeting data if available
+    const meetingData = window.currentMeetingData || [];
+
+    // Dispatch room status update event
+    document.dispatchEvent(
+      new CustomEvent("refreshRoomStatus", {
+        detail: { meetings: meetingData },
+      })
+    );
+
+    // Also trigger via room manager if available
+    if (window.roomManager && window.roomManager.updateRoomStatus) {
+      window.roomManager.updateRoomStatus(meetingData);
+    }
   }
 }
 

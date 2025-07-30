@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Room Design - No Meeting</title>
+    <link rel="stylesheet" href="assets/styles.css" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --secondary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --panel-spacing: 20px;
+        --font-xlarge: 3rem;
+        --font-large: 2rem;
+        --font-medium: 1.2rem;
+        --font-small: 1rem;
+      }
+
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        background: var(--secondary-gradient);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Back to Home Button -->
+    <button class="back-to-home-btn" id="backToHomeBtn">
+      <i class="home-icon">🏠</i>
+      <span>Back to Home</span>
+    </button>
+
+    <div class="room-detail-container">
+      <!-- Header Section with Room Status -->
+      <div class="room-header-section">
+        <div class="room-title-card">
+          <h1 class="room-name">PHÒNG HỌP LẦU 4</h1>
+          <div class="room-status-indicator available">
+            <span class="status-dot"></span>
+            <span class="status-text">SẴN SÀNG</span>
+          </div>
+        </div>
+
+        <div class="time-and-date-display">
+          <div class="current-time" id="currentTime-1">14:30</div>
+          <div class="current-date" id="currentDate-1">
+            Thứ Ba, 30 Tháng 7, 2025
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content Grid -->
+      <div class="room-content-grid">
+        <!-- Current Meeting Panel -->
+        <div class="current-meeting-panel">
+          <div class="panel-header">
+            <i class="fas fa-calendar-check"></i>
+            <h3>CUỘC HỌP HIỆN TẠI</h3>
+          </div>
+          <div class="meeting-content">
+            <div class="no-meeting-state">
+              <div class="no-meeting-icon">
+                <i class="fas fa-calendar-times"></i>
+              </div>
+              <div class="no-meeting-text">
+                <h4>Không có cuộc họp</h4>
+                <p>Phòng này hiện tại đang trống</p>
+              </div>
+              <button class="book-room-btn">
+                <i class="fas fa-plus-circle"></i>
+                ĐẶT PHÒNG NGAY
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upcoming Meetings Panel -->
+        <div class="upcoming-meetings-panel">
+          <div class="panel-header">
+            <i class="fas fa-clock"></i>
+            <h3>LỊCH HỌP SẮP TỚI</h3>
+          </div>
+          <div class="upcoming-content">
+            <div class="no-upcoming-state">
+              <div class="no-upcoming-icon">
+                <i class="fas fa-calendar-plus"></i>
+              </div>
+              <div class="no-upcoming-text">
+                <h4>Không có lịch hẹn</h4>
+                <p>Chưa có cuộc họp nào được lên lịch</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Room Information Panel -->
+        <div class="room-info-panel">
+          <div class="panel-header">
+            <i class="fas fa-info-circle"></i>
+            <h3>THÔNG TIN PHÒNG</h3>
+          </div>
+          <div class="room-info-content">
+            <div class="info-item">
+              <i class="fas fa-users"></i>
+              <span class="info-label">Sức chứa:</span>
+              <span class="info-value">8-12 người</span>
+            </div>
+            <div class="info-item">
+              <i class="fas fa-tv"></i>
+              <span class="info-label">Thiết bị:</span>
+              <span class="info-value">Smart TV, Wifi, AC</span>
+            </div>
+            <div class="info-item">
+              <i class="fas fa-map-marker-alt"></i>
+              <span class="info-label">Vị trí:</span>
+              <span class="info-value">Phòng họp lầu 4</span>
+            </div>
+            <div class="quick-actions">
+              <button class="action-btn book-btn">
+                <i class="fas fa-calendar-plus"></i>
+                <span>Đặt phòng</span>
+              </button>
+              <button class="action-btn refresh-btn">
+                <i class="fas fa-sync-alt"></i>
+                <span>Làm mới</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Test time update
+      function updateTime() {
+        const timeElement = document.getElementById("currentTime-1");
+        const dateElement = document.getElementById("currentDate-1");
+
+        const now = new Date();
+
+        if (timeElement) {
+          const timeString = now.toLocaleTimeString("vi-VN", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+          });
+          timeElement.textContent = timeString;
+        }
+
+        if (dateElement) {
+          const dateString = now.toLocaleDateString("vi-VN", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          });
+          dateElement.textContent = dateString;
+        }
+      }
+
+      // Update time immediately and then every second
+      updateTime();
+      setInterval(updateTime, 1000);
+
+      // Test button interactions
+      document.querySelectorAll("button").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          console.log("Button clicked:", e.target.textContent.trim());
+        });
+      });
+    </script>
+  </body>
+</html>

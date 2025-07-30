@@ -45,6 +45,31 @@ export const TIME_CONFIG = {
   TIMEZONE_OFFSET: 7, // UTC+7
 };
 
+// API Configuration
+export const API_BASE_URL = (() => {
+  // Auto-detect API base URL based on current environment
+  if (typeof window !== "undefined" && window.location) {
+    const protocol = window.location.protocol;
+    const hostname = window.location.hostname;
+
+    // If running from file:// protocol, use localhost
+    if (protocol === "file:") {
+      return "http://localhost:3000";
+    }
+
+    // If running from http/https, try to use same host
+    if (hostname === "localhost" || hostname === "127.0.0.1") {
+      return `${protocol}//${hostname}:3000`;
+    }
+
+    // For production or other hosts, use localhost as fallback
+    return "http://localhost:3000";
+  }
+
+  // Node.js environment fallback
+  return "http://localhost:3000";
+})();
+
 // UI Constants
 export const UI_CONFIG = {
   PROGRESS_BAR_DELAY: 100,

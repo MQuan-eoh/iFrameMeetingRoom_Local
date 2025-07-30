@@ -88,9 +88,15 @@ export function initTeamsTimeDropdown() {
     const isTimeInput = e.target.closest("#bookingStartTime, #bookingEndTime");
     const isDropdown = e.target.closest(".custom-time-dropdown");
     const isFormGroup = e.target.closest(".form-group");
+    const isBookingModal = e.target.closest(
+      ".booking-modal, #editMeetingModal"
+    );
 
-    if (!isTimeInput && !isDropdown) {
-      console.log("🕐 Clicking outside, hiding all dropdowns");
+    // Only hide dropdowns if we're inside a booking modal context
+    if (isBookingModal && !isTimeInput && !isDropdown) {
+      console.log(
+        "🕐 Clicking outside time components in booking modal, hiding all dropdowns"
+      );
       hideAllDropdowns();
     }
   });
