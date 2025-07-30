@@ -396,16 +396,6 @@ export class RoomManager {
                   <span class="info-label-room">Vị trí:</span>
                   <span class="info-value-room">${roomName}</span>
                 </div>
-                <div class="quick-actions">
-                  <button class="action-btn book-btn">
-                    <i class="fas fa-calendar-plus"></i>
-                    <span>Đặt phòng</span>
-                  </button>
-                  <button class="action-btn refresh-btn">
-                    <i class="fas fa-sync-alt"></i>
-                    <span>Làm mới</span>
-                  </button>
-                </div>
               </div>
             </div>
 
@@ -418,7 +408,7 @@ export class RoomManager {
               <div class="device-control-content">
                 <div class="light-control-container">
                   <img 
-                    src="assets/imgs/background1.jpg" 
+                    src="assets/imgs/bulb_off.jpg" 
                     alt="Light Control" 
                     class="light-control-image" 
                     id="lightControlImage"
@@ -1609,6 +1599,7 @@ export class RoomManager {
       lightStatusIndicator.classList.add("off");
       lightStatusText.textContent = "TẮT";
       lightControlImage.classList.remove("active");
+      lightControlImage.src = "assets/imgs/bulb_off.jpg"; // Change to OFF image
       console.log("💡 Light turned OFF");
     } else {
       // Turn on
@@ -1616,6 +1607,7 @@ export class RoomManager {
       lightStatusIndicator.classList.add("on");
       lightStatusText.textContent = "BẬT";
       lightControlImage.classList.add("active");
+      lightControlImage.src = "assets/imgs/bulb_on.jpg"; // Change to ON image
       console.log("💡 Light turned ON");
     }
 
