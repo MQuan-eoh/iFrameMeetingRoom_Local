@@ -17,14 +17,28 @@ const PORT = process.env.PORT || 3000;
 const DATA_DIR = path.join(__dirname, "data");
 const MEETINGS_FILE = path.join(DATA_DIR, "meetings.json");
 const BACKUP_DIR = path.join(DATA_DIR, "backups");
+const BACKGROUNDS_DIR = path.join(DATA_DIR, "backgrounds");
+const BACKGROUNDS_CONFIG = path.join(DATA_DIR, "backgrounds.json");
 
 // Ensure data directories exist
 fsExtra.ensureDirSync(DATA_DIR);
 fsExtra.ensureDirSync(BACKUP_DIR);
+fsExtra.ensureDirSync(BACKGROUNDS_DIR);
 
 // Initialize meetings file if it doesn't exist
 if (!fs.existsSync(MEETINGS_FILE)) {
   fs.writeFileSync(MEETINGS_FILE, JSON.stringify([]));
+}
+
+// Initialize backgrounds config if it doesn't exist
+if (!fs.existsSync(BACKGROUNDS_CONFIG)) {
+  fs.writeFileSync(
+    BACKGROUNDS_CONFIG,
+    JSON.stringify({
+      mainBackground: null,
+      scheduleBackground: null,
+    })
+  );
 }
 
 // Configure CORS to allow all origins with credentials
@@ -44,7 +58,9 @@ const corsOptions = {
 
 // Middleware
 app.use(cors(corsOptions));
-app.use(express.json());
+// Increase payload size limit for image uploads (50MB)
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use(morgan("dev"));
 
 // Add cache-control headers to all responses
@@ -287,6 +303,159 @@ function cleanupBackups() {
   }
 }
 
+// ========== BACKGROUND MANAGEMENT ENDPOINTS ==========
+
+/**
+ * Upload background image
+ * POST /api/backgrounds/upload
+ */
+app.post("/api/backgrounds/upload", (req, res) => {
+  try {
+    const { type, imageData } = req.body;
+
+    if (!type || !imageData) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing type or imageData",
+      });
+    }
+
+    if (!["main", "schedule"].includes(type)) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid type. Must be 'main' or 'schedule'",
+      });
+    }
+
+    // Validate imageData format
+    if (!imageData.startsWith("data:image/")) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid image data format",
+      });
+    }
+
+    // Check base64 data size (roughly estimate file size)
+    const base64Size = imageData.length * 0.75; // Base64 is ~33% larger than binary
+    const maxSize = 15 * 1024 * 1024; // 15MB limit
+    if (base64Size > maxSize) {
+      return res.status(413).json({
+        success: false,
+        error: `Image too large. Maximum size is ${maxSize / 1024 / 1024}MB`,
+      });
+    }
+
+    // Remove data:image prefix and get just base64 data
+    const base64Data = imageData.replace(/^data:image\/\w+;base64,/, "");
+    const buffer = Buffer.from(base64Data, "base64");
+
+    // Generate filename with timestamp
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const filename = `${type}-background-${timestamp}.jpg`;
+    const filepath = path.join(BACKGROUNDS_DIR, filename);
+
+    // Save image file
+    fs.writeFileSync(filepath, buffer);
+
+    // Update backgrounds config
+    const config = JSON.parse(fs.readFileSync(BACKGROUNDS_CONFIG, "utf8"));
+    config[`${type}Background`] = filename;
+    fs.writeFileSync(BACKGROUNDS_CONFIG, JSON.stringify(config, null, 2));
+
+    console.log(`📷 Background uploaded: ${type} -> ${filename}`);
+
+    res.json({
+      success: true,
+      filename,
+      message: `${type} background uploaded successfully`,
+    });
+  } catch (error) {
+    console.error("Error uploading background:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to upload background",
+    });
+  }
+});
+
+/**
+ * Get current background configuration
+ * GET /api/backgrounds
+ */
+app.get("/api/backgrounds", (req, res) => {
+  try {
+    const config = JSON.parse(fs.readFileSync(BACKGROUNDS_CONFIG, "utf8"));
+    res.json({ success: true, backgrounds: config });
+  } catch (error) {
+    console.error("Error getting backgrounds:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to get backgrounds",
+    });
+  }
+});
+
+/**
+ * Get background image file
+ * GET /api/backgrounds/:filename
+ */
+app.get("/api/backgrounds/:filename", (req, res) => {
+  try {
+    const filename = req.params.filename;
+    const filepath = path.join(BACKGROUNDS_DIR, filename);
+
+    if (!fs.existsSync(filepath)) {
+      return res.status(404).json({
+        success: false,
+        error: "Background file not found",
+      });
+    }
+
+    res.sendFile(filepath);
+  } catch (error) {
+    console.error("Error serving background:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to serve background",
+    });
+  }
+});
+
+/**
+ * Reset background
+ * DELETE /api/backgrounds/:type
+ */
+app.delete("/api/backgrounds/:type", (req, res) => {
+  try {
+    const type = req.params.type;
+
+    if (!["main", "schedule"].includes(type)) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid type. Must be 'main' or 'schedule'",
+      });
+    }
+
+    // Update backgrounds config
+    const config = JSON.parse(fs.readFileSync(BACKGROUNDS_CONFIG, "utf8"));
+    config[`${type}Background`] = null;
+    fs.writeFileSync(BACKGROUNDS_CONFIG, JSON.stringify(config, null, 2));
+
+    console.log(`🗑️ Background reset: ${type}`);
+
+    res.json({
+      success: true,
+      message: `${type} background reset successfully`,
+    });
+  } catch (error) {
+    console.error("Error resetting background:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to reset background",
+    });
+  }
+});
+
 // Get server IP addresses for easier network access
 function getServerIPs() {
   const networkInterfaces = require("os").networkInterfaces();
@@ -305,22 +474,40 @@ function getServerIPs() {
   return addresses;
 }
 
+// Global error handler for API routes
+app.use("/api", (error, req, res, next) => {
+  console.error("API Error:", error);
+
+  // Always return JSON for API errors
+  if (error.type === "entity.too.large") {
+    return res.status(413).json({
+      success: false,
+      error: "Request payload too large. Please reduce image size.",
+    });
+  }
+
+  res.status(500).json({
+    success: false,
+    error: error.message || "Internal server error",
+  });
+});
+
 // Start server
 app.listen(PORT, () => {
   const serverIPs = getServerIPs();
 
-  console.log(`🚀 Meeting Room Server running on port ${PORT}`);
-  console.log(`📁 Data stored in ${DATA_DIR}`);
-  console.log(`💾 Local access: http://localhost:${PORT}`);
+  console.log(` Meeting Room Server running on port ${PORT}`);
+  console.log(` Data stored in ${DATA_DIR}`);
+  console.log(` Local access: http://localhost:${PORT}`);
 
   // Show all possible network access URLs
   if (serverIPs.length > 0) {
-    console.log("💻 Network access URLs:");
+    console.log(" Network access URLs:");
     serverIPs.forEach((ip) => {
-      console.log(`   http://${ip}:${PORT}`);
+      console.log(`http://${ip}:${PORT}`);
     });
     console.log(
-      `\n⚠️  IMPORTANT: Other devices should use one of these network IPs for synchronization`
+      `\n IMPORTANT: Other devices should use one of these network IPs for synchronization`
     );
   }
 });
