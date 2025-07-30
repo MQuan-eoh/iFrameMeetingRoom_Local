@@ -356,7 +356,7 @@ export class RoomManager {
               currentMeeting ? "busy" : "available"
             }">
               <span class="status-dot"></span>
-              <span class="status-text">${
+              <span class="status-text-room">${
                 currentMeeting ? "ĐANG SỬ DỤNG" : "SẴN SÀNG"
               }</span>
             </div>
@@ -449,31 +449,40 @@ export class RoomManager {
                   currentMeeting
                     ? `
                   <div class="meeting-info-card">
-                    <div class="meeting-title-main">${
-                      currentMeeting.content || currentMeeting.purpose
-                    }</div>
-                    <div class="meeting-time-display">
-                      <div class="time-badge start-time">
-                        <i class="fas fa-play"></i>
-                        <span>Bắt đầu: ${currentMeeting.startTime}</span>
-                      </div>
-                      <div class="time-badge end-time">
-                        <i class="fas fa-stop"></i>
-                        <span>Kết thúc: ${currentMeeting.endTime}</span>
-                      </div>
-                    </div>
-                    <div class="meeting-purpose-section">
-                      <label class="purpose-label">MỤC ĐÍCH SỬ DỤNG</label>
-                      <div class="purpose-content">${
-                        currentMeeting.purpose
+                    <!-- Left Column: Meeting Title and Time -->
+                    <div class="meeting-info-left">
+                      <div class="meeting-title-main">${
+                        currentMeeting.content || currentMeeting.purpose
                       }</div>
+                      <div class="meeting-time-display">
+                        <div class="time-badge start-time">
+                          <i class="fas fa-play"></i>
+                          <span>Bắt đầu: ${currentMeeting.startTime}</span>
+                        </div>
+                        <div class="time-badge end-time">
+                          <i class="fas fa-stop"></i>
+                          <span>Kết thúc: ${currentMeeting.endTime}</span>
+                        </div>
+                      </div>
                     </div>
-                    <div class="meeting-actions">
-                      <button class="end-meeting-btn">
-                        <i class="fas fa-stop-circle"></i>
-                        KẾT THÚC CUỘC HỌP
-                      </button>
+                    
+                    <!-- Right Column: Meeting Purpose -->
+                    <div class="meeting-info-right">
+                      <div class="meeting-purpose-section">
+                        <label class="purpose-label">MỤC ĐÍCH SỬ DỤNG</label>
+                        <div class="purpose-content">${
+                          currentMeeting.purpose
+                        }</div>
+                      </div>
                     </div>
+                  </div>
+                  
+                  <!-- Meeting Actions - Below the content -->
+                  <div class="meeting-actions">
+                    <button class="end-meeting-btn">
+                      <i class="fas fa-stop-circle"></i>
+                      KẾT THÚC CUỘC HỌP
+                    </button>
                   </div>
                 `
                     : `

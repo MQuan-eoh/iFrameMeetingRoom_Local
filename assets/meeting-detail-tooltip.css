@@ -219,7 +219,7 @@
 .info-label {
   font-size: 13px;
   font-weight: 700;
-  color: #64748b;
+  color: #ffffff;
   text-transform: uppercase;
   letter-spacing: 0.8px;
   margin-bottom: 6px;
@@ -231,7 +231,8 @@
 .info-value {
   font-size: 15px;
   font-weight: 600;
-  color: #1e293b;
+  /* color: #1e293b; */
+  color: white;
   line-height: 1.5;
 }
 

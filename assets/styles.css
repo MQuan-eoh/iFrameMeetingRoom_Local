@@ -3504,10 +3504,10 @@ button:hover {
   animation: pulse-green 2s infinite;
 }
 
-.status-text {
+.status-text-room {
   font-size: 13px;
   font-weight: 500;
-  color: #64748b;
+  color: #ffffff;
 }
 
 .last-updated {
@@ -4087,7 +4087,7 @@ button:hover {
 }
 
 .room-status-indicator.busy {
-  background: rgba(255, 107, 107, 0.9);
+  background: rgba(250, 96, 96, 0.829);
   color: white;
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
@@ -4159,6 +4159,14 @@ button:hover {
   max-height: 100%;
   overflow-y: auto;
   padding-right: clamp(15px, 2vw, 40px);
+  /* Hide scrollbar but keep scrolling functionality */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+/* Hide scrollbar for webkit browsers (Chrome, Safari) */
+.room-left-column::-webkit-scrollbar {
+  display: none;
 }
 
 /* Right Column - Following Page 1 Right Column Pattern */
@@ -4174,19 +4182,21 @@ button:hover {
   background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(10px);
   border-radius: 20px;
-  padding: 24px;
+  padding: 20px;
   margin-bottom: 20px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   flex-shrink: 0;
+  height: auto;
+  min-height: 200px;
 }
 
 .panel-header {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 20px;
-  padding-bottom: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
   border-bottom: 2px solid rgba(255, 255, 255, 0.2);
 }
 
@@ -4197,42 +4207,58 @@ button:hover {
 
 .panel-header h3 {
   margin: 0;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   color: #ffffff;
   letter-spacing: 0.5px;
   text-transform: uppercase;
 }
 
+/* Two-column layout for meeting info */
 .meeting-info-card {
   display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.meeting-info-left {
+  flex: 1;
+  display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
+}
+
+.meeting-info-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .meeting-title-main {
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   font-weight: 600;
   color: #ffffff;
-  line-height: 1.4;
+  line-height: 1.3;
   margin-bottom: 8px;
 }
 
 .meeting-time-display {
   display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
-  margin-bottom: 16px;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 0;
 }
 
 .time-badge {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  border-radius: 12px;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 10px;
   font-weight: 500;
-  font-size: 14px;
+  font-size: 13px;
+  width: fit-content;
 }
 
 .time-badge.start-time {
@@ -4246,34 +4272,36 @@ button:hover {
 }
 
 .meeting-purpose-section {
-  padding: 16px;
+  padding: 12px;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+  border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-left: 4px solid #45ffda;
-  margin-bottom: 16px;
+  border-left: 3px solid #45ffda;
+  margin-bottom: 0;
 }
 
 .purpose-label {
   display: block;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   color: #ffffff;
   text-transform: uppercase;
   letter-spacing: 1px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .purpose-content {
-  font-size: 1.1rem;
+  font-size: 1rem;
   color: #ffffff;
   font-weight: 500;
+  line-height: 1.4;
 }
 
 .meeting-actions {
   display: flex;
   justify-content: center;
   margin-top: 16px;
+  grid-column: 1 / -1;
 }
 
 .end-meeting-btn {
@@ -4718,6 +4746,165 @@ button:hover {
 }
 
 /* Responsive Design - Following Page 1 Patterns */
+
+/* Laptop 15.6 inch (1536px - 1920px) - Standard FHD */
+@media (min-width: 1536px) and (max-width: 1919px) {
+  .room-detail-container {
+    max-width: 1400px;
+    padding: 24px;
+  }
+
+  .room-header-section {
+    padding: 24px 36px;
+    height: 130px;
+  }
+
+  .room-name {
+    font-size: clamp(2rem, 4vw, 2.8rem);
+  }
+
+  .current-time {
+    font-size: clamp(2.2rem, 3vw, 3.2rem);
+  }
+
+  .meeting-info-card {
+    gap: 24px;
+  }
+
+  .current-meeting-panel {
+    min-height: 220px;
+    padding: 24px;
+  }
+}
+
+/* Laptop 15.6 inch (1440px - 1535px) - Compact FHD */
+@media (min-width: 1440px) and (max-width: 1535px) {
+  .room-detail-container {
+    max-width: 1300px;
+    padding: 22px;
+  }
+
+  .room-header-section {
+    padding: 22px 32px;
+    height: 125px;
+  }
+
+  .room-left-column {
+    width: clamp(28%, 32%, 38%);
+  }
+
+  .meeting-info-card {
+    gap: 20px;
+  }
+
+  .meeting-title-main {
+    font-size: 1.15rem;
+  }
+
+  .current-meeting-panel {
+    min-height: 210px;
+    padding: 22px;
+  }
+
+  .panel-header h3 {
+    font-size: 15px;
+  }
+}
+
+/* Laptop 14 inch (1366px - 1439px) - Compact HD+ */
+@media (min-width: 1366px) and (max-width: 1439px) {
+  .room-detail-container {
+    max-width: 1200px;
+    padding: 20px;
+  }
+
+  .room-header-section {
+    padding: 20px 28px;
+    height: 115px;
+  }
+
+  .room-name {
+    font-size: clamp(1.6rem, 4vw, 2.2rem);
+  }
+
+  .current-time {
+    font-size: clamp(1.8rem, 3vw, 2.8rem);
+  }
+
+  .room-left-column {
+    width: clamp(30%, 35%, 40%);
+    padding-right: clamp(12px, 1.5vw, 30px);
+  }
+
+  .room-content-wrapper {
+    gap: 16px;
+  }
+
+  .meeting-info-card {
+    gap: 16px;
+  }
+
+  .meeting-title-main {
+    font-size: 1.1rem;
+  }
+
+  .current-meeting-panel {
+    min-height: 190px;
+    padding: 18px;
+  }
+
+  .panel-header {
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+  }
+
+  .panel-header h3 {
+    font-size: 14px;
+  }
+
+  .time-badge {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .purpose-content {
+    font-size: 0.95rem;
+  }
+
+  /* Optimize two-column layout for 14 inch */
+  .meeting-info-left,
+  .meeting-info-right {
+    gap: 10px;
+  }
+
+  .meeting-purpose-section {
+    padding: 10px;
+  }
+
+  .purpose-label {
+    font-size: 10px;
+  }
+}
+
+/* Standard responsive breakpoints */
+@media (max-width: 1365px) {
+  .meeting-info-card {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .meeting-info-left,
+  .meeting-info-right {
+    flex: none;
+  }
+
+  .meeting-time-display {
+    flex-direction: row;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+}
+
 @media (max-width: 1199px) {
   .room-content-wrapper {
     flex-direction: column;
