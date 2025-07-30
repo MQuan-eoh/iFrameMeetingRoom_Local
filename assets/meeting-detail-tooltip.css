@@ -219,6 +219,17 @@
 .info-label {
   font-size: 13px;
   font-weight: 700;
+  color: #000000;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.info-label-room {
+  font-size: 13px;
+  font-weight: 700;
   color: #ffffff;
   text-transform: uppercase;
   letter-spacing: 0.8px;
@@ -227,15 +238,20 @@
   align-items: center;
   gap: 6px;
 }
-
 .info-value {
   font-size: 15px;
   font-weight: 600;
-  /* color: #1e293b; */
-  color: white;
+  color: #1e293b;
+
   line-height: 1.5;
 }
+.info-value-room {
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
 
+  line-height: 1.5;
+}
 .info-value.time {
   font-family: "SF Mono", "Monaco", "Inconsolata", "Roboto Mono", monospace;
   font-weight: 700;

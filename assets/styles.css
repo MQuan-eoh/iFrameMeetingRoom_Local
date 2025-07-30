@@ -4174,79 +4174,88 @@ button:hover {
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-y: auto;
+  /* Hide scrollbar but keep scrolling functionality */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
 }
-
-/* Current Meeting Panel - Priority Display */
+.room-right-column::-webkit-scrollbar {
+  display: none;
+}
+/* Current Meeting Panel - Priority Display - Optimized Height */
 .current-meeting-panel {
   background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(10px);
   border-radius: 20px;
-  padding: 20px;
+  padding: 16px;
   margin-bottom: 20px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   flex-shrink: 0;
   height: auto;
-  min-height: 200px;
+  min-height: 160px;
 }
 
 .panel-header {
   display: flex;
   align-items: center;
+  padding: 12px;
   gap: 12px;
-  margin-bottom: 16px;
-  padding-bottom: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
   border-bottom: 2px solid rgba(255, 255, 255, 0.2);
 }
 
 .panel-header i {
-  font-size: 20px;
+  font-size: 18px;
   color: #45ffda;
 }
 
 .panel-header h3 {
   margin: 0;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   color: #ffffff;
   letter-spacing: 0.5px;
   text-transform: uppercase;
 }
 
-/* Two-column layout for meeting info */
+/* Two-column layout for meeting info - Redesigned */
 .meeting-info-card {
   display: flex;
-  gap: 20px;
+  gap: 16px;
   align-items: flex-start;
+  height: 100%;
 }
 
 .meeting-info-left {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .meeting-info-right {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
+  justify-content: space-between;
+  min-height: 100px;
 }
 
 .meeting-title-main {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 600;
   color: #ffffff;
   line-height: 1.3;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .meeting-time-display {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   margin-bottom: 0;
 }
 
@@ -4254,10 +4263,10 @@ button:hover {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 12px;
-  border-radius: 10px;
+  padding: 6px 10px;
+  border-radius: 8px;
   font-weight: 500;
-  font-size: 13px;
+  font-size: 12px;
   width: fit-content;
 }
 
@@ -4272,53 +4281,53 @@ button:hover {
 }
 
 .meeting-purpose-section {
-  padding: 12px;
+  padding: 10px;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
+  border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-left: 3px solid #45ffda;
-  margin-bottom: 0;
+  margin-bottom: 8px;
+  flex: 1;
 }
 
 .purpose-label {
   display: block;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   color: #ffffff;
   text-transform: uppercase;
   letter-spacing: 1px;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .purpose-content {
-  font-size: 1rem;
+  font-size: 0.9rem;
   color: #ffffff;
   font-weight: 500;
-  line-height: 1.4;
+  line-height: 1.3;
 }
 
+/* End meeting button in right column */
 .meeting-actions {
   display: flex;
-  justify-content: center;
-  margin-top: 16px;
-  grid-column: 1 / -1;
+  justify-content: flex-end;
+  margin-top: 0;
 }
 
 .end-meeting-btn {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 12px 24px;
+  gap: 6px;
+  padding: 8px 16px;
   background: linear-gradient(135deg, #e53e3e, #c53030);
   color: white;
   border: none;
-  border-radius: 12px;
+  border-radius: 8px;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  white-space: nowrap;
 }
 
 .end-meeting-btn:hover {
@@ -4460,7 +4469,15 @@ button:hover {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
+.meeting-details-room .meeting-title-room {
+  font-weight: 600;
+  color: #000000;
+  font-size: 14px;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .meeting-details .meeting-purpose {
   color: rgba(255, 255, 255, 0.8);
   font-size: 12px;
@@ -4989,5 +5006,58 @@ button:hover {
 
   .duration {
     font-size: 10px;
+  }
+}
+
+/* Additional responsive for current-meeting-panel optimized layout */
+@media (max-width: 1365px) {
+  .meeting-info-card {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .meeting-info-left,
+  .meeting-info-right {
+    flex: none;
+    width: 100%;
+  }
+
+  .meeting-time-display {
+    flex-direction: row;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .meeting-actions {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .current-meeting-panel {
+    min-height: 140px;
+    padding: 14px;
+  }
+
+  .panel-header h3 {
+    font-size: 14px;
+  }
+
+  .meeting-title-main {
+    font-size: 1rem;
+  }
+
+  .time-badge {
+    font-size: 11px;
+    padding: 5px 8px;
+  }
+
+  .purpose-content {
+    font-size: 0.85rem;
+  }
+
+  .end-meeting-btn {
+    font-size: 11px;
+    padding: 6px 12px;
   }
 }

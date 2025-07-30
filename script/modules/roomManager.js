@@ -381,20 +381,20 @@ export class RoomManager {
               <div class="room-info-content">
                 <div class="info-item">
                   <i class="fas fa-users"></i>
-                  <span class="info-label">Sức chứa:</span>
-                  <span class="info-value">${
+                  <span class="info-label-room">Sức chứa:</span>
+                  <span class="info-value-room">${
                     roomName.includes("3") ? "10-15 người" : "8-12 người"
                   }</span>
                 </div>
                 <div class="info-item">
                   <i class="fas fa-tv"></i>
-                  <span class="info-label">Thiết bị:</span>
-                  <span class="info-value">Projector, TV, Wifi</span>
+                  <span class="info-label-room">Thiết bị:</span>
+                  <span class="info-value-room">Projector, TV, Wifi</span>
                 </div>
                 <div class="info-item">
                   <i class="fas fa-map-marker-alt"></i>
-                  <span class="info-label">Vị trí:</span>
-                  <span class="info-value">${roomName}</span>
+                  <span class="info-label-room">Vị trí:</span>
+                  <span class="info-value-room">${roomName}</span>
                 </div>
                 <div class="quick-actions">
                   <button class="action-btn book-btn">
@@ -466,7 +466,7 @@ export class RoomManager {
                       </div>
                     </div>
                     
-                    <!-- Right Column: Meeting Purpose -->
+                    <!-- Right Column: Meeting Purpose and End Button -->
                     <div class="meeting-info-right">
                       <div class="meeting-purpose-section">
                         <label class="purpose-label">MỤC ĐÍCH SỬ DỤNG</label>
@@ -474,15 +474,15 @@ export class RoomManager {
                           currentMeeting.purpose
                         }</div>
                       </div>
+                      
+                      <!-- End Meeting Button in Right Column -->
+                      <div class="meeting-actions">
+                        <button class="end-meeting-btn">
+                          <i class="fas fa-stop-circle"></i>
+                          KẾT THÚC CUỘC HỌP
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                  
-                  <!-- Meeting Actions - Below the content -->
-                  <div class="meeting-actions">
-                    <button class="end-meeting-btn">
-                      <i class="fas fa-stop-circle"></i>
-                      KẾT THÚC CUỘC HỌP
-                    </button>
                   </div>
                 `
                     : `
@@ -524,8 +524,8 @@ export class RoomManager {
                           <span class="time-text">${meeting.startTime}</span>
                           <span class="duration">- ${meeting.endTime}</span>
                         </div>
-                        <div class="meeting-details">
-                          <div class="meeting-title">${
+                        <div class="meeting-details-room">
+                          <div class="meeting-title-room">${
                             meeting.content || meeting.purpose
                           }</div>
                           <div class="meeting-purpose">${meeting.purpose}</div>
