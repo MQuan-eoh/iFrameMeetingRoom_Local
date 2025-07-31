@@ -585,8 +585,7 @@
                       class="schedule-month-view"
                       id="monthView"
                       style="display: none"
-                    >
-                    </div>
+                    ></div>
                   </div>
                 </div>
                 <div class="fullscreen-toggle">
@@ -749,69 +748,6 @@
     <!-- External Scripts -->
     <script src="@eohjsc/era-widget/src/index.js"></script>
     <script src="https://alcdn.msauth.net/browser/2.30.0/js/msal-browser.min.js"></script>
-
-    <!-- Server Configuration Script -->
-    <script>
-      // Initialize server configuration when document is ready
-      document.addEventListener("DOMContentLoaded", () => {
-        // Create server config button
-        const configBtn = document.createElement("button");
-        configBtn.id = "serverConfigBtn";
-        configBtn.innerHTML = "⚙️";
-        configBtn.title = "Cấu hình máy chủ";
-        configBtn.style.cssText = `
-          position: fixed;
-          top: 10px;
-          right: 10px;
-          background: rgba(0,0,0,0.6);
-          color: white;
-          border: none;
-          border-radius: 50%;
-          width: 36px;
-          height: 36px;
-          font-size: 20px;
-          cursor: pointer;
-          z-index: 9999;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        `;
-        document.body.appendChild(configBtn);
-
-        // Open modal on click
-        configBtn.addEventListener("click", () => {
-          const modal = document.getElementById("serverConfigModal");
-          const input = document.getElementById("serverIP");
-          input.value =
-            localStorage.getItem("serverIP") ||
-            window.location.hostname ||
-            "localhost";
-          modal.style.display = "block";
-        });
-
-        // Save server IP
-        document
-          .getElementById("saveServerIP")
-          .addEventListener("click", () => {
-            const serverIP = document.getElementById("serverIP").value.trim();
-            if (serverIP) {
-              localStorage.setItem("serverIP", serverIP);
-              alert(
-                `Cấu hình máy chủ đã được lưu: ${serverIP}\nVui lòng làm mới trang để áp dụng thay đổi.`
-              );
-              document.getElementById("serverConfigModal").style.display =
-                "none";
-
-              // Reload after a short delay
-              setTimeout(() => {
-                window.location.reload();
-              }, 1000);
-            } else {
-              alert("Vui lòng nhập địa chỉ IP hợp lệ.");
-            }
-          });
-      });
-    </script>
     <script src="http://192.168.1.47:3000/@eohjsc/era-widget/src/index.js"></script>
     <script type="module" src="script/index.js"></script>
     <script src="script/modules/ERaServices.js"></script>
