@@ -1,7 +1,10 @@
 /**
  * Meeting Room Management Server
- * Local server for storing meeting room booking data
+ * Enhanced for Private Cloud Deployment
  */
+
+// Load environment variables first
+require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
@@ -9,12 +12,22 @@ const morgan = require("morgan");
 const fsExtra = require("fs-extra");
 const path = require("path");
 const fs = require("fs");
+const rateLimit = require("express-rate-limit");
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-// Data directory
-const DATA_DIR = path.join(__dirname, "data");
+// Environment configuration
+const NODE_ENV = process.env.NODE_ENV || "development";
+const PORT = process.env.PORT || 3000;
+const TRUST_PROXY = process.env.TRUST_PROXY === "true";
+
+// Configure trust proxy for cloud deployment
+if (TRUST_PROXY) {
+  app.set("trust proxy", 1);
+}
+
+// Data directory configuration - flexible for cloud deployment
+const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, "data");
 const MEETINGS_FILE = path.join(DATA_DIR, "meetings.json");
 const BACKUP_DIR = path.join(DATA_DIR, "backups");
 const BACKGROUNDS_DIR = path.join(DATA_DIR, "backgrounds");
@@ -41,9 +54,34 @@ if (!fs.existsSync(BACKGROUNDS_CONFIG)) {
   );
 }
 
-// Configure CORS to allow all origins with credentials
+// Configure CORS for production security
+const getAllowedOrigins = () => {
+  const origins = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(",").map((url) => url.trim())
+    : ["http://localhost:3000", "http://127.0.0.1:3000"];
+
+  if (NODE_ENV === "development") {
+    // Add development origins
+    origins.push("http://localhost:3001", "http://192.168.1.47:3000");
+  }
+
+  return origins;
+};
+
 const corsOptions = {
-  origin: "*",
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true);
+
+    const allowedOrigins = getAllowedOrigins();
+
+    if (allowedOrigins.indexOf(origin) !== -1 || NODE_ENV === "development") {
+      callback(null, true);
+    } else {
+      console.warn(`CORS blocked origin: ${origin}`);
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: [
     "Content-Type",
@@ -51,26 +89,72 @@ const corsOptions = {
     "Cache-Control",
     "Pragma",
     "Expires",
+    "X-Requested-With",
   ],
   credentials: true,
-  maxAge: 60, // Reduce preflight cache to ensure fresh requests
+  maxAge: NODE_ENV === "production" ? 3600 : 60, // Cache CORS preflight longer in production
 };
+
+// Rate limiting for production
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 1000, // limit each IP to 1000 requests per windowMs
+  message: {
+    success: false,
+    error: "Too many requests from this IP, please try again later.",
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Apply rate limiting to API routes only
+app.use("/api", limiter);
 
 // Middleware
 app.use(cors(corsOptions));
 // Increase payload size limit for image uploads (50MB)
-app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ limit: "50mb", extended: true }));
-app.use(morgan("dev"));
+app.use(express.json({ limit: process.env.MAX_UPLOAD_SIZE || "50mb" }));
+app.use(
+  express.urlencoded({
+    limit: process.env.MAX_UPLOAD_SIZE || "50mb",
+    extended: true,
+  })
+);
+
+// Configure logging based on environment
+if (NODE_ENV === "production") {
+  app.use(morgan(process.env.LOG_LEVEL || "combined"));
+} else {
+  app.use(morgan("dev"));
+}
 
 // Add cache-control headers to all responses
 app.use((req, res, next) => {
   // Prevent caching for API responses to ensure fresh data
-  res.set("Cache-Control", "no-cache, no-store, must-revalidate");
-  res.set("Pragma", "no-cache");
-  res.set("Expires", "0");
+  if (req.path.startsWith("/api/")) {
+    res.set("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.set("Pragma", "no-cache");
+    res.set("Expires", "0");
+  } else if (NODE_ENV === "production") {
+    // Cache static files in production
+    res.set(
+      "Cache-Control",
+      `public, max-age=${process.env.CACHE_CONTROL_MAX_AGE || 3600}`
+    );
+  }
   next();
 });
+
+// Security headers for production
+if (NODE_ENV === "production") {
+  app.use((req, res, next) => {
+    res.set("X-Content-Type-Options", "nosniff");
+    res.set("X-Frame-Options", "SAMEORIGIN");
+    res.set("X-XSS-Protection", "1; mode=block");
+    res.set("Referrer-Policy", "strict-origin-when-cross-origin");
+    next();
+  });
+}
 
 // Serve static files from the parent directory
 app.use(express.static(path.join(__dirname, "..")));
@@ -264,39 +348,71 @@ app.post("/api/meetings/batch", (req, res) => {
 });
 
 /**
- * Create a backup of meetings data
+ * Create a backup of meetings data with enhanced error handling
  */
 function createBackup() {
-  if (fs.existsSync(MEETINGS_FILE)) {
-    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-    const backupFile = path.join(BACKUP_DIR, `meetings-${timestamp}.json`);
-    fsExtra.copySync(MEETINGS_FILE, backupFile);
+  try {
+    if (fs.existsSync(MEETINGS_FILE)) {
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const backupFile = path.join(BACKUP_DIR, `meetings-${timestamp}.json`);
 
-    // Clean up old backups (keep only last 10)
-    cleanupBackups();
+      // Ensure backup directory exists
+      fsExtra.ensureDirSync(BACKUP_DIR);
+
+      // Create backup
+      fsExtra.copySync(MEETINGS_FILE, backupFile);
+
+      console.log(`Backup created: ${backupFile}`);
+
+      // Clean up old backups (keep only last configured amount)
+      cleanupBackups();
+
+      return backupFile;
+    }
+  } catch (error) {
+    console.error("Failed to create backup:", error);
+    // Don't throw error - backup failure shouldn't stop the operation
   }
 }
 
 /**
- * Clean up old backups, keeping only the most recent ones
+ * Enhanced cleanup function with better error handling
  */
 function cleanupBackups() {
   try {
+    if (!fs.existsSync(BACKUP_DIR)) {
+      return;
+    }
+
     const files = fs
       .readdirSync(BACKUP_DIR)
-      .filter((file) => file.endsWith(".json"))
-      .map((file) => ({
-        name: file,
-        path: path.join(BACKUP_DIR, file),
-        time: fs.statSync(path.join(BACKUP_DIR, file)).mtime.getTime(),
-      }))
+      .filter((file) => file.endsWith(".json") && file.startsWith("meetings-"))
+      .map((file) => {
+        const filePath = path.join(BACKUP_DIR, file);
+        return {
+          name: file,
+          path: filePath,
+          time: fs.statSync(filePath).mtime.getTime(),
+        };
+      })
       .sort((a, b) => b.time - a.time); // Sort by time (newest first)
 
-    // Keep only the 10 most recent backups
-    if (files.length > 10) {
-      files.slice(10).forEach((file) => {
-        fs.unlinkSync(file.path);
+    // Keep only the most recent backups (configurable via env)
+    const maxBackups = parseInt(process.env.MAX_BACKUPS) || 10;
+
+    if (files.length > maxBackups) {
+      const filesToDelete = files.slice(maxBackups);
+
+      filesToDelete.forEach((file) => {
+        try {
+          fs.unlinkSync(file.path);
+          console.log(`Deleted old backup: ${file.name}`);
+        } catch (deleteError) {
+          console.error(`Failed to delete backup ${file.name}:`, deleteError);
+        }
       });
+
+      console.log(`Cleaned up ${filesToDelete.length} old backups`);
     }
   } catch (error) {
     console.error("Error cleaning up backups:", error);
@@ -306,13 +422,13 @@ function cleanupBackups() {
 // ========== BACKGROUND MANAGEMENT ENDPOINTS ==========
 
 /**
- * Upload background image
- * POST /api/backgrounds/upload
+ * Enhanced background upload with better validation and error handling
  */
 app.post("/api/backgrounds/upload", (req, res) => {
   try {
     const { type, imageData } = req.body;
 
+    // Validation
     if (!type || !imageData) {
       return res.status(400).json({
         success: false,
@@ -327,46 +443,80 @@ app.post("/api/backgrounds/upload", (req, res) => {
       });
     }
 
-    // Validate imageData format
-    if (!imageData.startsWith("data:image/")) {
+    // Enhanced image validation
+    const imageTypeMatch = imageData.match(
+      /^data:image\/(jpeg|jpg|png|gif|webp);base64,/
+    );
+    if (!imageTypeMatch) {
       return res.status(400).json({
         success: false,
-        error: "Invalid image data format",
+        error: "Invalid image format. Supported: JPEG, PNG, GIF, WebP",
       });
     }
 
-    // Check base64 data size (roughly estimate file size)
-    const base64Size = imageData.length * 0.75; // Base64 is ~33% larger than binary
-    const maxSize = 15 * 1024 * 1024; // 15MB limit
+    const imageType = imageTypeMatch[1];
+
+    // Size validation
+    const base64Data = imageData.replace(/^data:image\/\w+;base64,/, "");
+    const base64Size = base64Data.length * 0.75;
+    const maxSize = parseInt(process.env.MAX_UPLOAD_SIZE) || 15 * 1024 * 1024; // 15MB default
+
     if (base64Size > maxSize) {
       return res.status(413).json({
         success: false,
-        error: `Image too large. Maximum size is ${maxSize / 1024 / 1024}MB`,
+        error: `Image too large. Maximum size is ${Math.round(
+          maxSize / 1024 / 1024
+        )}MB`,
       });
     }
 
-    // Remove data:image prefix and get just base64 data
-    const base64Data = imageData.replace(/^data:image\/\w+;base64,/, "");
+    // Ensure backgrounds directory exists
+    fsExtra.ensureDirSync(BACKGROUNDS_DIR);
+
+    // Convert base64 to buffer
     const buffer = Buffer.from(base64Data, "base64");
 
-    // Generate filename with timestamp
+    // Generate secure filename
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-    const filename = `${type}-background-${timestamp}.jpg`;
+    const filename = `${type}-background-${timestamp}.${
+      imageType === "jpg" ? "jpg" : imageType
+    }`;
     const filepath = path.join(BACKGROUNDS_DIR, filename);
 
-    // Save image file
+    // Delete old background file if exists
+    const config = JSON.parse(fs.readFileSync(BACKGROUNDS_CONFIG, "utf8"));
+    const oldBackground = config[`${type}Background`];
+    if (oldBackground) {
+      const oldFilepath = path.join(BACKGROUNDS_DIR, oldBackground);
+      if (fs.existsSync(oldFilepath)) {
+        try {
+          fs.unlinkSync(oldFilepath);
+          console.log(`Deleted old background: ${oldBackground}`);
+        } catch (deleteError) {
+          console.warn(
+            `Failed to delete old background: ${deleteError.message}`
+          );
+        }
+      }
+    }
+
+    // Save new image file
     fs.writeFileSync(filepath, buffer);
 
     // Update backgrounds config
-    const config = JSON.parse(fs.readFileSync(BACKGROUNDS_CONFIG, "utf8"));
     config[`${type}Background`] = filename;
     fs.writeFileSync(BACKGROUNDS_CONFIG, JSON.stringify(config, null, 2));
 
-    console.log(`📷 Background uploaded: ${type} -> ${filename}`);
+    console.log(
+      `Background uploaded: ${type} -> ${filename} (${Math.round(
+        base64Size / 1024
+      )}KB)`
+    );
 
     res.json({
       success: true,
       filename,
+      size: Math.round(base64Size / 1024),
       message: `${type} background uploaded successfully`,
     });
   } catch (error) {
@@ -492,22 +642,78 @@ app.use("/api", (error, req, res, next) => {
   });
 });
 
-// Start server
-app.listen(PORT, () => {
+/**
+ * Enhanced server startup with environment validation and logging
+ */
+const HOST = process.env.HOST || "0.0.0.0";
+
+// Validate critical environment variables
+const requiredEnvVars = ["NODE_ENV"];
+const missingVars = requiredEnvVars.filter((varName) => !process.env[varName]);
+
+if (missingVars.length > 0) {
+  console.warn(
+    `Warning: Missing environment variables: ${missingVars.join(", ")}`
+  );
+  console.warn(
+    "Some features may not work correctly. Please check your .env file."
+  );
+}
+
+// Enhanced server startup with graceful shutdown handling
+const server = app.listen(PORT, HOST, () => {
   const serverIPs = getServerIPs();
 
-  console.log(` Meeting Room Server running on port ${PORT}`);
-  console.log(` Data stored in ${DATA_DIR}`);
-  console.log(` Local access: http://localhost:${PORT}`);
+  console.log("\n####################");
+  console.log("Meeting Room Management Server");
+  console.log("####################");
+  console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
+  console.log(`Server running on: http://${HOST}:${PORT}`);
+  console.log(`Data directory: ${DATA_DIR}`);
+  console.log(`CORS origins: ${getAllowedOrigins()}`);
+  console.log(`Rate limiting: ${process.env.ENABLE_RATE_LIMIT || "true"}`);
+  console.log(`Debug mode: ${process.env.DEBUG_MODE || "false"}`);
+  console.log("####################");
+
+  console.log(`Local access: http://localhost:${PORT}`);
 
   // Show all possible network access URLs
   if (serverIPs.length > 0) {
-    console.log(" Network access URLs:");
+    console.log("Network access URLs:");
     serverIPs.forEach((ip) => {
-      console.log(`http://${ip}:${PORT}`);
+      console.log(`  http://${ip}:${PORT}`);
     });
     console.log(
-      `\n IMPORTANT: Other devices should use one of these network IPs for synchronization`
+      `\nIMPORTANT: Other devices should use one of these network IPs for synchronization`
     );
   }
+  console.log("");
+});
+
+// Graceful shutdown handling
+process.on("SIGTERM", () => {
+  console.log("SIGTERM received. Shutting down gracefully...");
+  server.close(() => {
+    console.log("Server closed");
+    process.exit(0);
+  });
+});
+
+process.on("SIGINT", () => {
+  console.log("\nSIGINT received. Shutting down gracefully...");
+  server.close(() => {
+    console.log("Server closed");
+    process.exit(0);
+  });
+});
+
+// Handle uncaught exceptions
+process.on("uncaughtException", (error) => {
+  console.error("Uncaught Exception:", error);
+  process.exit(1);
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection at:", promise, "reason:", reason);
+  process.exit(1);
 });

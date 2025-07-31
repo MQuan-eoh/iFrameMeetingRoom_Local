@@ -45,25 +45,112 @@ export const TIME_CONFIG = {
   TIMEZONE_OFFSET: 7, // UTC+7
 };
 
-// API Configuration
-export const API_BASE_URL = (() => {
-  // Auto-detect API base URL based on current environment
-  if (typeof window !== "undefined" && window.location) {
+// API Configuration with Cloud Deployment Support
+export const API_CONFIG = {
+  /**
+   * Intelligent API base URL detection for different deployment environments
+   */
+  detectApiBaseUrl() {
     const protocol = window.location.protocol;
     const hostname = window.location.hostname;
+    const port = window.location.port;
 
-    // If running from file:// protocol, use localhost
-    if (protocol === "file:") {
-      return "http://localhost:3000";
+    // Development environment detection
+    if (
+      protocol === "file:" ||
+      hostname === "localhost" ||
+      hostname === "127.0.0.1"
+    ) {
+      // Check if custom server IP is stored for network synchronization
+      const serverIP = localStorage.getItem("serverIP");
+      if (serverIP && serverIP !== "localhost" && serverIP !== "127.0.0.1") {
+        console.log(`[CONFIG] Using stored server IP: ${serverIP}`);
+        return `http://${serverIP}:3000/api`;
+      }
+      return "http://localhost:3000/api";
     }
 
-    // If running from http/https, try to use same host
-    if (hostname === "localhost" || hostname === "127.0.0.1") {
-      return `${protocol}//${hostname}:3000`;
+    // Cloud/production environment detection
+    if (hostname && hostname !== "localhost") {
+      // Use same protocol and host as the current page
+      const baseUrl = port
+        ? `${protocol}//${hostname}:${port}`
+        : `${protocol}//${hostname}`;
+
+      // For cloud deployment, API is typically on same domain with /api path
+      console.log(`[CONFIG] Cloud environment detected: ${baseUrl}/api`);
+      return `${baseUrl}/api`;
     }
 
-    // For production or other hosts, use localhost as fallback
-    return "http://localhost:3000";
+    // Fallback to localhost for development
+    console.log(`[CONFIG] Using localhost fallback`);
+    return "http://localhost:3000/api";
+  },
+
+  /**
+   * Get the current environment type
+   */
+  getEnvironment() {
+    const hostname = window.location.hostname;
+    const protocol = window.location.protocol;
+
+    if (protocol === "file:") return "file";
+    if (hostname === "localhost" || hostname === "127.0.0.1")
+      return "development";
+    return "production";
+  },
+
+  /**
+   * Check if running in development mode
+   */
+  isDevelopment() {
+    return this.getEnvironment() !== "production";
+  },
+
+  /**
+   * Check if running in production/cloud mode
+   */
+  isProduction() {
+    return this.getEnvironment() === "production";
+  },
+
+  // Network configuration
+  TIMEOUT: 30000, // 30 seconds
+  RETRY_ATTEMPTS: 3,
+  RETRY_DELAY: 2000, // 2 seconds
+
+  // Connection monitoring
+  CONNECTION_CHECK_INTERVAL: 30000, // 30 seconds
+  FAST_CHECK_INTERVAL: 5000, // 5 seconds for failed connections
+};
+
+// Legacy support - will be dynamically determined using API_CONFIG
+export const API_BASE_URL = (() => {
+  // Use the new API_CONFIG for consistency
+  if (typeof window !== "undefined" && window.location) {
+    // Import API_CONFIG detection method if available
+    try {
+      return API_CONFIG.detectApiBaseUrl();
+    } catch (error) {
+      // Fallback to original logic if API_CONFIG is not available
+      const protocol = window.location.protocol;
+      const hostname = window.location.hostname;
+
+      // If running from file:// protocol, use localhost
+      if (protocol === "file:") {
+        return "http://localhost:3000";
+      }
+
+      // If running from http/https, try to use same host
+      if (hostname === "localhost" || hostname === "127.0.0.1") {
+        return `${protocol}//${hostname}:3000`;
+      }
+
+      // For production or other hosts, detect based on current location
+      return `${protocol}//${hostname}${
+        window.location.port ? ":" + window.location.port : ""
+      }`;
+    }
   }
 
   // Node.js environment fallback
@@ -129,8 +216,8 @@ export const CSS_CLASSES = {
   FILTER_CHECK: "filter-check",
 };
 
-// API Configuration (if needed in future)
-export const API_CONFIG = {
+// Enhanced API Configuration with Cloud Deployment Support
+export const LEGACY_API_CONFIG = {
   BASE_URL: "",
   ENDPOINTS: {
     MEETINGS: "/api/meetings",
