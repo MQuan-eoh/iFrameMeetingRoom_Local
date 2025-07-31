@@ -28,7 +28,7 @@ export class RoomManager {
       if (roomsContainer) {
         this._ensureRoomSections(roomsContainer);
       } else {
-        console.warn("⚠️ RoomManager: Cannot find .rooms-container element");
+        console.warn("RoomManager: Cannot find .rooms-container element");
       }
 
       // Initialize room filter functionality
@@ -610,7 +610,7 @@ export class RoomManager {
     const lightControlImage = document.getElementById("lightControlImage");
     if (lightControlImage) {
       lightControlImage.addEventListener("click", () => {
-        this._handleLightControl();
+        this._handleLightControl(roomName);
       });
     }
 
@@ -1576,8 +1576,8 @@ export class RoomManager {
   /**
    * Handle light control toggle
    */
-  _handleLightControl() {
-    console.log("🔅 Light control button clicked");
+  _handleLightControl(roomName) {
+    console.log(`🔅 Light control button clicked for room: ${roomName}`);
 
     const lightControlImage = document.getElementById("lightControlImage");
     const lightStatusIndicator = document.getElementById(
@@ -1592,7 +1592,9 @@ export class RoomManager {
 
     // Toggle light status
     const isCurrentlyOn = lightStatusIndicator.classList.contains("on");
+    const turnOn = !isCurrentlyOn;
 
+    // Update UI immediately for better user experience
     if (isCurrentlyOn) {
       // Turn off
       lightStatusIndicator.classList.remove("on");
@@ -1617,33 +1619,96 @@ export class RoomManager {
       lightControlImage.style.transform = "";
     }, 150);
 
-    // Simulate API call (you can replace this with actual API call)
-    this._simulateLightControlAPI(!isCurrentlyOn);
+    // Call Era widget for actual light control
+    this._executeRoomLightControl(roomName, turnOn);
   }
 
   /**
-   * Simulate API call for light control
+   * Execute actual light control via Era widget
+   * @param {string} roomName - The name of the room
    * @param {boolean} turnOn - Whether to turn the light on or off
    */
-  _simulateLightControlAPI(turnOn) {
+  _executeRoomLightControl(roomName, turnOn) {
     console.log(
-      `🌐 Simulating API call to ${turnOn ? "turn ON" : "turn OFF"} the light`
+      `🌐 Executing light control for ${roomName}: ${turnOn ? "ON" : "OFF"}`
     );
 
-    // Here you can add actual API call
-    // Example:
-    // fetch('/api/light-control', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ action: turnOn ? 'on' : 'off' })
-    // });
+    // Check if the global light control function is available
+    if (typeof window.controlRoomLight === "function") {
+      const success = window.controlRoomLight(roomName, turnOn);
 
-    // For now, just log the action
-    setTimeout(() => {
-      console.log(
-        `✅ Light control API call completed: ${turnOn ? "ON" : "OFF"}`
-      );
-    }, 500);
+      if (success) {
+        console.log(`✅ Light control successful for ${roomName}`);
+
+        // Optional: Show success feedback to user
+        this._showLightControlFeedback(roomName, turnOn, true);
+      } else {
+        console.error(`❌ Light control failed for ${roomName}`);
+
+        // Revert UI changes on failure
+        this._revertLightControlUI(turnOn);
+
+        // Show error feedback
+        this._showLightControlFeedback(roomName, turnOn, false);
+      }
+    } else {
+      console.error("❌ Era light control function not available");
+
+      // Revert UI changes if Era control is not available
+      this._revertLightControlUI(turnOn);
+
+      // Show error message
+      alert("Hệ thống điều khiển đèn chưa sẵn sàng. Vui lòng thử lại sau.");
+    }
+  }
+
+  /**
+   * Revert light control UI changes when action fails
+   * @param {boolean} attemptedTurnOn - The action that was attempted
+   */
+  _revertLightControlUI(attemptedTurnOn) {
+    const lightControlImage = document.getElementById("lightControlImage");
+    const lightStatusIndicator = document.getElementById(
+      "lightStatusIndicator"
+    );
+    const lightStatusText = document.getElementById("lightStatusText");
+
+    if (!lightStatusIndicator || !lightStatusText || !lightControlImage) {
+      return;
+    }
+
+    // Revert to previous state
+    if (attemptedTurnOn) {
+      // Was trying to turn on, revert to off
+      lightStatusIndicator.classList.remove("on");
+      lightStatusIndicator.classList.add("off");
+      lightStatusText.textContent = "TẮT";
+      lightControlImage.classList.remove("active");
+      lightControlImage.src = "assets/imgs/bulb_off.jpg";
+    } else {
+      // Was trying to turn off, revert to on
+      lightStatusIndicator.classList.remove("off");
+      lightStatusIndicator.classList.add("on");
+      lightStatusText.textContent = "BẬT";
+      lightControlImage.classList.add("active");
+      lightControlImage.src = "assets/imgs/bulb_on.jpg";
+    }
+  }
+
+  /**
+   * Show feedback message for light control action
+   * @param {string} roomName - The room name
+   * @param {boolean} turnOn - Whether light was turned on or off
+   * @param {boolean} success - Whether the action was successful
+   */
+  _showLightControlFeedback(roomName, turnOn, success) {
+    const action = turnOn ? "bật" : "tắt";
+    const status = success ? "thành công" : "thất bại";
+
+    console.log(`💡 Light control ${status}: ${action} đèn ${roomName}`);
+
+    // You can add toast notification or other UI feedback here
+    // For now, just console log
   }
 }
 

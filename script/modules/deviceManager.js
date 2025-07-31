@@ -623,3 +623,4 @@ class PeopleDetectionSystem {
 }
 
 export default DeviceManager;
+export { PeopleDetectionSystem };

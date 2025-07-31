@@ -69,7 +69,7 @@ export class ConnectionStatusManager {
     // Add sync button
     const syncButton = document.createElement("button");
     syncButton.className = "sync-button";
-    syncButton.textContent = "🔄";
+    syncButton.textContent = "⟲";
     syncButton.title = "Đồng bộ dữ liệu";
     syncButton.style.cssText = `
       background: transparent;
@@ -129,7 +129,7 @@ export class ConnectionStatusManager {
     // Re-add the sync button
     const syncButton = document.createElement("button");
     syncButton.className = "sync-button";
-    syncButton.textContent = "🔄";
+    syncButton.textContent = "⟲";
     syncButton.title = "Đồng bộ dữ liệu";
     syncButton.style.cssText = `
       background: transparent;

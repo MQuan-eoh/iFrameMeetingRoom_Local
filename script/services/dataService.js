@@ -23,7 +23,7 @@ class DataService {
     this.lastFetchTime = 0;
 
     // Print the API URL being used for debugging
-    console.log(`🔌 API connection using: ${this.apiBaseUrl}`);
+    console.log(`API connection using: ${this.apiBaseUrl}`);
 
     // Check connection on init
     this._checkConnection();
@@ -55,7 +55,7 @@ class DataService {
 
       if (this.isConnected) {
         console.log(
-          `✅ Connected successfully to API server at: ${this.apiBaseUrl}`
+          `Connected successfully to API server at: ${this.apiBaseUrl}`
         );
       }
 
@@ -85,7 +85,7 @@ class DataService {
       this.lastFetchTime = timestamp;
 
       console.log(
-        `📥 Fetching meetings from: ${this.apiBaseUrl}/meetings?t=${timestamp}`
+        `Fetching meetings from: ${this.apiBaseUrl}/meetings?t=${timestamp}`
       );
 
       const response = await fetch(
@@ -107,7 +107,7 @@ class DataService {
       const data = await response.json();
       this.isConnected = true;
 
-      console.log(`📊 Retrieved ${data.length} meetings from server`);
+      console.log(`Retrieved ${data.length} meetings from server`);
 
       // Dispatch a global event that data has been refreshed from server
       window.dispatchEvent(

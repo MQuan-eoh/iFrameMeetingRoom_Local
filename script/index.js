@@ -52,6 +52,11 @@ class MeetingRoomApp {
       // Expose managers globally for cross-component access
       window.roomManager = this.managers.roomManager;
       window.meetingDataManager = this.managers.meetingDataManager;
+      window.deviceManager = this.managers.deviceManager;
+
+      // Also expose PeopleDetectionSystem for direct access
+      window.PeopleDetectionSystem =
+        this.managers.deviceManager.peopleDetectionSystem;
 
       // Initialize booking manager
       this.managers.scheduleBookingManager = new ScheduleBookingManager();
@@ -88,13 +93,13 @@ class MeetingRoomApp {
 
       // Set up periodic room detection and data refresh
       setInterval(async () => {
-        console.log("🔄 Periodic room detection and data refresh");
+        console.log("Periodic room detection and data refresh");
         await this._detectAndConfigureRooms();
         this.managers.meetingDataManager.forceRefresh();
       }, 3 * 60 * 1000); // Every 3 minutes
 
       this.initialized = true;
-      console.log("✅ Application initialized successfully");
+      console.log("Application initialized successfully");
 
       // Force an immediate data refresh after initialization
       setTimeout(() => {
@@ -108,7 +113,7 @@ class MeetingRoomApp {
         })
       );
     } catch (error) {
-      console.error("❌ Failed to initialize application:", error);
+      console.error("Failed to initialize application:", error);
       this._handleInitializationError(error);
     }
   }
@@ -132,7 +137,7 @@ class MeetingRoomApp {
    */
   async refreshData() {
     try {
-      console.log("🔄 Manually refreshing data...");
+      console.log("Manually refreshing data...");
 
       // Force a new data fetch from server
       const cachedData = await this.managers.meetingDataManager.forceRefresh();
@@ -434,12 +439,12 @@ class MeetingRoomApp {
           }
         });
 
-        console.log("✅ Manual recovery completed");
+        console.log("Manual recovery completed");
         return;
       }
 
       // Fallback: only reload if not in iframe
-      console.warn("⚠️ Using page reload as last resort");
+      console.warn("Using page reload as last resort");
       window.location.reload();
     }
   }
@@ -448,12 +453,12 @@ class MeetingRoomApp {
    * Handle room navigation
    */
   _handleRoomNavigation(detail = {}) {
-    console.log("🚪 Handling room navigation:", detail);
+    console.log("Handling room navigation:", detail);
 
     const { roomName, roomKey } = detail;
 
     if (!roomName && !roomKey) {
-      console.warn("⚠️ Room navigation called without room identifier");
+      console.warn("Room navigation called without room identifier");
       return;
     }
 
@@ -474,9 +479,9 @@ class MeetingRoomApp {
         window.history.pushState(null, null, newHash);
       }
 
-      console.log("✅ Room navigation completed");
+      console.log("Room navigation completed");
     } catch (error) {
-      console.error("❌ Error during room navigation:", error);
+      console.error("Error during room navigation:", error);
     }
   }
 
@@ -499,7 +504,7 @@ class MeetingRoomApp {
    */
   async refreshData() {
     try {
-      console.log("🔄 Manually refreshing data...");
+      console.log("Manually refreshing data...");
 
       // Force a new data fetch from server
       const cachedData = await this.managers.meetingDataManager.forceRefresh();

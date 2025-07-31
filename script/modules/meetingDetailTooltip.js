@@ -31,7 +31,7 @@ class MeetingDetailTooltipManager {
     // Initialize event listeners
     this.attachEventListeners();
 
-    console.log("✅ Meeting Detail Tooltip Manager initialized");
+    console.log("Meeting Detail Tooltip Manager initialized");
   }
 
   createTooltipContainer() {

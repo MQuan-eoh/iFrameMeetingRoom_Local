@@ -37,7 +37,7 @@ export class ScheduleBookingManager {
 
     // Listen for meeting data updates to refresh calendar
     document.addEventListener("meetingDataUpdated", (event) => {
-      console.log("🔄 Meeting data updated, refreshing schedule view");
+      console.log("Meeting data updated, refreshing schedule view");
       // Small delay to ensure data is fully updated
       setTimeout(() => {
         this._renderMeetingsForCurrentWeek();
@@ -46,7 +46,7 @@ export class ScheduleBookingManager {
 
     // Listen for room status updates to refresh calendar
     document.addEventListener("roomStatusUpdate", (event) => {
-      console.log("🔄 Room status updated, refreshing schedule view");
+      console.log("Room status updated, refreshing schedule view");
       // Small delay to ensure data is fully updated
       setTimeout(() => {
         this._renderMeetingsForCurrentWeek();
@@ -55,7 +55,7 @@ export class ScheduleBookingManager {
 
     // Listen for room filter changes to re-apply filter after meeting data updates
     document.addEventListener("roomFilterChanged", (event) => {
-      console.log("🎯 Room filter changed, applying filter to schedule view");
+      console.log("Room filter changed, applying filter to schedule view");
       const filter = event.detail?.filter;
       if (filter) {
         // Small delay to ensure meetings are rendered first
@@ -104,7 +104,7 @@ export class ScheduleBookingManager {
       this._renderMeetingsForCurrentWeek();
     }, 1000);
 
-    console.log("✅ Schedule Booking Manager initialized");
+    console.log("Schedule Booking Manager initialized");
   }
 
   /**
@@ -876,7 +876,7 @@ export class ScheduleBookingManager {
    * Render week view with proper dates
    */
   _renderWeekView() {
-    console.log("📅 Rendering week view");
+    console.log("Rendering week view");
 
     // Use Vietnam timezone (UTC+7) for all date calculations
     // Get current date in Vietnam timezone
@@ -901,7 +901,7 @@ export class ScheduleBookingManager {
       startOfWeek.setDate(startOfWeek.getDate() - 7);
     }
 
-    console.log(`📅 Week starting from: ${startOfWeek.toLocaleDateString()}`);
+    console.log(`Week starting from: ${startOfWeek.toLocaleDateString()}`);
 
     // Update each day column with the correct date
     for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
@@ -960,7 +960,7 @@ export class ScheduleBookingManager {
    * Render all meetings for current week view
    */
   _renderMeetingsForCurrentWeek() {
-    console.log("📅 Rendering meetings for current week view");
+    console.log("Rendering meetings for current week view");
 
     // First clear all existing meeting elements
     document.querySelectorAll(".meeting-event").forEach((el) => el.remove());
@@ -968,16 +968,16 @@ export class ScheduleBookingManager {
     // Get all meetings data
     const allMeetings = window.currentMeetingData || [];
     if (!allMeetings || allMeetings.length === 0) {
-      console.log("📅 No meetings data available");
+      console.log("No meetings data available");
       return;
     }
 
-    console.log(`📅 Found ${allMeetings.length} total meetings in data`);
+    console.log(`Found ${allMeetings.length} total meetings in data`);
 
     // Get dates for each day in current view
     const dayColumns = document.querySelectorAll(".day-column");
     if (!dayColumns || dayColumns.length === 0) {
-      console.log("📅 No day columns found in week view");
+      console.log("No day columns found in week view");
       return;
     }
 
@@ -1009,7 +1009,7 @@ export class ScheduleBookingManager {
       meetingsRendered++;
     });
 
-    console.log(`📅 Rendered ${meetingsRendered} meetings in week view`);
+    console.log(`Rendered ${meetingsRendered} meetings in week view`);
 
     // Auto-apply current room filter if one is active
     if (
@@ -1018,7 +1018,7 @@ export class ScheduleBookingManager {
       window.roomManager.currentRoomFilter !== "all"
     ) {
       console.log(
-        `🎯 Auto-applying room filter: ${window.roomManager.currentRoomFilter}`
+        `Auto-applying room filter: ${window.roomManager.currentRoomFilter}`
       );
       setTimeout(() => {
         window.roomManager._filterScheduleViewMeetings(

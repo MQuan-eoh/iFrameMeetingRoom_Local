@@ -21,7 +21,7 @@ export class DateTimeUtils {
       // Already in Vietnam timezone, use local time directly
       vietnamTime = now;
       console.log(
-        `📅 Using local time (already in Vietnam timezone UTC+${TIME_CONFIG.TIMEZONE_OFFSET})`
+        ` Using local time (already in Vietnam timezone UTC+${TIME_CONFIG.TIMEZONE_OFFSET})`
       );
     } else {
       // Convert to Vietnam timezone
@@ -29,7 +29,7 @@ export class DateTimeUtils {
         TIME_CONFIG.TIMEZONE_OFFSET - timezoneOffsetHours;
       vietnamTime = new Date(now.getTime() + offsetDifference * 60 * 60 * 1000);
       console.log(
-        `📅 Converting from UTC+${timezoneOffsetHours} to Vietnam time UTC+${TIME_CONFIG.TIMEZONE_OFFSET}`
+        `Converting from UTC+${timezoneOffsetHours} to Vietnam time UTC+${TIME_CONFIG.TIMEZONE_OFFSET}`
       );
     }
 
@@ -37,7 +37,7 @@ export class DateTimeUtils {
     const month = String(vietnamTime.getMonth() + 1).padStart(2, "0");
     const year = vietnamTime.getFullYear();
 
-    console.log(`📅 Current Vietnam date: ${date}/${month}/${year}`);
+    console.log(`Current Vietnam date: ${date}/${month}/${year}`);
     return `${date}/${month}/${year}`;
   }
 
@@ -53,7 +53,7 @@ export class DateTimeUtils {
       // Already in Vietnam timezone, use local time directly
       vietnamTime = now;
       console.log(
-        `⏰ Using local time (already in Vietnam timezone UTC+${TIME_CONFIG.TIMEZONE_OFFSET})`
+        `Using local time (already in Vietnam timezone UTC+${TIME_CONFIG.TIMEZONE_OFFSET})`
       );
     } else {
       // Convert to Vietnam timezone
@@ -61,7 +61,7 @@ export class DateTimeUtils {
         TIME_CONFIG.TIMEZONE_OFFSET - timezoneOffsetHours;
       vietnamTime = new Date(now.getTime() + offsetDifference * 60 * 60 * 1000);
       console.log(
-        `⏰ Converting from UTC+${timezoneOffsetHours} to Vietnam time UTC+${TIME_CONFIG.TIMEZONE_OFFSET}`
+        `Converting from UTC+${timezoneOffsetHours} to Vietnam time UTC+${TIME_CONFIG.TIMEZONE_OFFSET}`
       );
     }
 
@@ -69,7 +69,7 @@ export class DateTimeUtils {
     const minutes = String(vietnamTime.getMinutes()).padStart(2, "0");
     const seconds = String(vietnamTime.getSeconds()).padStart(2, "0");
 
-    console.log(`⏰ Current Vietnam time: ${hours}:${minutes}:${seconds}`);
+    console.log(`Current Vietnam time: ${hours}:${minutes}:${seconds}`);
     return `${hours}:${minutes}:${seconds}`;
   }
 
@@ -228,7 +228,7 @@ export class DateTimeUtils {
 
   static timeToMinutes(timeStr) {
     if (!timeStr) {
-      console.warn("⚠️ Attempted to convert empty time string to minutes");
+      console.warn("Attempted to convert empty time string to minutes");
       return 0;
     }
 
@@ -242,14 +242,14 @@ export class DateTimeUtils {
 
       // Log for debugging
       console.log(
-        `⏰ Converting time ${timeStr} to minutes: ${hours}h ${minutes}m = ${
+        `Converting time ${timeStr} to minutes: ${hours}h ${minutes}m = ${
           hours * 60 + minutes
         } minutes`
       );
 
       return hours * 60 + minutes;
     } catch (error) {
-      console.error("❌ Error converting time to minutes:", timeStr, error);
+      console.error("Error converting time to minutes:", timeStr, error);
       return 0;
     }
   }
@@ -263,7 +263,7 @@ export class DateTimeUtils {
 
   static isTimeInRangeWithSeconds(currentTime, startTime, endTime) {
     if (!currentTime || !startTime || !endTime) {
-      console.warn("⚠️ Missing time parameters:", {
+      console.warn("Missing time parameters:", {
         currentTime,
         startTime,
         endTime,
@@ -299,7 +299,7 @@ export class DateTimeUtils {
       }
 
       console.log(
-        `⏱️ VIETNAM TIME CHECK - Current: ${normalizedCurrentTime}, Start: ${normalizedStartTime}, End: ${normalizedEndTime}`
+        `VIETNAM TIME CHECK - Current: ${normalizedCurrentTime}, Start: ${normalizedStartTime}, End: ${normalizedEndTime}`
       );
 
       // Convert times to minutes for easy comparison
@@ -308,19 +308,19 @@ export class DateTimeUtils {
       const end = this.timeToMinutes(normalizedEndTime);
 
       console.log(
-        `⏱️ Time in minutes - Current: ${current}, Start: ${start}, End: ${end}`
+        `Time in minutes - Current: ${current}, Start: ${start}, End: ${end}`
       );
 
       const isInRange = current >= start && current <= end;
       console.log(
-        `🔍 Time check result: ${normalizedCurrentTime} in range ${normalizedStartTime}-${normalizedEndTime}? ${
-          isInRange ? "YES ✅" : "NO ❌"
+        `Time check result: ${normalizedCurrentTime} in range ${normalizedStartTime}-${normalizedEndTime}? ${
+          isInRange ? "YES" : "NO"
         }`
       );
 
       return isInRange;
     } catch (error) {
-      console.error("❌ Error in time range check:", error, {
+      console.error("Error in time range check:", error, {
         currentTime,
         startTime,
         endTime,
@@ -564,11 +564,11 @@ export class ValidationUtils {
 export class DOMUtils {
   static findRoomSection(roomCode) {
     if (!roomCode) {
-      console.error("❌ findRoomSection called with null/empty roomCode");
+      console.error("findRoomSection called with null/empty roomCode");
       return null;
     }
 
-    console.log(`🔍 Finding room section for: "${roomCode}"`);
+    console.log(`Finding room section for: "${roomCode}"`);
 
     // Normalized Room Name Map for better matching - add all possible variations
     const roomNameMap = {
@@ -594,15 +594,15 @@ export class DOMUtils {
     };
 
     const normalizedRoomCode = normalizeRoomName(roomCode);
-    console.log(`🔍 Normalized room code: "${normalizedRoomCode}"`);
+    console.log(`Normalized room code: "${normalizedRoomCode}"`);
 
     // First try to find in rooms-container which is the main container
     const roomsContainer = document.querySelector(".rooms-container");
     if (roomsContainer) {
-      console.log("🔍 Found rooms-container, searching within it");
+      console.log("Found rooms-container, searching within it");
       const roomSections = roomsContainer.querySelectorAll(".room-section");
       console.log(
-        `🔍 Found ${roomSections.length} room sections in rooms-container`
+        `Found ${roomSections.length} room sections in rooms-container`
       );
 
       // Strategy 1: Find by room-number element text content
@@ -611,13 +611,13 @@ export class DOMUtils {
         if (roomElement) {
           const sectionRoomName = normalizeRoomName(roomElement.textContent);
           console.log(
-            `🔍 Comparing: "${sectionRoomName}" with "${normalizedRoomCode}"`
+            `Comparing: "${sectionRoomName}" with "${normalizedRoomCode}"`
           );
 
           // Try exact match first
           if (sectionRoomName === normalizedRoomCode) {
             console.log(
-              `✅ Found exact matching room section: ${roomElement.textContent}`
+              `Found exact matching room section: ${roomElement.textContent}`
             );
             return section;
           }
@@ -628,7 +628,7 @@ export class DOMUtils {
             normalizedRoomCode.includes(sectionRoomName)
           ) {
             console.log(
-              `✅ Found partial matching room section: ${roomElement.textContent}`
+              `Found partial matching room section: ${roomElement.textContent}`
             );
             return section;
           }
@@ -643,7 +643,7 @@ export class DOMUtils {
                 sectionRoomName.includes(key) ||
                 key.includes(sectionRoomName)
               ) {
-                console.log(`✅ Found room section via room map key: ${key}`);
+                console.log(`Found room section via room map key: ${key}`);
                 return section;
               }
 
@@ -654,7 +654,7 @@ export class DOMUtils {
                   alias.includes(sectionRoomName)
                 ) {
                   console.log(
-                    `✅ Found room section via room map alias: ${alias}`
+                    `Found room section via room map alias: ${alias}`
                   );
                   return section;
                 }
@@ -673,7 +673,7 @@ export class DOMUtils {
           normalizedRoomCode.includes("lầu 3") ||
           normalizedRoomCode.includes("phòng 3")
         ) {
-          console.log(`✅ Using room section at index 0 for: ${roomCode}`);
+          console.log(`Using room section at index 0 for: ${roomCode}`);
           return roomSections[0];
         } else if (
           normalizedRoomCode.includes("4") ||
@@ -681,11 +681,11 @@ export class DOMUtils {
           normalizedRoomCode.includes("phòng 4")
         ) {
           if (roomSections.length > 1) {
-            console.log(`✅ Using room section at index 1 for: ${roomCode}`);
+            console.log(`Using room section at index 1 for: ${roomCode}`);
             return roomSections[1];
           } else {
             console.log(
-              `✅ Only one room section found, using it for: ${roomCode}`
+              `Only one room section found, using it for: ${roomCode}`
             );
             return roomSections[0];
           }
@@ -696,7 +696,7 @@ export class DOMUtils {
     // If not found in rooms-container, try all room sections in the document
     const allRoomSections = document.querySelectorAll(".room-section");
     console.log(
-      `🔍 Searching in all ${allRoomSections.length} room sections in document`
+      `Searching in all ${allRoomSections.length} room sections in document`
     );
 
     // Strategy 1: Find by room-number element text content
@@ -715,7 +715,7 @@ export class DOMUtils {
     });
 
     if (byRoomNumber) {
-      console.log(`✅ Found room section by room-number (document-wide)`);
+      console.log(`Found room section by room-number (document-wide)`);
       return byRoomNumber;
     }
 
@@ -728,7 +728,7 @@ export class DOMUtils {
     );
 
     if (byAttribute) {
-      console.log(`✅ Found room section by data-room attribute`);
+      console.log(`Found room section by data-room attribute`);
       return byAttribute;
     }
 
@@ -745,7 +745,7 @@ export class DOMUtils {
     });
 
     if (byHeading) {
-      console.log(`✅ Found room section by heading content`);
+      console.log(`Found room section by heading content`);
       return byHeading;
     }
 
@@ -755,20 +755,18 @@ export class DOMUtils {
         normalizedRoomCode.includes("3") ||
         normalizedRoomCode.includes("lầu 3")
       ) {
-        console.log(`✅ Using first room section as fallback for: ${roomCode}`);
+        console.log(`Using first room section as fallback for: ${roomCode}`);
         return allRoomSections[0];
       } else if (
         normalizedRoomCode.includes("4") ||
         normalizedRoomCode.includes("lầu 4")
       ) {
         if (allRoomSections.length > 1) {
-          console.log(
-            `✅ Using second room section as fallback for: ${roomCode}`
-          );
+          console.log(`Using second room section as fallback for: ${roomCode}`);
           return allRoomSections[1];
         } else {
           console.log(
-            `✅ Only one room section found, using it as fallback for: ${roomCode}`
+            `Only one room section found, using it as fallback for: ${roomCode}`
           );
           return allRoomSections[0];
         }
@@ -776,7 +774,7 @@ export class DOMUtils {
     }
 
     console.warn(
-      `❌ Could not find room section for "${roomCode}" after trying all strategies`
+      `Could not find room section for "${roomCode}" after trying all strategies`
     );
     return null;
   }
