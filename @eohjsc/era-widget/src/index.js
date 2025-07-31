@@ -1,4 +1,4 @@
-const ALLOW_ORIGINS = [
+const ALLOW_ORIGINS_ERA = [
   "http://localhost:3000",
   "http://192.168.1.47:3000",
   "http://localhost:3001",
@@ -7,13 +7,13 @@ const ALLOW_ORIGINS = [
   "https://staging-app.e-ra.io",
   "https://ots.e-ra.io",
 ];
-console.log("Allowed origins:", ALLOW_ORIGINS);
+console.log("Allowed origins:", ALLOW_ORIGINS_ERA);
 
 class EraWidget {
   constructor() {}
 
   init({
-    origins = ALLOW_ORIGINS,
+    origins = ALLOW_ORIGINS_ERA,
     onConfiguration,
     onValues,
     onHistories,

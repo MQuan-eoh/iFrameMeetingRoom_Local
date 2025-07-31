@@ -5,7 +5,7 @@
 
 import { DateTimeUtils, FormatUtils, ValidationUtils } from "../utils/core.js";
 import { TIME_CONFIG } from "../config/constants.js";
-import dataService from "../services/dataService.js";
+import DataService from "../services/dataService.js";
 
 export class MeetingDataManager {
   constructor() {
@@ -24,6 +24,7 @@ export class MeetingDataManager {
 
     // Setup periodic sync
     this._setupPeriodicSync();
+    this.dataService = new DataService();
   }
 
   /**
@@ -102,7 +103,7 @@ export class MeetingDataManager {
     this.isLoading = true;
     try {
       console.log("🔍 Requesting meetings from server...");
-      const meetings = await dataService.getMeetings();
+      const meetings = await this.dataService.getMeetings();
 
       // Keep track of current data for comparison
       const currentData = this.getCachedMeetingData();
@@ -210,18 +211,16 @@ export class MeetingDataManager {
   async saveMeetingsToServer() {
     try {
       const meetings = this.getCachedMeetingData();
-      console.log(`📤 Saving ${meetings.length} meetings to server...`);
+      console.log(`Saving ${meetings.length} meetings to server...`);
 
-      const result = await dataService.updateAllMeetings(meetings);
+      const result = await this.dataService.updateAllMeetings(meetings);
       this.isOnline = true;
       this.lastSync = new Date();
 
       // Store the update timestamp in localStorage for cross-tab/window synchronization
       localStorage.setItem("meetingDataUpdated", new Date().toISOString());
 
-      console.log(
-        `✅ Successfully saved ${meetings.length} meetings to server`
-      );
+      console.log(`Successfully saved ${meetings.length} meetings to server`);
 
       // Trigger events to update the UI
       document.dispatchEvent(
@@ -238,7 +237,7 @@ export class MeetingDataManager {
 
       return true;
     } catch (error) {
-      console.error("❌ Failed to save meetings to server:", error);
+      console.error("Failed to save meetings to server:", error);
       this.isOnline = false;
 
       document.dispatchEvent(
@@ -260,9 +259,7 @@ export class MeetingDataManager {
       console.log("🔄 Performing periodic server data sync...");
       this.loadMeetingsFromServer()
         .then((meetings) => {
-          console.log(
-            `📊 Periodic sync complete - ${meetings.length} meetings`
-          );
+          console.log(`Periodic sync complete - ${meetings.length} meetings`);
           // Explicitly trigger room status update to refresh UI
           this._triggerRoomStatusUpdate(this.getTodayMeetings(meetings));
         })
@@ -289,7 +286,7 @@ export class MeetingDataManager {
 
     // Listen for online/offline events
     window.addEventListener("online", () => {
-      console.log("🌐 Browser went online, syncing data...");
+      console.log(" Browser went online, syncing data...");
       this.loadMeetingsFromServer().then((meetings) => {
         this.saveMeetingsToServer();
         // Force UI refresh
@@ -300,29 +297,25 @@ export class MeetingDataManager {
     // Listen for API connection errors
     window.addEventListener("apiConnectionError", () => {
       this.isOnline = false;
-      console.log(
-        "⚠️ API connection error detected, will attempt reconnection"
-      );
+      console.log(" API connection error detected, will attempt reconnection");
 
       // Try to reconnect after a short delay with increasing backoff
       const attemptReconnection = (attempt = 1, maxAttempts = 5) => {
         if (attempt > maxAttempts) {
-          console.warn(`⚠️ Failed to reconnect after ${maxAttempts} attempts`);
+          console.warn(` Failed to reconnect after ${maxAttempts} attempts`);
           return;
         }
 
         const delay = Math.min(attempt * 3000, 15000); // Max 15 second delay
         console.log(
-          `🔄 Reconnection attempt ${attempt}/${maxAttempts} in ${
-            delay / 1000
-          }s`
+          ` Reconnection attempt ${attempt}/${maxAttempts} in ${delay / 1000}s`
         );
 
         setTimeout(() => {
           this.loadMeetingsFromServer()
             .then((meetings) => {
               if (meetings && meetings.length > 0) {
-                console.log("✅ Reconnection successful");
+                console.log(" Reconnection successful");
                 this._triggerMeetingUpdate(meetings);
               } else {
                 attemptReconnection(attempt + 1, maxAttempts);
@@ -351,9 +344,7 @@ export class MeetingDataManager {
     // Listen for storage changes from other tabs/windows
     window.addEventListener("storage", (event) => {
       if (event.key === "meetingDataUpdated") {
-        console.log(
-          "📢 Meeting data updated in another tab/window, refreshing"
-        );
+        console.log(" Meeting data updated in another tab/window, refreshing");
         this.loadMeetingsFromServer();
       }
     });
@@ -401,14 +392,14 @@ export class MeetingDataManager {
 
     try {
       // Try to save to server first
-      if (dataService.isConnected) {
+      if (this.dataService.isConnected) {
         console.log("📤 Creating meeting on server:", newMeeting);
-        const savedMeeting = await dataService.createMeeting(newMeeting);
+        const savedMeeting = await this.dataService.createMeeting(newMeeting);
         // If server save successful, update with server data
         if (savedMeeting && savedMeeting.id) {
           newMeeting.id = savedMeeting.id; // Use server-generated ID if available
           console.log(
-            "✅ Meeting created successfully on server with ID:",
+            " Meeting created successfully on server with ID:",
             savedMeeting.id
           );
         }
@@ -416,11 +407,11 @@ export class MeetingDataManager {
         this.isOnline = true;
       } else {
         console.warn(
-          "⚠️ Server not connected, will attempt to save locally only"
+          " Server not connected, will attempt to save locally only"
         );
       }
     } catch (error) {
-      console.error("❌ Failed to save meeting to server:", error);
+      console.error(" Failed to save meeting to server:", error);
       this.isOnline = false;
       // Continue with local save on error
     }
@@ -434,19 +425,19 @@ export class MeetingDataManager {
     try {
       // Always try to sync all data to ensure consistency
       await this.saveMeetingsToServer();
-      console.log("✅ Full sync completed successfully");
+      console.log(" Full sync completed successfully");
 
       // Force a refresh from server to ensure all clients have latest data
       setTimeout(() => {
         console.log(
-          "🔄 Performing additional data refresh to confirm synchronization"
+          " Performing additional data refresh to confirm synchronization"
         );
         this.loadMeetingsFromServer().catch((err) =>
           console.warn("Post-creation data refresh failed:", err)
         );
       }, 2000);
     } catch (err) {
-      console.warn("⚠️ Background sync failed after create:", err);
+      console.warn(" Background sync failed after create:", err);
     }
 
     // Trigger update event with explicit data refresh
@@ -525,11 +516,11 @@ export class MeetingDataManager {
 
     try {
       // Try to save to server
-      if (dataService.isConnected) {
-        await dataService.updateMeeting(meetingId, updatedMeeting);
+      if (this.dataService.isConnected) {
+        await this.dataService.updateMeeting(meetingId, updatedMeeting);
         this.lastSync = new Date();
         this.isOnline = true;
-        console.log(`📤 Meeting ${meetingId} updated on server`);
+        console.log(` Meeting ${meetingId} updated on server`);
       } else {
         console.warn("Server connection unavailable, updating locally only");
       }
@@ -848,7 +839,7 @@ export class MeetingDataManager {
       const cachedData = this.getCachedMeetingData();
 
       // Load fresh data from server
-      const meetings = await dataService.getMeetings();
+      const meetings = await this.dataService.getMeetings();
 
       if (Array.isArray(meetings)) {
         this.setCachedMeetingData(meetings);
