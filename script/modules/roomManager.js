@@ -80,7 +80,7 @@ export class RoomManager {
 
     const roomsToUpdate = Object.values(ROOM_CONFIG.ROOMS);
     console.log(
-      `🏢 Updating ${roomsToUpdate.length} rooms: ${roomsToUpdate.join(", ")}`
+      `Updating ${roomsToUpdate.length} rooms: ${roomsToUpdate.join(", ")}`
     );
 
     roomsToUpdate.forEach((roomName) => {
@@ -137,7 +137,7 @@ export class RoomManager {
     if (roomsContainer) {
       this._ensureRoomSections(roomsContainer);
     } else {
-      console.error(`❌ Cannot find rooms-container element in DOM!`);
+      console.error(`Cannot find rooms-container element in DOM!`);
     }
 
     // Find room section in DOM with improved search
@@ -821,14 +821,12 @@ export class RoomManager {
 
     // Last resort - only reload if we're in an iframe or if explicitly needed
     console.warn(
-      "⚠️ No other navigation methods available, checking if reload is safe"
+      "No other navigation methods available, checking if reload is safe"
     );
 
     // Check if we're in an iframe - if so, avoid reload
     if (window.self !== window.top) {
-      console.warn(
-        "🚫 In iframe context - avoiding page reload to prevent crash"
-      );
+      console.warn("In iframe context - avoiding page reload to prevent crash");
 
       // Try to reset view manually without reload
       const meetingContainer = document.querySelector(".meeting-container");
@@ -909,9 +907,7 @@ export class RoomManager {
 
     // Also listen for dashboard updates as they might contain fresh meeting data
     document.addEventListener("dashboardUpdate", (event) => {
-      console.log(
-        "🔄 Dashboard update event received, checking for room updates"
-      );
+      console.log("Dashboard update event received, checking for room updates");
       const todayMeetings = event.detail?.todayMeetings;
       if (todayMeetings && todayMeetings.length > 0) {
         this.updateRoomStatus(todayMeetings);
@@ -1050,9 +1046,7 @@ export class RoomManager {
       .map(([name]) => name);
 
     if (missingElements.length > 0) {
-      console.warn(
-        `⚠️ Missing room UI elements: ${missingElements.join(", ")}`
-      );
+      console.warn(`Missing room UI elements: ${missingElements.join(", ")}`);
 
       // Try alternative selectors for common issues
       if (!standardElements.titleElement) {
@@ -1060,7 +1054,7 @@ export class RoomManager {
           roomSection.querySelector(".meeting-title") ||
           roomSection.querySelector('[class*="meeting-title"]');
         console.log(
-          `🔍 Alternative title element:`,
+          `Alternative title element:`,
           standardElements.titleElement
         );
       }
@@ -1070,7 +1064,7 @@ export class RoomManager {
           roomSection.querySelector(".start-time") ||
           roomSection.querySelector('[class*="start-time"]');
         console.log(
-          `🔍 Alternative start time element:`,
+          `Alternative start time element:`,
           standardElements.startTimeElement
         );
       }
@@ -1503,7 +1497,7 @@ export class RoomManager {
     });
 
     console.log(
-      `📊 Filter results: ${visibleCount} visible, ${hiddenCount} hidden`
+      `Filter results: ${visibleCount} visible, ${hiddenCount} hidden`
     );
 
     // Add visual feedback for empty filter results
@@ -1571,7 +1565,7 @@ export class RoomManager {
     roomsToEnsure.forEach((roomName) => {
       const normalizedRoomName = roomName.toLowerCase().trim();
       if (!existingRooms.has(normalizedRoomName)) {
-        console.log(`➕ Creating missing room section for "${roomName}"`);
+        console.log(` Creating missing room section for "${roomName}"`);
 
         // Create new room section
         const roomSection = document.createElement("div");
@@ -1625,7 +1619,7 @@ export class RoomManager {
    * Handle light control toggle
    */
   _handleLightControl(roomName) {
-    console.log(`🔅 Light control button clicked for room: ${roomName}`);
+    console.log(`Light control button clicked for room: ${roomName}`);
 
     const lightControlImage = document.getElementById("lightControlImage");
     const lightStatusIndicator = document.getElementById(
@@ -1678,7 +1672,7 @@ export class RoomManager {
    */
   _executeRoomLightControl(roomName, turnOn) {
     console.log(
-      `🌐 Executing light control for ${roomName}: ${turnOn ? "ON" : "OFF"}`
+      ` Executing light control for ${roomName}: ${turnOn ? "ON" : "OFF"}`
     );
 
     // Check if the global light control function is available
@@ -1691,7 +1685,7 @@ export class RoomManager {
         // Optional: Show success feedback to user
         this._showLightControlFeedback(roomName, turnOn, true);
       } else {
-        console.error(`❌ Light control failed for ${roomName}`);
+        console.error(`Light control failed for ${roomName}`);
 
         // Revert UI changes on failure
         this._revertLightControlUI(turnOn);
@@ -1754,9 +1748,6 @@ export class RoomManager {
     const status = success ? "thành công" : "thất bại";
 
     console.log(`Light control ${status}: ${action} đèn ${roomName}`);
-
-    // You can add toast notification or other UI feedback here
-    // For now, just console log
   }
 }
 
