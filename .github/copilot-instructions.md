@@ -21,7 +21,7 @@
 - **Cấu trúc file:** Phân chia code thành các file/module theo từng cụm chức năng cụ thể. Tránh việc viết tất cả vào một file quá dài gây khó khăn cho việc debug và bảo trì.
 - **Comment (Bình luận) trong code:**
   - Comment phải rõ ràng, súc tích và viết bằng tiếng Anh.
-  - **TUYỆT ĐỐI KHÔNG** sử dụng icon (biểu tượng cảm xúc) trong comment.
+  - **TUYỆT ĐỐI KHÔNG** sử dụng icon (biểu tượng cảm xúc) trong commen và console log.
   - Để phân tách các khu vực code hoặc làm nổi bật một section (ví dụ: console log), hãy sử dụng một hàng dấu thăng dài: `####################`.
 - **Bảo mật (Security):**
   - Mọi đoạn code được tạo ra phải tuân thủ các tiêu chuẩn bảo mật tốt nhất.

@@ -613,7 +613,7 @@ export class UIManager {
           body: JSON.stringify(payload),
         });
 
-        console.log("📡 Response received:");
+        console.log("Response received:");
         console.log("   Status:", response.status);
         console.log("   Status Text:", response.statusText);
         console.log(
@@ -623,7 +623,7 @@ export class UIManager {
 
         // Get response text first to debug what we're receiving
         const responseText = await response.text();
-        console.log(" Raw response text:", responseText.substring(0, 500));
+        console.log("Raw response text:", responseText.substring(0, 500));
 
         // Check if response failed
         if (!response.ok) {
@@ -683,8 +683,8 @@ export class UIManager {
           throw new Error(result.error || "Upload failed");
         }
       } catch (error) {
-        console.error(`❌ Failed to upload ${type} background:`, error);
-        console.error("🔍 Error details:", {
+        console.error(`Failed to upload ${type} background:`, error);
+        console.error("Error details:", {
           name: error.name,
           message: error.message,
           stack: error.stack,
@@ -726,9 +726,9 @@ export class UIManager {
 
     resetMainBtn.addEventListener("click", async () => {
       try {
-        console.log("🗑️ Starting main background reset...");
+        console.log("Starting main background reset...");
         const resetUrl = `${API_BASE_URL}/api/backgrounds/main`;
-        console.log("🌐 Reset URL:", resetUrl);
+        console.log("Reset URL:", resetUrl);
 
         const response = await fetch(resetUrl, {
           method: "DELETE",
@@ -747,9 +747,9 @@ export class UIManager {
         let result;
         try {
           result = JSON.parse(responseText);
-          console.log(" Successfully parsed JSON:", result);
+          console.log("Successfully parsed JSON:", result);
         } catch (parseError) {
-          console.error("❌ JSON Parse Error in reset:", parseError);
+          console.error("JSON Parse Error in reset:", parseError);
           throw new Error(
             `Server returned non-JSON response: ${responseText.substring(
               0,
@@ -767,7 +767,7 @@ export class UIManager {
           throw new Error(result.error || "Reset failed");
         }
       } catch (error) {
-        console.error("❌ Failed to reset main background:", error);
+        console.error("Failed to reset main background:", error);
         this._showNotification(
           `Lỗi khi reset hình nền: ${error.message}`,
           "error"
@@ -784,26 +784,26 @@ export class UIManager {
 
   async _applyStoredBackgrounds(meetingScreen) {
     try {
-      console.log("🔄 Loading stored backgrounds...");
+      console.log("Loading stored backgrounds...");
       const backgroundsUrl = `${API_BASE_URL}/api/backgrounds`;
-      console.log("🌐 Backgrounds URL:", backgroundsUrl);
+      console.log("Backgrounds URL:", backgroundsUrl);
 
       const response = await fetch(backgroundsUrl);
 
-      console.log("📡 Backgrounds response received:");
+      console.log("Backgrounds response received:");
       console.log("   Status:", response.status);
       console.log("   Status Text:", response.statusText);
 
       const responseText = await response.text();
-      console.log("📄 Raw response text:", responseText);
+      console.log("Raw response text:", responseText);
 
       let result;
       try {
         result = JSON.parse(responseText);
-        console.log("✅ Successfully parsed JSON:", result);
+        console.log("Successfully parsed JSON:", result);
       } catch (parseError) {
         console.error(
-          "❌ JSON Parse Error in _applyStoredBackgrounds:",
+          "JSON Parse Error in _applyStoredBackgrounds:",
           parseError
         );
         throw new Error(
@@ -816,7 +816,7 @@ export class UIManager {
 
       if (result.success) {
         const { backgrounds } = result;
-        console.log("📷 Current backgrounds config:", backgrounds);
+        console.log("Current backgrounds config:", backgrounds);
 
         // Apply main background if exists
         if (backgrounds.mainBackground && meetingScreen) {
@@ -830,17 +830,17 @@ export class UIManager {
           );
         }
       } else {
-        console.log("📷 No stored backgrounds found, using defaults");
+        console.log("No stored backgrounds found, using defaults");
       }
     } catch (error) {
-      console.error("❌ Failed to load stored backgrounds:", error);
-      console.error("🔍 Error details:", {
+      console.error("Failed to load stored backgrounds:", error);
+      console.error("Error details:", {
         name: error.name,
         message: error.message,
         stack: error.stack,
       });
       // Fallback to localStorage for backwards compatibility
-      console.log("🔄 Falling back to localStorage...");
+      console.log("Falling back to localStorage...");
       this._applyStoredBackgroundsFromLocalStorage(meetingScreen);
     }
   }
@@ -882,7 +882,7 @@ export class UIManager {
    * Renders the main dashboard view without page reload
    */
   renderMainDashboard() {
-    console.log("🏠 Rendering main dashboard view");
+    console.log("Rendering main dashboard view");
 
     try {
       // Check if meeting-container has room-specific content that needs to be cleared
@@ -901,10 +901,10 @@ export class UIManager {
           meetingContainer.querySelector(".content-wrapper");
         if (contentWrapper) {
           contentWrapper.style.display = "";
-          console.log("👁️ Showing main dashboard content");
+          console.log("Showing main dashboard content");
         } else {
           console.log(
-            "⚠️ content-wrapper missing, meeting-container may have been cleared incorrectly"
+            "content-wrapper missing, meeting-container may have been cleared incorrectly"
           );
 
           // If the main structure is missing, we need to reload the page
@@ -916,13 +916,13 @@ export class UIManager {
             window.location.href = "index.html";
             return false;
           } else {
-            console.log("🔄 Reloading page to restore main structure");
+            console.log("Reloading page to restore main structure");
             window.location.reload();
             return false;
           }
         }
 
-        console.log("✅ Meeting container structure preserved");
+        console.log("Meeting container structure preserved");
       }
 
       // Ensure main dashboard elements are visible
@@ -939,9 +939,9 @@ export class UIManager {
           element.style.display = "";
           element.style.visibility = "visible";
           element.style.opacity = "1";
-          console.log(`✅ Restored visibility for: ${selector}`);
+          console.log(`Restored visibility for: ${selector}`);
         } else {
-          console.warn(`⚠️ Element not found: ${selector}`);
+          console.warn(`Element not found: ${selector}`);
         }
       });
 
@@ -958,25 +958,25 @@ export class UIManager {
       // Ensure room sections exist in rooms-container
       const roomsContainer = document.querySelector(".rooms-container");
       if (roomsContainer) {
-        console.log("🏢 Found rooms-container, checking room sections...");
+        console.log("Found rooms-container, checking room sections...");
 
         // Check if room sections exist
         const existingRoomSections =
           roomsContainer.querySelectorAll(".room-section");
         console.log(
-          `🔍 Found ${existingRoomSections.length} existing room sections`
+          `Found ${existingRoomSections.length} existing room sections`
         );
 
         // If no room sections exist, trigger room manager to recreate them
         if (existingRoomSections.length === 0) {
-          console.log("🔧 No room sections found, triggering recreation...");
+          console.log("No room sections found, triggering recreation...");
 
           // Use room manager to ensure room sections
           if (window.roomManager && window.roomManager._ensureRoomSections) {
             window.roomManager._ensureRoomSections(roomsContainer);
           } else {
             console.warn(
-              "⚠️ Room manager not available, creating basic room sections"
+              "Room manager not available, creating basic room sections"
             );
             this._createBasicRoomSections(roomsContainer);
           }
@@ -985,7 +985,7 @@ export class UIManager {
         // Trigger room status updates
         this._triggerRoomStatusRefresh();
       } else {
-        console.error("❌ rooms-container element not found!");
+        console.error("rooms-container element not found!");
       }
 
       // Re-initialize main dashboard components if needed
@@ -999,10 +999,10 @@ export class UIManager {
         })
       );
 
-      console.log("✅ Main dashboard rendered successfully");
+      console.log("Main dashboard rendered successfully");
       return true;
     } catch (error) {
-      console.error("❌ Error rendering main dashboard:", error);
+      console.error("Error rendering main dashboard:", error);
       return false;
     }
   }
@@ -1011,7 +1011,7 @@ export class UIManager {
    * Create basic room sections as fallback
    */
   _createBasicRoomSections(roomsContainer) {
-    console.log("🔧 Creating basic room sections");
+    console.log("Creating basic room sections");
 
     const rooms = ["PHÒNG HỌP LẦU 3", "PHÒNG HỌP LẦU 4"];
 
@@ -1055,7 +1055,7 @@ export class UIManager {
       `;
 
       roomsContainer.appendChild(roomSection);
-      console.log(`✅ Created room section for: ${roomName}`);
+      console.log(`Created room section for: ${roomName}`);
     });
   }
 
@@ -1063,7 +1063,7 @@ export class UIManager {
    * Trigger room status refresh
    */
   _triggerRoomStatusRefresh() {
-    console.log("🔄 Triggering room status refresh");
+    console.log("Triggering room status refresh");
 
     // Use the global meeting data if available
     const meetingData = window.currentMeetingData || [];

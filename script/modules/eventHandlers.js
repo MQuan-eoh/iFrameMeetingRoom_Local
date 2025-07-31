@@ -391,7 +391,33 @@ export class EventHandlers {
   cleanup() {
     // Clean up any intervals or observers
     this.roomManager.stopAutoUpdate();
-    this.meetingDataManager.stopFileMonitoring();
+
+    // Check if stopFileMonitoring method exists before calling
+    if (
+      this.meetingDataManager &&
+      typeof this.meetingDataManager.stopFileMonitoring === "function"
+    ) {
+      this.meetingDataManager.stopFileMonitoring();
+    }
+
+    this.deviceManager.cleanup();
+  }
+
+  /**
+   * Cleanup event handlers and managers
+   */
+  cleanup() {
+    // Clean up any intervals or observers
+    this.roomManager.stopAutoUpdate();
+
+    // Check if stopFileMonitoring method exists before calling
+    if (
+      this.meetingDataManager &&
+      typeof this.meetingDataManager.stopFileMonitoring === "function"
+    ) {
+      this.meetingDataManager.stopFileMonitoring();
+    }
+
     this.deviceManager.cleanup();
   }
 }

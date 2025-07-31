@@ -23,7 +23,7 @@ export class RoomManager {
 
     // Ensure room sections are created when the DOM is ready
     document.addEventListener("DOMContentLoaded", () => {
-      console.log("🏢 RoomManager: DOM ready, initializing room sections");
+      console.log("RoomManager: DOM ready, initializing room sections");
       const roomsContainer = document.querySelector(".rooms-container");
       if (roomsContainer) {
         this._ensureRoomSections(roomsContainer);
@@ -41,20 +41,20 @@ export class RoomManager {
    */
   updateRoomStatus(data) {
     console.log(
-      "🔄 Updating room status with data at:",
+      "Updating room status with data at:",
       DateTimeUtils.getCurrentTime()
     );
 
     const currentDate = DateTimeUtils.getCurrentDate();
     const currentTime = DateTimeUtils.getCurrentTime();
 
-    console.log("📅 Current date:", currentDate);
-    console.log("⏰ Current time:", currentTime);
+    console.log("Current date:", currentDate);
+    console.log("Current time:", currentTime);
 
     // Use latest meeting data from global state if not provided
     if (!data || !Array.isArray(data)) {
       data = window.currentMeetingData || [];
-      console.log("📊 Using global meeting data:", data.length, "meetings");
+      console.log("Using global meeting data:", data.length, "meetings");
     }
 
     // Filter for today's meetings
@@ -63,7 +63,7 @@ export class RoomManager {
       return isToday;
     });
 
-    console.log("📅 Today's meetings:", todayMeetings.length);
+    console.log("Today's meetings:", todayMeetings.length);
 
     // Save state for debugging
     this.lastUpdateTime = new Date();
@@ -72,7 +72,7 @@ export class RoomManager {
     // Check if we have a rooms-container element
     const roomsContainer = document.querySelector(".rooms-container");
     if (roomsContainer) {
-      console.log("🏢 Found rooms-container, ensuring all rooms are present");
+      console.log("Found rooms-container, ensuring all rooms are present");
 
       // Ensure all rooms have room-section elements
       this._ensureRoomSections(roomsContainer);
@@ -84,12 +84,12 @@ export class RoomManager {
     );
 
     roomsToUpdate.forEach((roomName) => {
-      console.log(`🔄 Processing room update for: ${roomName}`);
+      console.log(`Processing room update for: ${roomName}`);
 
       // If no data or empty data, pass empty array to indicate no meetings
       if (!todayMeetings || todayMeetings.length === 0) {
         console.log(
-          `ℹ️ No meetings data for ${roomName}, updating with empty array`
+          `No meetings data for ${roomName}, updating with empty array`
         );
         this.updateSingleRoomStatus(roomName, [], currentTime);
       } else {
@@ -104,14 +104,14 @@ export class RoomManager {
 
           if (isMatch) {
             console.log(
-              `✓ Found meeting for ${roomName}: "${meeting.content}" (${meeting.startTime}-${meeting.endTime})`
+              `Found meeting for ${roomName}: "${meeting.content}" (${meeting.startTime}-${meeting.endTime})`
             );
           }
           return isMatch;
         });
 
         console.log(
-          `🔍 Found ${roomSpecificMeetings.length} meetings for ${roomName}`
+          `Found ${roomSpecificMeetings.length} meetings for ${roomName}`
         );
         this.updateSingleRoomStatus(roomName, todayMeetings, currentTime);
       }
@@ -129,7 +129,7 @@ export class RoomManager {
    */
   updateSingleRoomStatus(roomCode, meetings, currentTime) {
     console.log(
-      `📋 Updating room status for: "${roomCode}" with current VIETNAM time: ${currentTime}`
+      `Updating room status for: "${roomCode}" with current VIETNAM time: ${currentTime}`
     );
 
     // First, ensure room sections are created if they don't exist
@@ -144,17 +144,17 @@ export class RoomManager {
     const roomSection = DOMUtils.findRoomSection(roomCode);
 
     if (!roomSection) {
-      console.warn(`❌ No room section found for room code: ${roomCode}`);
+      console.warn(`No room section found for room code: ${roomCode}`);
       return;
     } else {
-      console.log(`✅ Found room section for: ${roomCode}`);
+      console.log(`Found room section for: ${roomCode}`);
     }
 
     // Get UI elements
     const uiElements = this._getRoomUIElements(roomSection);
 
     // Log which elements were found for debugging
-    console.log(`🔍 Room elements found for ${roomCode}:`, {
+    console.log(`Room elements found for ${roomCode}:`, {
       titleElement: !!uiElements.titleElement,
       startTimeElement: !!uiElements.startTimeElement,
       endTimeElement: !!uiElements.endTimeElement,
@@ -169,7 +169,7 @@ export class RoomManager {
       !uiElements.indicatorDot
     ) {
       console.log(
-        `⚠️ Missing UI elements for ${roomCode}, attempting to repair room section`
+        `Missing UI elements for ${roomCode}, attempting to repair room section`
       );
       // Remove the existing section and recreate it
       if (roomSection.parentNode) {
@@ -181,7 +181,7 @@ export class RoomManager {
         // Try again with the newly created section
         const newRoomSection = DOMUtils.findRoomSection(roomCode);
         if (newRoomSection) {
-          console.log(`✅ Successfully recreated room section for ${roomCode}`);
+          console.log(`Successfully recreated room section for ${roomCode}`);
           return this.updateSingleRoomStatus(roomCode, meetings, currentTime);
         }
       }
@@ -316,7 +316,7 @@ export class RoomManager {
       const mainContent = container.querySelector(".content-wrapper");
       if (mainContent) {
         mainContent.style.display = "none";
-        console.log("🙈 Hidden main dashboard content");
+        console.log("Hidden main dashboard content");
       }
 
       // Create or update room page wrapper
@@ -325,12 +325,12 @@ export class RoomManager {
         roomPageWrapper = document.createElement("div");
         roomPageWrapper.className = "room-page-wrapper";
         container.appendChild(roomPageWrapper);
-        console.log("📄 Created room page wrapper");
+        console.log("Created room page wrapper");
       }
 
       roomPageWrapper.innerHTML = template;
       roomPageWrapper.style.display = "block";
-      console.log("✅ Room page content updated");
+      console.log("Room page content updated");
     }
 
     // Setup event handlers for this room page
@@ -570,7 +570,7 @@ export class RoomManager {
    * Setup event handlers for room page
    */
   _setupRoomPageEventHandlers(roomName) {
-    console.log(`🔧 Setting up event handlers for room page: ${roomName}`);
+    console.log(`Setting up event handlers for room page: ${roomName}`);
 
     // Back to Home button
     const backToHomeBtn = document.getElementById("backToHomeBtn");
@@ -767,7 +767,7 @@ export class RoomManager {
    * Handle back to home action
    */
   _handleBackToHome() {
-    console.log("🏠 Navigating back to home page");
+    console.log("Navigating back to home page");
 
     // Clean up room page resources
     this._cleanupRoomPage();
@@ -786,7 +786,7 @@ export class RoomManager {
       window.meetingRoomApp.instance.managers &&
       window.meetingRoomApp.instance.managers.uiManager
     ) {
-      console.log("🔄 Using app navigation to render main dashboard");
+      console.log("Using app navigation to render main dashboard");
       const success =
         window.meetingRoomApp.instance.managers.uiManager.renderMainDashboard();
 
@@ -795,14 +795,14 @@ export class RoomManager {
         if (window.history && window.location.hash) {
           window.history.pushState(null, null, window.location.pathname);
         }
-        console.log("✅ Successfully navigated to home via app navigation");
+        console.log("Successfully navigated to home via app navigation");
         return;
       }
     }
 
     // Try to navigate using window history if available (but be more careful)
     if (window.history && window.history.length > 2) {
-      console.log("🔄 Using browser history navigation");
+      console.log("Using browser history navigation");
       window.history.back();
       return;
     }
@@ -814,7 +814,7 @@ export class RoomManager {
       document.querySelector("#homeBtn");
 
     if (homeNavElement && typeof homeNavElement.click === "function") {
-      console.log("🔄 Using home navigation element click");
+      console.log("Using home navigation element click");
       homeNavElement.click();
       return;
     }
@@ -847,12 +847,12 @@ export class RoomManager {
         }
       });
 
-      console.log("✅ Manually reset view without page reload");
+      console.log("Manually reset view without page reload");
       return;
     }
 
     // Only reload as absolute last resort for non-iframe contexts
-    console.warn("⚠️ Using page reload as last resort");
+    console.warn("Using page reload as last resort");
     window.location.reload();
   }
 
@@ -870,7 +870,7 @@ export class RoomManager {
 
     // Set up more frequent updates (every 15 seconds)
     this.updateInterval = setInterval(() => {
-      console.log("🔄 Auto-updating room statuses...");
+      console.log("Auto-updating room statuses...");
 
       // Always get the latest data from global state
       const latestData = window.currentMeetingData || [];
@@ -879,14 +879,14 @@ export class RoomManager {
 
     // Add room status refresh event listener
     document.addEventListener("refreshRoomStatus", () => {
-      console.log("🔄 Room status refresh explicitly requested");
+      console.log("Room status refresh explicitly requested");
       const latestData = window.currentMeetingData || [];
       this.updateRoomStatus(latestData);
     });
 
     // Listen for meeting data updates to refresh rooms
     document.addEventListener("meetingDataUpdated", (event) => {
-      console.log("🔄 Meeting data updated, refreshing room status");
+      console.log("Meeting data updated, refreshing room status");
       const meetingData =
         event.detail?.meetings || window.currentMeetingData || [];
       this.updateRoomStatus(meetingData);
@@ -894,7 +894,7 @@ export class RoomManager {
 
     // Listen for room status updates specifically
     document.addEventListener("roomStatusUpdate", (event) => {
-      console.log("🔄 Room status update event received");
+      console.log("Room status update event received");
       const todayMeetings = event.detail?.todayMeetings;
       const allMeetings = window.currentMeetingData || [];
       this.updateRoomStatus(todayMeetings || allMeetings);
@@ -902,7 +902,7 @@ export class RoomManager {
 
     // Listen for schedule filter application requests
     document.addEventListener("applyScheduleFilter", (event) => {
-      console.log("🎯 Apply schedule filter event received");
+      console.log("Apply schedule filter event received");
       const filter = event.detail?.filter || this.currentRoomFilter;
       this._filterScheduleViewMeetings(filter);
     });
@@ -919,7 +919,7 @@ export class RoomManager {
     });
 
     console.log(
-      "✅ Auto-update started for room statuses with multiple event listeners"
+      "Auto-update started for room statuses with multiple event listeners"
     );
   }
 
@@ -1029,7 +1029,7 @@ export class RoomManager {
    * Private helper methods
    */
   _getRoomUIElements(roomSection) {
-    console.log(`🔍 Finding UI elements in room section:`, roomSection);
+    console.log(`Finding UI elements in room section:`, roomSection);
 
     // Get standard UI elements using CSS classes
     const standardElements = {
@@ -1337,7 +1337,7 @@ export class RoomManager {
       }
     });
 
-    console.log("✅ Room filter functionality initialized");
+    console.log("Room filter functionality initialized");
   }
 
   /**
@@ -1370,7 +1370,7 @@ export class RoomManager {
    * Set room filter and update displays
    */
   _setRoomFilter(roomFilter) {
-    console.log(`🔍 Setting room filter to: ${roomFilter}`);
+    console.log(`Setting room filter to: ${roomFilter}`);
 
     this.currentRoomFilter = roomFilter;
 
@@ -1446,13 +1446,13 @@ export class RoomManager {
    * Filter schedule view meetings based on room filter
    */
   _filterScheduleViewMeetings(roomFilter) {
-    console.log(`🎯 Filtering schedule view meetings for room: ${roomFilter}`);
+    console.log(`Filtering schedule view meetings for room: ${roomFilter}`);
 
     // Get all meeting events in the schedule view
     const meetingEvents = document.querySelectorAll(".meeting-event");
 
     if (meetingEvents.length === 0) {
-      console.log("📅 No meeting events found in schedule view");
+      console.log("No meeting events found in schedule view");
       return;
     }
 
@@ -1463,7 +1463,7 @@ export class RoomManager {
       const roomElement = meetingEvent.querySelector(".event-room");
 
       if (!roomElement) {
-        console.warn("⚠️ Meeting event without room element found");
+        console.warn("Meeting event without room element found");
         return;
       }
 
@@ -1616,7 +1616,7 @@ export class RoomManager {
         roomsContainer.appendChild(roomSection);
         existingRooms.add(normalizedRoomName);
 
-        console.log(`✅ Added room section for "${roomName}"`);
+        console.log(`Added room section for "${roomName}"`);
       }
     });
   }
@@ -1634,7 +1634,7 @@ export class RoomManager {
     const lightStatusText = document.getElementById("lightStatusText");
 
     if (!lightStatusIndicator || !lightStatusText || !lightControlImage) {
-      console.error("❌ Light control elements not found");
+      console.error("Light control elements not found");
       return;
     }
 
@@ -1650,7 +1650,7 @@ export class RoomManager {
       lightStatusText.textContent = "TẮT";
       lightControlImage.classList.remove("active");
       lightControlImage.src = "assets/imgs/bulb_off.jpg"; // Change to OFF image
-      console.log("💡 Light turned OFF");
+      console.log("Light turned OFF");
     } else {
       // Turn on
       lightStatusIndicator.classList.remove("off");
@@ -1658,7 +1658,7 @@ export class RoomManager {
       lightStatusText.textContent = "BẬT";
       lightControlImage.classList.add("active");
       lightControlImage.src = "assets/imgs/bulb_on.jpg"; // Change to ON image
-      console.log("💡 Light turned ON");
+      console.log("Light turned ON");
     }
 
     // Add visual feedback
@@ -1686,7 +1686,7 @@ export class RoomManager {
       const success = window.controlRoomLight(roomName, turnOn);
 
       if (success) {
-        console.log(`✅ Light control successful for ${roomName}`);
+        console.log(`Light control successful for ${roomName}`);
 
         // Optional: Show success feedback to user
         this._showLightControlFeedback(roomName, turnOn, true);
@@ -1700,7 +1700,7 @@ export class RoomManager {
         this._showLightControlFeedback(roomName, turnOn, false);
       }
     } else {
-      console.error("❌ Era light control function not available");
+      console.error("Era light control function not available");
 
       // Revert UI changes if Era control is not available
       this._revertLightControlUI(turnOn);
@@ -1753,7 +1753,7 @@ export class RoomManager {
     const action = turnOn ? "bật" : "tắt";
     const status = success ? "thành công" : "thất bại";
 
-    console.log(`💡 Light control ${status}: ${action} đèn ${roomName}`);
+    console.log(`Light control ${status}: ${action} đèn ${roomName}`);
 
     // You can add toast notification or other UI feedback here
     // For now, just console log

@@ -4345,7 +4345,7 @@ button:hover {
 .panel-header {
   display: flex;
   align-items: center;
-  padding: 8px;
+  padding: 12px;
   gap: 8px;
   margin-bottom: 8px;
   padding-bottom: 6px;
@@ -4490,13 +4490,14 @@ button:hover {
   display: block;
   font-size: 11px;
   font-weight: 700;
-  color: #45ffda;
+  color: #ffffff;
   text-transform: uppercase;
   letter-spacing: 1.2px;
   margin-bottom: 8px;
   text-align: center;
   padding-bottom: 4px;
   border-bottom: 1px solid rgba(69, 255, 218, 0.2);
+  font-size: 14px;
 }
 
 .purpose-content {

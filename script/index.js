@@ -31,7 +31,7 @@ class MeetingRoomApp {
     this.initialized = false;
 
     console.log(
-      `🚀 Meeting Room Management System v${this.version} - Starting...`
+      `Meeting Room Management System v${this.version} - Starting...`
     );
     this.initialize();
   }
@@ -41,7 +41,7 @@ class MeetingRoomApp {
    */
   async initialize() {
     try {
-      console.log("📦 Initializing application modules...");
+      console.log("Initializing application modules...");
 
       // Initialize core managers
       this.managers.meetingDataManager = new MeetingDataManager();
@@ -150,7 +150,7 @@ class MeetingRoomApp {
         this.managers.roomManager.updateScheduleTable(todayMeetings);
 
         // Update room status with explicit refresh of all rooms
-        console.log("🔄 Explicitly refreshing room status for all rooms");
+        console.log("Explicitly refreshing room status for all rooms");
         this.managers.roomManager.updateRoomStatus(cachedData);
 
         // Trigger events for complete UI refresh
@@ -170,16 +170,16 @@ class MeetingRoomApp {
           "Data refreshed successfully",
           "success"
         );
-        console.log("✅ Data refresh completed");
+        console.log("Data refresh completed");
       } else {
-        console.log("ℹ️ No cached data available to refresh");
+        console.log("No cached data available to refresh");
         this.managers.uiManager.showNotification(
           "No data available to refresh",
           "info"
         );
       }
     } catch (error) {
-      console.error("❌ Error refreshing data:", error);
+      console.error("Error refreshing data:", error);
       this.managers.uiManager.showNotification(
         "Failed to refresh data",
         "error"
@@ -235,7 +235,7 @@ class MeetingRoomApp {
    */
   async _detectAndConfigureRooms() {
     try {
-      console.log("🔍 Detecting available rooms...");
+      console.log("Detecting available rooms...");
 
       // Start with empty room configuration
       const detectedRooms = {};
@@ -260,14 +260,14 @@ class MeetingRoomApp {
           index++;
         });
 
-        console.log(`🏢 Detected ${roomSet.size} rooms from meeting data:`, [
+        console.log(`Detected ${roomSet.size} rooms from meeting data:`, [
           ...roomSet,
         ]);
       }
 
       // If no rooms detected, use defaults from ROOM_CONFIG
       if (Object.keys(detectedRooms).length === 0) {
-        console.log("⚠️ No rooms detected from meeting data, using defaults");
+        console.log("No rooms detected from meeting data, using defaults");
 
         // Keep the default rooms from constants
         Object.assign(detectedRooms, ROOM_CONFIG.ROOMS);
@@ -276,7 +276,7 @@ class MeetingRoomApp {
       // Update the ROOM_CONFIG.ROOMS with detected rooms
       ROOM_CONFIG.ROOMS = detectedRooms;
 
-      console.log("📋 Updated room configuration:", ROOM_CONFIG.ROOMS);
+      console.log("Updated room configuration:", ROOM_CONFIG.ROOMS);
 
       // Force room status update with enhanced error handling
       if (this.managers.roomManager) {
@@ -287,7 +287,7 @@ class MeetingRoomApp {
             roomsContainer &&
             typeof this.managers.roomManager._ensureRoomSections === "function"
           ) {
-            console.log("🔧 Ensuring all room sections exist in DOM");
+            console.log("Ensuring all room sections exist in DOM");
             this.managers.roomManager._ensureRoomSections(roomsContainer);
           }
 
@@ -298,11 +298,11 @@ class MeetingRoomApp {
             this.managers.meetingDataManager.getTodayMeetings(meetings);
 
           // Update room status
-          console.log("🔄 Forcing room status update after room detection");
+          console.log("Forcing room status update after room detection");
           this.managers.roomManager.updateRoomStatus(meetings);
 
           // Dispatch events for UI refresh
-          console.log("📢 Dispatching events for room UI refresh");
+          console.log("Dispatching events for room UI refresh");
           document.dispatchEvent(
             new CustomEvent("refreshRoomStatus", {
               detail: { meetings, todayMeetings },
@@ -310,7 +310,7 @@ class MeetingRoomApp {
           );
         } catch (roomError) {
           console.error(
-            "❌ Error updating room status after configuration:",
+            "Error updating room status after configuration:",
             roomError
           );
         }
@@ -318,7 +318,7 @@ class MeetingRoomApp {
 
       return detectedRooms;
     } catch (error) {
-      console.error("❌ Error detecting rooms:", error);
+      console.error("Error detecting rooms:", error);
       return ROOM_CONFIG.ROOMS; // Fall back to defaults
     }
   }
@@ -327,35 +327,35 @@ class MeetingRoomApp {
    * Setup navigation event handlers
    */
   _setupNavigationHandlers() {
-    console.log("🧭 Setting up navigation handlers");
+    console.log("Setting up navigation handlers");
 
     // Listen for back to home navigation events
     document.addEventListener("navigateToHome", (event) => {
-      console.log("🏠 Navigation to home requested:", event.detail);
+      console.log("Navigation to home requested:", event.detail);
       this._handleBackToHome(event.detail);
     });
 
     // Listen for room navigation events
     document.addEventListener("navigateToRoom", (event) => {
-      console.log("🚪 Navigation to room requested:", event.detail);
+      console.log("Navigation to room requested:", event.detail);
       this._handleRoomNavigation(event.detail);
     });
 
-    console.log("✅ Navigation handlers set up successfully");
+    console.log("Navigation handlers set up successfully");
   }
 
   /**
    * Handle navigation back to home
    */
   _handleBackToHome(detail = {}) {
-    console.log("🏠 Handling back to home navigation");
+    console.log("Handling back to home navigation");
 
     try {
       // Don't clear meeting-container blindly - let renderMainDashboard handle it
       const meetingContainer = document.querySelector(".meeting-container");
       if (meetingContainer) {
         console.log(
-          "📦 Found meeting-container, delegating to renderMainDashboard"
+          "Found meeting-container, delegating to renderMainDashboard"
         );
 
         // Trigger main dashboard re-render using the new method
@@ -367,7 +367,7 @@ class MeetingRoomApp {
 
           if (!success) {
             console.warn(
-              "⚠️ Main dashboard render failed, trying alternative approach"
+              "Main dashboard render failed, trying alternative approach"
             );
             // Try alternative approach - show main elements manually
             const mainElements = document.querySelectorAll(
@@ -382,7 +382,7 @@ class MeetingRoomApp {
           }
         } else {
           console.warn(
-            "⚠️ renderMainDashboard method not available, using fallback"
+            "renderMainDashboard method not available, using fallback"
           );
           // Show main dashboard elements manually
           const mainElements = document.querySelectorAll(
@@ -418,14 +418,14 @@ class MeetingRoomApp {
         })
       );
 
-      console.log("✅ Back to home navigation completed");
+      console.log("Back to home navigation completed");
     } catch (error) {
-      console.error("❌ Error during back to home navigation:", error);
+      console.error("Error during back to home navigation:", error);
 
       // Check if we're in an iframe - if so, avoid reload
       if (window.self !== window.top) {
         console.warn(
-          "🚫 In iframe context - avoiding page reload to prevent crash"
+          "In iframe context - avoiding page reload to prevent crash"
         );
 
         // Try manual recovery without clearing meeting-container
@@ -517,7 +517,7 @@ class MeetingRoomApp {
         this.managers.roomManager.updateScheduleTable(todayMeetings);
 
         // Update room status with explicit refresh of all rooms
-        console.log("🔄 Explicitly refreshing room status for all rooms");
+        console.log("Explicitly refreshing room status for all rooms");
         this.managers.roomManager.updateRoomStatus(cachedData);
 
         // Trigger events for complete UI refresh
@@ -537,16 +537,16 @@ class MeetingRoomApp {
           "Data refreshed successfully",
           "success"
         );
-        console.log("✅ Data refresh completed");
+        console.log("Data refresh completed");
       } else {
-        console.log("ℹ️ No cached data available to refresh");
+        console.log("No cached data available to refresh");
         this.managers.uiManager.showNotification(
           "No data available to refresh",
           "info"
         );
       }
     } catch (error) {
-      console.error("❌ Error refreshing data:", error);
+      console.error("Error refreshing data:", error);
       this.managers.uiManager.showNotification(
         "Failed to refresh data",
         "error"
@@ -602,7 +602,7 @@ class MeetingRoomApp {
    */
   async _detectAndConfigureRooms() {
     try {
-      console.log("🔍 Detecting available rooms...");
+      console.log("Detecting available rooms...");
 
       // Start with empty room configuration
       const detectedRooms = {};
@@ -627,14 +627,14 @@ class MeetingRoomApp {
           index++;
         });
 
-        console.log(`🏢 Detected ${roomSet.size} rooms from meeting data:`, [
+        console.log(`Detected ${roomSet.size} rooms from meeting data:`, [
           ...roomSet,
         ]);
       }
 
       // If no rooms detected, use defaults from ROOM_CONFIG
       if (Object.keys(detectedRooms).length === 0) {
-        console.log("⚠️ No rooms detected from meeting data, using defaults");
+        console.log("No rooms detected from meeting data, using defaults");
 
         // Keep the default rooms from constants
         Object.assign(detectedRooms, ROOM_CONFIG.ROOMS);
@@ -643,7 +643,7 @@ class MeetingRoomApp {
       // Update the ROOM_CONFIG.ROOMS with detected rooms
       ROOM_CONFIG.ROOMS = detectedRooms;
 
-      console.log("📋 Updated room configuration:", ROOM_CONFIG.ROOMS);
+      console.log("Updated room configuration:", ROOM_CONFIG.ROOMS);
 
       // Force room status update with enhanced error handling
       if (this.managers.roomManager) {
@@ -654,7 +654,7 @@ class MeetingRoomApp {
             roomsContainer &&
             typeof this.managers.roomManager._ensureRoomSections === "function"
           ) {
-            console.log("🔧 Ensuring all room sections exist in DOM");
+            console.log("Ensuring all room sections exist in DOM");
             this.managers.roomManager._ensureRoomSections(roomsContainer);
           }
 
@@ -665,11 +665,11 @@ class MeetingRoomApp {
             this.managers.meetingDataManager.getTodayMeetings(meetings);
 
           // Update room status
-          console.log("🔄 Forcing room status update after room detection");
+          console.log("Forcing room status update after room detection");
           this.managers.roomManager.updateRoomStatus(meetings);
 
           // Dispatch events for UI refresh
-          console.log("📢 Dispatching events for room UI refresh");
+          console.log("Dispatching events for room UI refresh");
           document.dispatchEvent(
             new CustomEvent("refreshRoomStatus", {
               detail: { meetings, todayMeetings },
@@ -677,7 +677,7 @@ class MeetingRoomApp {
           );
         } catch (roomError) {
           console.error(
-            "❌ Error updating room status after configuration:",
+            "Error updating room status after configuration:",
             roomError
           );
         }
@@ -685,7 +685,7 @@ class MeetingRoomApp {
 
       return detectedRooms;
     } catch (error) {
-      console.error("❌ Error detecting rooms:", error);
+      console.error("Error detecting rooms:", error);
       return ROOM_CONFIG.ROOMS; // Fall back to defaults
     }
   }
@@ -695,7 +695,7 @@ class MeetingRoomApp {
    */
   _setupGlobalErrorHandling() {
     window.addEventListener("error", (event) => {
-      console.error("🔥 Global error caught:", event.error);
+      console.error("Global error caught:", event.error);
 
       // Show user-friendly error message for critical errors
       if (this.managers.uiManager) {
@@ -708,7 +708,7 @@ class MeetingRoomApp {
     });
 
     window.addEventListener("unhandledrejection", (event) => {
-      console.error("🔥 Unhandled promise rejection:", event.reason);
+      console.error("Unhandled promise rejection:", event.reason);
       event.preventDefault(); // Prevent the default browser error handling
     });
   }
@@ -740,7 +740,7 @@ class MeetingRoomApp {
       window.location.protocol === "file:";
     if (isDevelopmentMode) {
       setInterval(() => {
-        console.log("📊 App Status:", this.getStatus());
+        console.log("App Status:", this.getStatus());
       }, 60000); // Every minute
     }
   }
@@ -767,7 +767,7 @@ class MeetingRoomApp {
       }
 
       .app-loading::after {
-        content: '⏳ Loading...';
+        content: 'Loading...';
         animation: pulse 1.5s ease-in-out infinite;
       }
 
@@ -903,7 +903,7 @@ class MeetingRoomApp {
         border-radius: 4px;
         cursor: pointer;
         margin-top: 10px;
-      ">🔄 Reload Page</button>
+      ">Reload Page</button>
     `;
 
     document.body.appendChild(errorDiv);
@@ -913,14 +913,14 @@ class MeetingRoomApp {
    * Cleanup method for proper shutdown
    */
   cleanup() {
-    console.log("🧹 Cleaning up application...");
+    console.log("Cleaning up application...");
 
     if (this.managers.eventHandlers) {
       this.managers.eventHandlers.cleanup();
     }
 
     this.initialized = false;
-    console.log("✅ Application cleanup completed");
+    console.log("Application cleanup completed");
   }
 }
 

@@ -22,7 +22,7 @@ export function initTeamsTimeDropdown() {
     startTimeInput.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      console.log("🕐 Start time input clicked");
+      console.log("Start time input clicked");
 
       // Hide all other dropdowns first
       hideAllDropdowns();
@@ -33,14 +33,14 @@ export function initTeamsTimeDropdown() {
 
     // Also handle focus event to show dropdown
     startTimeInput.addEventListener("focus", (e) => {
-      console.log("🕐 Start time input focused");
+      console.log("Start time input focused");
       hideAllDropdowns();
       toggleTimeDropdown(startTimeDropdown, true);
     });
 
     // Hide dropdown when clicking outside (with longer delay)
     startTimeInput.addEventListener("blur", (e) => {
-      console.log("🕐 Start time input blur");
+      console.log("Start time input blur");
       setTimeout(() => {
         // Only hide if no option was clicked
         if (!startTimeDropdown.classList.contains("option-clicked")) {
@@ -55,7 +55,7 @@ export function initTeamsTimeDropdown() {
     endTimeInput.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      console.log("🕐 End time input clicked");
+      console.log("End time input clicked");
 
       // Hide all other dropdowns first
       hideAllDropdowns();
@@ -66,14 +66,14 @@ export function initTeamsTimeDropdown() {
 
     // Also handle focus event to show dropdown
     endTimeInput.addEventListener("focus", (e) => {
-      console.log("🕐 End time input focused");
+      console.log("End time input focused");
       hideAllDropdowns();
       toggleTimeDropdown(endTimeDropdown, true);
     });
 
     // Hide dropdown when clicking outside (with longer delay)
     endTimeInput.addEventListener("blur", (e) => {
-      console.log("🕐 End time input blur");
+      console.log("End time input blur");
       setTimeout(() => {
         // Only hide if no option was clicked
         if (!endTimeDropdown.classList.contains("option-clicked")) {
@@ -95,7 +95,7 @@ export function initTeamsTimeDropdown() {
     // Only hide dropdowns if we're inside a booking modal context
     if (isBookingModal && !isTimeInput && !isDropdown) {
       console.log(
-        "🕐 Clicking outside time components in booking modal, hiding all dropdowns"
+        "Clicking outside time components in booking modal, hiding all dropdowns"
       );
       hideAllDropdowns();
     }
@@ -109,12 +109,12 @@ export function createFullDayTimeOptions() {
   const startTimeDropdown = document.getElementById("startTimeOptions");
   const endTimeDropdown = document.getElementById("endTimeOptions");
 
-  console.log("🕐 Creating full day time options...");
-  console.log("🕐 startTimeDropdown:", startTimeDropdown);
-  console.log("🕐 endTimeDropdown:", endTimeDropdown);
+  console.log("Creating full day time options...");
+  console.log("startTimeDropdown:", startTimeDropdown);
+  console.log("endTimeDropdown:", endTimeDropdown);
 
   if (!startTimeDropdown || !endTimeDropdown) {
-    console.error("🕐 Could not find dropdown elements!");
+    console.error("Could not find dropdown elements!");
     return;
   }
 
@@ -141,16 +141,14 @@ export function createFullDayTimeOptions() {
       startOption.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        console.log(`🕐 Start time option clicked: ${timeValue}`);
+        console.log(`Start time option clicked: ${timeValue}`);
 
         // Mark that an option was clicked to prevent blur from hiding dropdown
         startTimeDropdown.classList.add("option-clicked");
 
         const startTimeInput = document.getElementById("bookingStartTime");
         startTimeInput.value = timeValue;
-        console.log(
-          `🕐 Set start time input value to: ${startTimeInput.value}`
-        );
+        console.log(`Set start time input value to: ${startTimeInput.value}`);
 
         // Small delay to ensure value is set
         setTimeout(() => {
@@ -187,14 +185,14 @@ export function createFullDayTimeOptions() {
       endOption.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        console.log(`🕐 End time option clicked: ${timeValue}`);
+        console.log(`End time option clicked: ${timeValue}`);
 
         // Mark that an option was clicked to prevent blur from hiding dropdown
         endTimeDropdown.classList.add("option-clicked");
 
         const endTimeInput = document.getElementById("bookingEndTime");
         endTimeInput.value = timeValue;
-        console.log(`🕐 Set end time input value to: ${endTimeInput.value}`);
+        console.log(`Set end time input value to: ${endTimeInput.value}`);
 
         // Small delay to ensure value is set
         setTimeout(() => {
@@ -208,12 +206,12 @@ export function createFullDayTimeOptions() {
     }
   }
 
-  console.log(`🕐 Created ${optionsCreated} time options for each dropdown`);
+  console.log(`Created ${optionsCreated} time options for each dropdown`);
   console.log(
-    `🕐 Start dropdown children count: ${startTimeDropdown.children.length}`
+    `Start dropdown children count: ${startTimeDropdown.children.length}`
   );
   console.log(
-    `🕐 End dropdown children count: ${endTimeDropdown.children.length}`
+    `End dropdown children count: ${endTimeDropdown.children.length}`
   );
 
   // Get current time to highlight suggested options
@@ -243,14 +241,14 @@ export function createFullDayTimeOptions() {
     .toString()
     .padStart(2, "0")}:${suggestedMinute.toString().padStart(2, "0")}`;
 
-  console.log(`🕐 Suggested time: ${suggestedTime}`);
+  console.log(`Suggested time: ${suggestedTime}`);
 
   // Find and highlight suggested option
   const startOptions = startTimeDropdown.querySelectorAll(".time-option");
   startOptions.forEach((option) => {
     if (option.getAttribute("data-time") === suggestedTime) {
       option.classList.add("selected");
-      console.log(`🕐 Highlighted suggested start time: ${suggestedTime}`);
+      console.log(`Highlighted suggested start time: ${suggestedTime}`);
     }
   });
 }
@@ -339,27 +337,21 @@ export function hideAllDropdowns() {
  */
 export function toggleTimeDropdown(dropdown, show) {
   if (!dropdown) {
-    console.warn("🕐 toggleTimeDropdown: dropdown element not found");
+    console.warn("toggleTimeDropdown: dropdown element not found");
     return;
   }
 
   console.log(
-    `🕐 toggleTimeDropdown: ${show ? "showing" : "hiding"} dropdown`,
+    `toggleTimeDropdown: ${show ? "showing" : "hiding"} dropdown`,
     dropdown.id
   );
 
   if (show) {
     dropdown.classList.add("show");
-    console.log(
-      `🕐 Dropdown ${dropdown.id} now has classes:`,
-      dropdown.className
-    );
+    console.log(`Dropdown ${dropdown.id} now has classes:`, dropdown.className);
   } else {
     dropdown.classList.remove("show");
     dropdown.classList.remove("option-clicked");
-    console.log(
-      `🕐 Dropdown ${dropdown.id} now has classes:`,
-      dropdown.className
-    );
+    console.log(`Dropdown ${dropdown.id} now has classes:`, dropdown.className);
   }
 }
