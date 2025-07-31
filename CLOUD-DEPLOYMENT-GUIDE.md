@@ -332,9 +332,3 @@ pm2 logs meeting-room-app --lines 100
 - Monitor logs sau khi deploy
 - Keep environment variables secure
 - Regular security updates
-
-**Support**:
-
-- GitHub Issues cho technical support
-- Documentation updates
-- Community contributions welcome
