@@ -195,21 +195,6 @@ function initEraWidget() {
         const humidValue2 = values[configHumi2.id].value;
         if (humi2) humi2.textContent = humidValue2;
       }
-
-      // Lavender 1 Room
-      // if (configCurrent2 && values[configCurrent2.id]) {
-      //   updateRoomElements(
-      //     "Phòng họp lầu 4",
-      //     values[configCurrent2.id].value,
-      //     values[configPower2?.id]?.value
-      //   );
-      // }
-
-      // if (configPower2 && values[configPower2.id]) {
-      //   const powerValue2 = values[configPower2.id].value;
-      //   if (powerIndex2) powerIndex2.textContent = powerValue2;
-      // }
-
       if (configPeopleDetection1 && values[configPeopleDetection1.id]) {
         // Use helper function for safe access
         updatePeopleDetectionStatus(
