@@ -4333,22 +4333,22 @@ button:hover {
   background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(10px);
   border-radius: 20px;
-  padding: 16px;
-  margin-bottom: 20px;
+  padding: 12px;
+  margin-bottom: 16px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   flex-shrink: 0;
   height: auto;
-  min-height: 160px;
+  min-height: 120px;
 }
 
 .panel-header {
   display: flex;
   align-items: center;
-  padding: 12px;
-  gap: 12px;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
+  padding: 8px;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
   border-bottom: 2px solid rgba(255, 255, 255, 0.2);
 }
 
@@ -4366,120 +4366,183 @@ button:hover {
   text-transform: uppercase;
 }
 
-/* Two-column layout for meeting info - Redesigned */
+/* Two-column layout for meeting info - Redesigned for Perfect Balance */
 .meeting-info-card {
-  display: flex;
-  gap: 16px;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
   height: 100%;
+  min-height: 80px;
 }
 
 .meeting-info-left {
-  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  height: 100%;
+  justify-content: space-between;
 }
 
 .meeting-info-right {
-  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  height: 100%;
   justify-content: space-between;
-  min-height: 100px;
 }
 
 .meeting-title-main {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 600;
   color: #ffffff;
-  line-height: 1.3;
-  margin-bottom: 6px;
+  line-height: 1.4;
+  margin: 0;
+  padding: 8px 0;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  background: linear-gradient(
+    135deg,
+    rgba(69, 255, 218, 0.1),
+    rgba(69, 255, 218, 0.05)
+  );
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 13px;
 }
 
 .meeting-time-display {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-bottom: 0;
+  gap: 8px;
+  margin: 0;
+  flex: 1;
+  justify-content: center;
 }
 
 .time-badge {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border-radius: 8px;
-  font-weight: 500;
-  font-size: 12px;
-  width: fit-content;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 13px;
+  width: 100%;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.time-badge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .time-badge.start-time {
   background: linear-gradient(135deg, #48bb78, #38a169);
   color: white;
+  box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
 }
 
 .time-badge.end-time {
   background: linear-gradient(135deg, #ed8936, #dd6b20);
   color: white;
+  box-shadow: 0 4px 12px rgba(237, 137, 54, 0.3);
+}
+
+.time-badge.start-time:hover {
+  box-shadow: 0 6px 20px rgba(72, 187, 120, 0.4);
+}
+
+.time-badge.end-time:hover {
+  box-shadow: 0 6px 20px rgba(237, 137, 54, 0.4);
 }
 
 .meeting-purpose-section {
-  padding: 10px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-left: 3px solid #45ffda;
-  margin-bottom: 8px;
+  padding: 12px;
+  background: linear-gradient(
+    135deg,
+    rgba(69, 255, 218, 0.1),
+    rgba(69, 255, 218, 0.05)
+  );
+  border-radius: 10px;
+  border: 1px solid rgba(69, 255, 218, 0.3);
+  border-left: 4px solid #45ffda;
+  margin: 0;
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 60px;
 }
 
 .purpose-label {
   display: block;
-  font-size: 10px;
-  font-weight: 600;
-  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  color: #45ffda;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 4px;
+  letter-spacing: 1.2px;
+  margin-bottom: 8px;
+  text-align: center;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(69, 255, 218, 0.2);
 }
 
 .purpose-content {
-  font-size: 0.9rem;
+  font-size: 14px;
   color: #ffffff;
   font-weight: 500;
-  line-height: 1.3;
+  line-height: 1.4;
+  text-align: center;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* End meeting button in right column */
 .meeting-actions {
   display: flex;
-  justify-content: flex-end;
-  margin-top: 0;
+  justify-content: center;
+  margin: 0;
+  padding-top: 8px;
 }
 
 .end-meeting-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
   background: linear-gradient(135deg, #e53e3e, #c53030);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   font-weight: 600;
-  font-size: 12px;
+  font-size: 13px;
   cursor: pointer;
   transition: all 0.3s ease;
-  white-space: nowrap;
+  width: 100%;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(229, 62, 62, 0.3);
 }
 
 .end-meeting-btn:hover {
   background: linear-gradient(135deg, #c53030, #9c2626);
-  transform: translateY(-1px);
-  box-shadow: 0 8px 25px rgba(197, 48, 48, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(197, 48, 48, 0.4);
 }
 
 /* No Meeting State */
@@ -4488,8 +4551,8 @@ button:hover {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 32px 20px;
-  gap: 20px;
+  padding: 20px 16px;
+  gap: 12px;
 }
 
 .no-meeting-icon {
@@ -4550,6 +4613,8 @@ button:hover {
   flex: 1;
   overflow-y: auto;
   max-height: calc(100vh - 300px);
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
 }
 
 .upcoming-meetings-list {
@@ -4563,14 +4628,14 @@ button:hover {
   align-items: center;
   gap: 16px;
   padding: 12px;
-  background: #f7fafc;
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   border: 1px solid #e2e8f0;
   transition: all 0.3s ease;
 }
 
 .upcoming-meeting-item:hover {
-  background: #edf2f7;
+  background: rgba(255, 255, 255, 0.3);
   border-color: #cbd5e0;
   transform: translateX(4px);
 }
@@ -4617,21 +4682,27 @@ button:hover {
 }
 .meeting-details-room .meeting-title-room {
   font-weight: 600;
-  color: #000000;
+  color: #ffffff;
   font-size: 14px;
   line-height: 1.3;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.meeting-details .meeting-purpose {
+.meeting-details {
   color: rgba(255, 255, 255, 0.8);
   font-size: 12px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
+.meeting-purpose {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .meeting-priority {
   display: flex;
   align-items: center;
