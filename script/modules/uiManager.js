@@ -288,7 +288,12 @@ export class UIManager {
    */
   initializeClock() {
     const updateClock = () => {
-      const timeElements = document.querySelectorAll('[id^="currentTime"]');
+      // Only target homepage time elements, not room page elements
+      const timeElements = [
+        document.getElementById("currentTimeHomePage"),
+        // Add other homepage time elements if needed
+      ].filter(Boolean); // Remove null elements
+
       timeElements.forEach((element) => {
         if (element) {
           // Use the proper Vietnam time from DateTimeUtils
@@ -303,7 +308,12 @@ export class UIManager {
     };
 
     const updateDate = () => {
-      const dateElements = document.querySelectorAll('[id^="currentDate"]');
+      // Only target homepage date elements, not room page elements
+      const dateElements = [
+        document.getElementById("currentDateHomePage"),
+        // Add other homepage date elements if needed
+      ].filter(Boolean); // Remove null elements
+
       const daysOfWeek = [
         "Chủ Nhật",
         "Thứ Hai",
@@ -350,7 +360,7 @@ export class UIManager {
       const month = months[vietnamDate.getMonth()];
       const year = vietnamDate.getFullYear();
 
-      const formattedDate = `${dayOfWeek}, ${day} ${month} ${year}`;
+      const formattedDate = `${dayOfWeek}, ${day} ${month}, ${year}`;
 
       dateElements.forEach((element) => {
         if (element) {

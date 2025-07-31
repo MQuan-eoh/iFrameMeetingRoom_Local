@@ -342,7 +342,7 @@ export class RoomManager {
     return `
       <!-- Back to Home Button -->
       <button class="back-to-home-btn" id="backToHomeBtn">
-        <i class="home-icon">🏠</i>
+        <i class="fas fa-home home-icon"></i>
         <span>Back to Home</span>
       </button>
       
@@ -629,7 +629,14 @@ export class RoomManager {
   _updateTimeDisplay() {
     const currentTimeElement = document.getElementById("currentTime-1");
     const currentDateElement = document.getElementById("currentDate-1");
+    const currrentTimeHomePageElement = document.getElementById(
+      "currentTimeHomePage"
+    );
+    const currentDateHomePageElement = document.getElementById(
+      "currentDateHomePage"
+    );
 
+    // Only update room page specific elements (currentTime-1 and currentDate-1)
     if (currentTimeElement || currentDateElement) {
       const now = new Date();
 
@@ -643,15 +650,56 @@ export class RoomManager {
       }
 
       if (currentDateElement) {
-        const dateString = now.toLocaleDateString("vi-VN", {
-          weekday: "long",
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        });
+        // Use consistent formatting that matches uiManager.js to avoid conflicts
+        const daysOfWeek = [
+          "Chủ Nhật",
+          "Thứ Hai",
+          "Thứ Ba",
+          "Thứ Tư",
+          "Thứ Năm",
+          "Thứ Sáu",
+          "Thứ Bảy",
+        ];
+        const months = [
+          "Tháng 1",
+          "Tháng 2",
+          "Tháng 3",
+          "Tháng 4",
+          "Tháng 5",
+          "Tháng 6",
+          "Tháng 7",
+          "Tháng 8",
+          "Tháng 9",
+          "Tháng 10",
+          "Tháng 11",
+          "Tháng 12",
+        ];
+
+        // Get proper Vietnam timezone date
+        const timezoneOffsetHours = -now.getTimezoneOffset() / 60;
+        let vietnamDate;
+
+        if (timezoneOffsetHours === 7) {
+          vietnamDate = now;
+        } else {
+          const offsetDifference = 7 - timezoneOffsetHours;
+          vietnamDate = new Date(
+            now.getTime() + offsetDifference * 60 * 60 * 1000
+          );
+        }
+
+        const dayOfWeek = daysOfWeek[vietnamDate.getDay()];
+        const day = vietnamDate.getDate();
+        const month = months[vietnamDate.getMonth()];
+        const year = vietnamDate.getFullYear();
+
+        const dateString = `${dayOfWeek}, ${day} ${month}, ${year}`;
         currentDateElement.textContent = dateString;
       }
     }
+
+    // DO NOT update homepage elements here - let uiManager handle them
+    // This prevents conflicts between different update sources
   }
 
   /**
@@ -1032,7 +1080,7 @@ export class RoomManager {
           roomSection.querySelector(".end-time") ||
           roomSection.querySelector('[class*="end-time"]');
         console.log(
-          `🔍 Alternative end time element:`,
+          `Alternative end time element:`,
           standardElements.endTimeElement
         );
       }
@@ -1042,7 +1090,7 @@ export class RoomManager {
           roomSection.querySelector(".status-text") ||
           roomSection.querySelector('[class*="status-text"]');
         console.log(
-          `🔍 Alternative status indicator:`,
+          "Alternative status indicator:",
           standardElements.statusIndicator
         );
       }
@@ -1052,12 +1100,12 @@ export class RoomManager {
           roomSection.querySelector(".indicator-dot") ||
           roomSection.querySelector('[class*="indicator-dot"]');
         console.log(
-          `🔍 Alternative indicator dot:`,
+          `Alternative indicator dot:`,
           standardElements.indicatorDot
         );
       }
     } else {
-      console.log(`✅ All room UI elements found successfully`);
+      console.log(` All room UI elements found successfully`);
     }
 
     return standardElements;
@@ -1080,14 +1128,14 @@ export class RoomManager {
 
     // Debug logs
     console.log(
-      `🔍 Room ${roomCode} update - Active meeting:`,
+      ` Room ${roomCode} update - Active meeting:`,
       activeMeeting ? activeMeeting.id : "none"
     );
     console.log(
-      `🔍 Room ${roomCode} update - Total meetings:`,
+      `Room ${roomCode} update - Total meetings:`,
       allMeetings.length
     );
-    console.log(`🔍 Room ${roomCode} update - Current time:`, currentTime);
+    console.log(` Room ${roomCode} update - Current time:`, currentTime);
 
     // Normalize current time for comparison (remove seconds)
     const normalizedCurrentTime = currentTime.split(":").slice(0, 2).join(":");
@@ -1107,7 +1155,7 @@ export class RoomManager {
     });
 
     console.log(
-      `🔍 Filtered ${roomMeetings.length} meetings for room ${roomCode}`
+      ` Filtered ${roomMeetings.length} meetings for room ${roomCode}`
     );
 
     // Check if any meetings are happening now - as a secondary check
@@ -1124,7 +1172,7 @@ export class RoomManager {
 
       if (isActive) {
         console.log(
-          `✅ Found active meeting manually for ${roomCode}: ${meeting.id} (${meeting.startTime}-${meeting.endTime})`
+          `Found active meeting manually for ${roomCode}: ${meeting.id} (${meeting.startTime}-${meeting.endTime})`
         );
       }
 
@@ -1172,7 +1220,7 @@ export class RoomManager {
       }
 
       console.log(
-        `✅ Updated room ${roomCode} with active meeting: "${effectiveActiveMeeting.content}" (${effectiveActiveMeeting.startTime}-${effectiveActiveMeeting.endTime})`
+        `Updated room ${roomCode} with active meeting: "${effectiveActiveMeeting.content}" (${effectiveActiveMeeting.startTime}-${effectiveActiveMeeting.endTime})`
       );
     } else {
       // No active meeting - check for upcoming meetings

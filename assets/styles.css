@@ -65,30 +65,60 @@
 }
 .date-wrapper {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  position: relative;
-  top: 10px;
-  left: 40px;
+  align-items: baseline;
+  gap: 20px;
+  padding: 15px 25px;
+  margin: 10px 0 20px 0;
+  backdrop-filter: blur(10px);
 }
 .logo {
-  display: flex;
-  justify-content: flex-start; /* Căn logo sang bên trái */
-  align-items: center; /* Căn giữa theo chiều dọc */
-  margin: 20px 20px 20px 0; /* Khoảng cách với phần còn lại */
-}
-
-.current-date {
-  font-size: 0.8rem; /* Nhỏ hơn và sử dụng đơn vị rem */
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  font-weight: 400;
+  line-height: 1;
+  margin: 0;
+  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif;
   color: #ffffff;
-  white-space: nowrap;
-  opacity: 0.85; /* Làm mờ đi một chút để nhấn mạnh clock */
-  letter-spacing: 0.5px; /* Tăng khoảng cách chữ để dễ đọc */
-  margin-left: 40px;
-  margin-top: 10%;
+  text-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+  letter-spacing: -0.02em;
+}
+.current-dateHome,
+.current-date {
+  font-size: 0.8rem;
+  color: #ffffff;
+  white-space: normal;
+  opacity: 0.9;
+  letter-spacing: 0.3px;
+  margin: 0;
   flex-direction: column;
   display: flex;
-  white-space: pre-wrap;
+  align-items: flex-start;
+  gap: 3px;
+  line-height: 1.3;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+.current-dateHome span,
+.current-date span {
+  display: block;
+  font-weight: 300;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.current-dateHome span:first-child,
+.current-date span:first-child {
+  font-size: 0.85em;
+  opacity: 0.8;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  line-height: 1.2;
+}
+
+.current-dateHome span:last-child,
+.current-date span:last-child {
+  font-size: 1.1em;
+  font-weight: 500;
+  line-height: 1.3;
 }
 
 .welcome-message {
@@ -103,7 +133,6 @@
   /* Spacing */
   gap: 10px;
   margin: 40px 0 auto 0;
-  padding: 15px;
   font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: clamp(2rem, 5vw, 3.5rem); /* Responsive font size */
   line-height: 1.5;
@@ -125,15 +154,9 @@
   .welcome-message {
     font-size: 1.8rem;
     padding: 10px;
-    margin-top: 20px;
   }
 }
 
-@media (min-width: 1366px) {
-  .welcome-message {
-    margin-top: 6px;
-  }
-}
 .welcome-text {
   max-width: 400px;
   font-size: 18px;
@@ -464,8 +487,7 @@
     min-width: 120px; /* Slightly wider on iPad */
   }
 }
-@media screen and (min-width: 1025px) {
-}
+
 /* Handle smaller iPad screens in portrait */
 @media screen and (max-width: 767px) {
   .meeting-info {
@@ -503,13 +525,29 @@
     padding-left: 10px;
   }
   .date-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    padding: 12px 20px;
+    margin: 8px 0 16px 0;
+    gap: 15px;
   }
+  .logo {
+    font-size: clamp(2rem, 3.5vw, 3.5rem);
+  }
+  .current-dateHome,
   .current-date {
-    font-size: clamp(0.5rem, 1.8vw, 0.7rem);
-    margin-left: 5px;
+    font-size: 0.9rem;
+    gap: 2px;
+    line-height: 1.3;
+  }
+
+  .current-dateHome span:first-child,
+  .current-date span:first-child {
+    font-size: 0.8em;
+    line-height: 1.2;
+  }
+  .current-dateHome span:last-child,
+  .current-date span:last-child {
+    font-size: 1em;
+    line-height: 1.3;
   }
   .welcome-text {
     margin-top: 20px; /* Điều chỉnh khoảng cách trên */
@@ -521,8 +559,68 @@
     top: 5px;
     left: 40px;
   }
+  .date-wrapper {
+    padding: 8px 15px;
+    margin: 5px 0 12px 0;
+    gap: 12px;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+  .logo {
+    font-size: clamp(1.8rem, 4vw, 2.2rem);
+    margin-bottom: 4px;
+  }
+
+  .current-dateHome,
+  .current-date {
+    font-size: 0.8rem;
+    align-items: flex-start;
+    gap: 2px;
+    line-height: 1.2;
+  }
+  .current-dateHome span:first-child,
+  .current-date span:first-child {
+    font-size: 0.75em;
+    line-height: 1.1;
+  }
+  .current-dateHome span:last-child,
+  .current-date span:last-child {
+    font-size: 0.9em;
+    line-height: 1.2;
+  }
   .welcome-text {
     margin-top: 30px;
+  }
+}
+
+/* Mobile Extra Small Screens */
+@media (max-width: 480px) {
+  .date-wrapper {
+    padding: 6px 12px;
+    margin: 3px 0 8px 0;
+    gap: 8px;
+    border-radius: 8px;
+  }
+  .logo {
+    font-size: clamp(1.5rem, 5vw, 1.8rem);
+  }
+
+  .current-dateHome,
+  .current-date {
+    font-size: 0.7rem;
+    gap: 1px;
+    line-height: 1.1;
+  }
+  .current-dateHome span:first-child,
+  .current-date span:first-child {
+    font-size: 0.7em;
+    line-height: 1;
+  }
+  .current-dateHome span:last-child,
+  .current-date span:last-child {
+    font-size: 0.85em;
+    line-height: 1.1;
   }
 }
 .meeting-stats {
@@ -749,13 +847,31 @@
     width: 100%; /* Đặt lại chiều rộng cho các cột */
   }
   .date-wrapper {
-    flex-wrap: wrap;
-    align-items: center;
+    padding: 10px 15px;
+    margin: 5px 0 15px 0;
+    gap: 12px;
+    flex-direction: row;
+    align-items: baseline;
   }
+  .logo {
+    font-size: clamp(1.8rem, 3vw, 2.5rem);
+  }
+  .current-dateHome,
   .current-date {
-    margin-left: 60px;
-    text-align: left;
-    margin-top: 5px;
+    font-size: 0.85rem;
+    gap: 2px;
+    line-height: 1.3;
+  }
+
+  .current-dateHome span:first-child,
+  .current-date span:first-child {
+    font-size: 0.75em;
+    line-height: 1.2;
+  }
+  .current-dateHome span:last-child,
+  .current-date span:last-child {
+    font-size: 0.95em;
+    line-height: 1.3;
   }
 }
 @media (min-width: 1024px) and (max-width: 1190px) {
@@ -1345,11 +1461,6 @@ schedule-table {
 
   border-radius: 12px;
   font-size: 1rem;
-}
-@media (min-width: 1370px) and (max-width: 1600px) {
-  .date-picker {
-    margin-left: 50%;
-  }
 }
 @media (min-width: 1610px) {
   .date-picker {
@@ -2567,6 +2678,8 @@ schedule-table {
     font-size: 18px;
     margin-top: -20px;
   }
+
+  .current-dateHome,
   .current-date {
     margin-left: 60%;
     margin-top: -5%;
@@ -2622,8 +2735,8 @@ schedule-table {
 
   .welcome-message,
   .schedule-title {
-    font-size: 34px;
-    margin-top: 18px;
+    font-size: 1.9rem;
+    font-weight: 500;
   }
 
   .date-wrapper,
@@ -2690,6 +2803,8 @@ schedule-table {
     padding: 8px;
     margin-bottom: 40px;
   }
+
+  .current-dateHome,
   .current-date {
     margin-left: 20%;
     margin-top: 8%;
@@ -2710,15 +2825,14 @@ schedule-table {
   .welcome-text {
     font-size: 14px; /* Giữ nguyên size */
   }
-  .welcome-message {
-    margin-top: 15%;
-  }
   .schedule-title {
     font-size: 22px;
   }
   .clock-container {
     margin-left: 5%;
   }
+
+  .current-dateHome,
   .current-date {
     margin-top: 8%;
     margin-left: 24%;
@@ -2765,13 +2879,34 @@ schedule-table {
 
 @media (max-width: 850px) {
   .date-wrapper {
-    font-size: 10px; /* Giảm font size */
-    gap: 4px; /* Giảm khoảng cách */
-    margin-bottom: 3px;
+    padding: 8px 12px;
+    margin: 5px 0 10px 0;
+    gap: 10px;
+  }
+  .logo {
+    font-size: clamp(1.5rem, 2.5vw, 2rem);
   }
 
-  .logo {
-    width: 90px; /* Giảm width của logo */
+  .current-dateHome,
+  .current-date {
+    font-size: 0.75rem;
+    gap: 2px;
+    line-height: 1.2;
+  }
+
+  .current-dateHome span:first-child {
+    font-size: 0.7em;
+    line-height: 1.1;
+  }
+  .current-date span:first-child {
+    font-size: 0.7em;
+    line-height: 1.1;
+  }
+
+  .current-dateHome span:last-child,
+  .current-date span:last-child {
+    font-size: 0.85em;
+    line-height: 1.2;
   }
 }
 .flex-grow {
@@ -3917,12 +4052,15 @@ button:hover {
 
 .home-icon {
   font-size: 16px;
-  transition: transform 0.3s ease;
-  filter: brightness(0) saturate(100%) invert(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .back-to-home-btn:hover .home-icon {
-  transform: rotate(15deg);
+  transform: rotate(-15deg) scale(1.1);
 }
 
 .back-to-home-btn:focus {
@@ -3945,6 +4083,10 @@ button:hover {
   .home-icon {
     font-size: 14px;
   }
+
+  .back-to-home-btn:hover .home-icon {
+    transform: rotate(-10deg) scale(1.05);
+  }
 }
 
 @media (max-width: 480px) {
@@ -3956,6 +4098,10 @@ button:hover {
 
   .home-icon {
     font-size: 12px;
+  }
+
+  .back-to-home-btn:hover .home-icon {
+    transform: rotate(-8deg) scale(1.03);
   }
 }
 
@@ -4135,7 +4281,7 @@ button:hover {
 
 .current-date {
   font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255, 255, 255, 1);
   font-weight: 500;
   opacity: 0.85;
   letter-spacing: 0.5px;
