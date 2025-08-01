@@ -1,42 +1,127 @@
 /**
  * Meeting Room Management Server
- * Enhanced for Private Cloud Deployment
+ * Enhanced for Multi-Environment Deployment (Local, Private Cloud)
  */
 
-// Load environment variables first
-require("dotenv").config();
+// ####################
+// Multi-Environment Configuration Loading
+// ####################
+const path = require("path");
+const fs = require("fs");
+
+// Determine environment and load appropriate config
+const NODE_ENV = process.env.NODE_ENV || "development";
+const envFiles = [
+  `.env.${NODE_ENV}.local`,
+  `.env.${NODE_ENV}`,
+  `.env.local`,
+  `.env`,
+];
+
+// Load the first existing environment file
+let envFileLoaded = false;
+for (const envFile of envFiles) {
+  const envPath = path.join(__dirname, envFile);
+  if (fs.existsSync(envPath)) {
+    require("dotenv").config({ path: envPath });
+    console.log(`Environment loaded from: ${envFile}`);
+    envFileLoaded = true;
+    break;
+  }
+}
+
+if (!envFileLoaded) {
+  require("dotenv").config();
+  console.log("Using default environment configuration");
+}
 
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
 const fsExtra = require("fs-extra");
-const path = require("path");
-const fs = require("fs");
 const rateLimit = require("express-rate-limit");
 
 const app = express();
 
-// Environment configuration
-const NODE_ENV = process.env.NODE_ENV || "development";
+// ####################
+// Environment Configuration with Cross-Platform Support
+// ####################
 const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || "0.0.0.0";
 const TRUST_PROXY = process.env.TRUST_PROXY === "true";
+
+// Environment-specific configurations
+const ENV_CONFIG = {
+  development: {
+    logLevel: "dev",
+    rateLimit: 5000,
+    cacheMaxAge: 300,
+    debugMode: true,
+    strictCors: false,
+  },
+  production: {
+    logLevel: process.env.LOG_LEVEL || "combined",
+    rateLimit: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 1000,
+    cacheMaxAge: parseInt(process.env.CACHE_CONTROL_MAX_AGE) || 3600,
+    debugMode: process.env.DEBUG_MODE === "true",
+    strictCors: true,
+  },
+  test: {
+    logLevel: "short",
+    rateLimit: 10000,
+    cacheMaxAge: 0,
+    debugMode: true,
+    strictCors: false,
+  },
+};
+
+const currentConfig = ENV_CONFIG[NODE_ENV] || ENV_CONFIG.development;
+
+console.log(`Current environment: ${NODE_ENV}`);
+console.log(`Configuration loaded:`, currentConfig);
 
 // Configure trust proxy for cloud deployment
 if (TRUST_PROXY) {
   app.set("trust proxy", 1);
 }
 
-// Data directory configuration - flexible for cloud deployment
-const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, "data");
+// ####################
+// Data Directory Configuration with Cross-Platform Support
+// ####################
+const DATA_DIR = (() => {
+  const configuredDir = process.env.DATA_DIR;
+
+  if (!configuredDir) {
+    // Default to local data directory
+    return path.join(__dirname, "data");
+  }
+
+  // Handle relative paths
+  if (!path.isAbsolute(configuredDir)) {
+    return path.resolve(__dirname, configuredDir);
+  }
+
+  // Use absolute path as-is
+  return configuredDir;
+})();
+
 const MEETINGS_FILE = path.join(DATA_DIR, "meetings.json");
 const BACKUP_DIR = path.join(DATA_DIR, "backups");
 const BACKGROUNDS_DIR = path.join(DATA_DIR, "backgrounds");
 const BACKGROUNDS_CONFIG = path.join(DATA_DIR, "backgrounds.json");
 
-// Ensure data directories exist
-fsExtra.ensureDirSync(DATA_DIR);
-fsExtra.ensureDirSync(BACKUP_DIR);
-fsExtra.ensureDirSync(BACKGROUNDS_DIR);
+console.log(`Data directory resolved to: ${DATA_DIR}`);
+
+// Ensure data directories exist with proper error handling
+try {
+  fsExtra.ensureDirSync(DATA_DIR);
+  fsExtra.ensureDirSync(BACKUP_DIR);
+  fsExtra.ensureDirSync(BACKGROUNDS_DIR);
+  console.log("Data directories initialized successfully");
+} catch (error) {
+  console.error("Failed to initialize data directories:", error);
+  process.exit(1);
+}
 
 // Initialize meetings file if it doesn't exist
 if (!fs.existsSync(MEETINGS_FILE)) {
@@ -54,15 +139,28 @@ if (!fs.existsSync(BACKGROUNDS_CONFIG)) {
   );
 }
 
-// Configure CORS for production security
+// ####################
+// Multi-Environment CORS Configuration
+// ####################
 const getAllowedOrigins = () => {
   const origins = process.env.ALLOWED_ORIGINS
     ? process.env.ALLOWED_ORIGINS.split(",").map((url) => url.trim())
     : ["http://localhost:3000", "http://127.0.0.1:3000"];
 
-  if (NODE_ENV === "development") {
-    // Add development origins
-    origins.push("http://localhost:3001", "http://192.168.1.47:3000");
+  // Environment-specific origins
+  if (NODE_ENV === "development" || NODE_ENV === "test") {
+    // Add development and local network origins
+    const devOrigins = [
+      "http://localhost:3001",
+      "http://127.0.0.1:3001",
+      "http://192.168.1.47:3000",
+      "http://192.168.1.99:3000",
+    ];
+    origins.push(...devOrigins);
+  }
+
+  if (currentConfig.debugMode) {
+    console.log("Allowed CORS origins:", origins);
   }
 
   return origins;
@@ -75,7 +173,7 @@ const corsOptions = {
 
     const allowedOrigins = getAllowedOrigins();
 
-    if (allowedOrigins.indexOf(origin) !== -1 || NODE_ENV === "development") {
+    if (allowedOrigins.indexOf(origin) !== -1 || !currentConfig.strictCors) {
       callback(null, true);
     } else {
       console.warn(`CORS blocked origin: ${origin}`);
@@ -92,66 +190,70 @@ const corsOptions = {
     "X-Requested-With",
   ],
   credentials: true,
-  maxAge: NODE_ENV === "production" ? 3600 : 60, // Cache CORS preflight longer in production
+  maxAge: NODE_ENV === "production" ? 3600 : 60,
 };
 
-// Rate limiting for production
+// ####################
+// Environment-Aware Rate Limiting
+// ####################
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 1000, // limit each IP to 1000 requests per windowMs
+  max: currentConfig.rateLimit,
   message: {
     success: false,
     error: "Too many requests from this IP, please try again later.",
   },
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => {
+    // Skip rate limiting for local development
+    if (NODE_ENV === "development" && req.ip === "127.0.0.1") {
+      return true;
+    }
+    return false;
+  },
 });
 
 // Apply rate limiting to API routes only
 app.use("/api", limiter);
 
-// Middleware
+// ####################
+// Environment-Aware Middleware Configuration
+// ####################
 app.use(cors(corsOptions));
-// Increase payload size limit for image uploads (50MB)
-app.use(express.json({ limit: process.env.MAX_UPLOAD_SIZE || "50mb" }));
-app.use(
-  express.urlencoded({
-    limit: process.env.MAX_UPLOAD_SIZE || "50mb",
-    extended: true,
-  })
-);
 
-// Configure logging based on environment
-if (NODE_ENV === "production") {
-  app.use(morgan(process.env.LOG_LEVEL || "combined"));
-} else {
-  app.use(morgan("dev"));
-}
+// Increase payload size limit for image uploads
+const maxUploadSize = process.env.MAX_UPLOAD_SIZE || "50mb";
+app.use(express.json({ limit: maxUploadSize }));
+app.use(express.urlencoded({ limit: maxUploadSize, extended: true }));
 
-// Add cache-control headers to all responses
+// Environment-specific logging
+app.use(morgan(currentConfig.logLevel));
+
+// ####################
+// Environment-Aware Caching and Security Headers
+// ####################
 app.use((req, res, next) => {
   // Prevent caching for API responses to ensure fresh data
   if (req.path.startsWith("/api/")) {
     res.set("Cache-Control", "no-cache, no-store, must-revalidate");
     res.set("Pragma", "no-cache");
     res.set("Expires", "0");
-  } else if (NODE_ENV === "production") {
-    // Cache static files in production
-    res.set(
-      "Cache-Control",
-      `public, max-age=${process.env.CACHE_CONTROL_MAX_AGE || 3600}`
-    );
+  } else {
+    // Cache static files based on environment
+    res.set("Cache-Control", `public, max-age=${currentConfig.cacheMaxAge}`);
   }
   next();
 });
 
-// Security headers for production
+// Environment-specific security headers
 if (NODE_ENV === "production") {
   app.use((req, res, next) => {
     res.set("X-Content-Type-Options", "nosniff");
     res.set("X-Frame-Options", "SAMEORIGIN");
     res.set("X-XSS-Protection", "1; mode=block");
     res.set("Referrer-Policy", "strict-origin-when-cross-origin");
+    res.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
     next();
   });
 }
@@ -233,7 +335,7 @@ app.put("/api/meetings/:id", (req, res) => {
     const meetingId = req.params.id;
     const updateData = req.body;
 
-    console.log(`📝 Updating meeting ${meetingId}:`, updateData);
+    console.log(`Updating meeting ${meetingId}:`, updateData);
 
     // Read existing meetings
     const meetings = JSON.parse(fs.readFileSync(MEETINGS_FILE, "utf8"));
@@ -267,7 +369,7 @@ app.put("/api/meetings/:id", (req, res) => {
     // Save updated meetings
     fs.writeFileSync(MEETINGS_FILE, JSON.stringify(meetings, null, 2));
 
-    console.log(`✅ Meeting ${meetingId} updated successfully`);
+    console.log(`Meeting ${meetingId} updated successfully`);
 
     res.json({
       success: true,
@@ -275,7 +377,7 @@ app.put("/api/meetings/:id", (req, res) => {
       message: "Meeting updated successfully",
     });
   } catch (error) {
-    console.error("❌ Error updating meeting:", error);
+    console.error("Error updating meeting:", error);
     res.status(500).json({
       success: false,
       error: "Failed to update meeting",
@@ -591,7 +693,7 @@ app.delete("/api/backgrounds/:type", (req, res) => {
     config[`${type}Background`] = null;
     fs.writeFileSync(BACKGROUNDS_CONFIG, JSON.stringify(config, null, 2));
 
-    console.log(`🗑️ Background reset: ${type}`);
+    console.log(`Background reset: ${type}`);
 
     res.json({
       success: true,
@@ -645,7 +747,6 @@ app.use("/api", (error, req, res, next) => {
 /**
  * Enhanced server startup with environment validation and logging
  */
-const HOST = process.env.HOST || "0.0.0.0";
 
 // Validate critical environment variables
 const requiredEnvVars = ["NODE_ENV"];

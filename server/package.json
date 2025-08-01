@@ -5,11 +5,17 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "env-cmd -f .env.development node server.js",
-    "prod": "env-cmd -f .env.production node server.js"
+    "dev": "cross-env NODE_ENV=development node server.js",
+    "local": "cross-env NODE_ENV=development node server.js",
+    "prod": "cross-env NODE_ENV=production node server.js",
+    "test:network": "cross-env NODE_ENV=development node server.js",
+    "start:dev": "cross-env NODE_ENV=development node server.js",
+    "start:local": "cross-env NODE_ENV=development node server.js",
+    "start:prod": "cross-env NODE_ENV=production node server.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
+    "cross-env": "^7.0.3",
     "dotenv": "^17.2.1",
     "express": "^4.18.1",
     "express-rate-limit": "^8.0.1",
