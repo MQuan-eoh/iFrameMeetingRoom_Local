@@ -162,6 +162,7 @@
   padding: 5px 10px;
   background-color: #f5f5f5;
   border-bottom: 1px solid #e0e0e0;
+  position: relative; /* Fix: Add relative positioning for absolute child elements */
 }
 
 .nav-arrow {
@@ -215,7 +216,8 @@
   color: #333;
   position: absolute;
   left: 55%;
-  transform: translateX(-50%);
+  top: 50%; /* Center vertically within parent */
+  transform: translateX(-50%) translateY(-50%); /* Center both horizontally and vertically */
 }
 
 /* Today Button styling - căn giữa với current-period */

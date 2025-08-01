@@ -62,37 +62,5 @@
     "createdAt": "2025-08-01T04:25:56.635Z",
     "isEnded": false,
     "forceEndedByUser": false
-  },
-  {
-    "id": "meeting_1754022381541",
-    "room": "Phòng họp lầu 3",
-    "date": "30/07/2025",
-    "dayOfWeek": "4",
-    "startTime": "11:00",
-    "endTime": "12:00",
-    "duration": "1h",
-    "purpose": "Thảo luận",
-    "department": "Marketing",
-    "title": "Test book 1",
-    "content": "Book script 1",
-    "createdAt": "2025-08-01T04:26:21.541Z",
-    "isEnded": false,
-    "forceEndedByUser": false
-  },
-  {
-    "id": "meeting_1754022399741",
-    "room": "Phòng họp lầu 3",
-    "date": "31/07/2025",
-    "dayOfWeek": "5",
-    "startTime": "08:00",
-    "endTime": "09:00",
-    "duration": "1h",
-    "purpose": "Phỏng vấn",
-    "department": "Marketing",
-    "title": "Test book 2 ",
-    "content": "Test book 2 ",
-    "createdAt": "2025-08-01T04:26:39.741Z",
-    "isEnded": false,
-    "forceEndedByUser": false
   }
 ]
