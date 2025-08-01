@@ -39,9 +39,10 @@ export class ScheduleBookingManager {
     document.addEventListener("meetingDataUpdated", (event) => {
       const source = event.detail?.source || "unknown";
       const isNewMeeting = event.detail?.isNewMeeting || false;
+      const action = event.detail?.action || "unknown";
 
       console.log(
-        `Meeting data updated from ${source}, refreshing schedule view`
+        `Meeting data updated from ${source}, action: ${action}, refreshing schedule view`
       );
 
       // Skip refresh if this update is from a new meeting creation to prevent conflicts
@@ -54,6 +55,27 @@ export class ScheduleBookingManager {
       setTimeout(() => {
         this._renderMeetingsForCurrentWeek();
       }, 300);
+    });
+
+    // Listen for early meeting end events
+    document.addEventListener("meetingEndedEarly", (event) => {
+      console.log("Meeting ended early, refreshing schedule view immediately");
+
+      // Immediate refresh for better user experience
+      setTimeout(() => {
+        this._renderMeetingsForCurrentWeek();
+        console.log("Schedule view refreshed after early meeting end");
+      }, 100);
+    });
+
+    // Listen for schedule refresh requests
+    document.addEventListener("scheduleRefresh", (event) => {
+      const reason = event.detail?.reason || "unknown";
+      console.log(`Schedule refresh requested, reason: ${reason}`);
+
+      setTimeout(() => {
+        this._renderMeetingsForCurrentWeek();
+      }, 200);
     });
 
     // Listen for room status updates to refresh calendar
@@ -539,15 +561,6 @@ export class ScheduleBookingManager {
       input.classList.remove("invalid");
       this._clearTimeFormatError(input);
 
-      // If valid, check if it's within working hours
-      if (value) {
-        const [hour, minute] = value.split(":").map(Number);
-        if (hour < 7 || hour > 19 || (hour === 19 && minute > 0)) {
-          input.classList.add("invalid");
-          this._showWorkingHoursError(input);
-          return false;
-        }
-      }
       return true;
     }
   }

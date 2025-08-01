@@ -169,19 +169,15 @@
     "date": "01/08/2025",
     "dayOfWeek": "6",
     "startTime": "12:00",
-    "endTime": "12:18:34",
+    "endTime": "13:00",
     "duration": "1h",
     "purpose": "Thảo luận",
     "department": "Marketing",
     "title": "vxcvxc",
     "content": "vxcvxc",
     "createdAt": "2025-08-01T05:08:13.988Z",
-    "isEnded": true,
-    "forceEndedByUser": true,
-    "originalEndTime": "13:00",
-    "lastUpdated": "2025-08-01T05:18:34.152Z",
-    "endedEarlyAt": "2025-08-01T05:18:34.152Z",
-    "updatedAt": "2025-08-01T05:18:34.170Z"
+    "isEnded": false,
+    "forceEndedByUser": false
   },
   {
     "id": "meeting_1754025297577",

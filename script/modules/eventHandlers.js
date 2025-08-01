@@ -113,6 +113,37 @@ export class EventHandlers {
     document.addEventListener("endMeetingRequested", (event) => {
       this.meetingDataManager.handleEndMeeting(event.detail.event);
     });
+
+    // Handle early end meeting events
+    document.addEventListener("meetingEndedEarly", (event) => {
+      console.log("Meeting ended early event received:", event.detail);
+
+      const { meeting, originalEndTime, newEndTime } = event.detail;
+
+      // Force refresh all UI components
+      setTimeout(() => {
+        // Refresh room status
+        if (this.roomManager) {
+          this.roomManager.updateRoomStatus(window.currentMeetingData || []);
+        }
+
+        // Refresh schedule view
+        if (window.scheduleBookingManager) {
+          window.scheduleBookingManager._renderMeetingsForCurrentWeek();
+        }
+
+        // Show UI notification
+        if (this.uiManager) {
+          this.uiManager.showNotification(
+            `Cuộc họp "${
+              meeting.title || meeting.content
+            }" đã kết thúc sớm (${originalEndTime} → ${newEndTime})`,
+            "success",
+            4000
+          );
+        }
+      }, 500);
+    });
   }
 
   /**

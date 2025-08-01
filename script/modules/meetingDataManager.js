@@ -641,6 +641,107 @@ export class MeetingDataManager {
   }
 
   /**
+   * End a meeting early with complete server synchronization
+   */
+  async endMeetingEarly(meetingId) {
+    console.log(`####################`);
+    console.log(`Starting early end process for meeting ID: ${meetingId}`);
+
+    try {
+      const currentData = this.getCachedMeetingData();
+      const meetingIndex = currentData.findIndex(
+        (meeting) => meeting.id === meetingId
+      );
+
+      if (meetingIndex === -1) {
+        throw new Error("Meeting not found");
+      }
+
+      const currentTime = DateTimeUtils.getCurrentTime();
+      const meeting = currentData[meetingIndex];
+
+      console.log(`Ending meeting early: ${meeting.title || meeting.content}`);
+      console.log(
+        `Original end time: ${meeting.endTime}, New end time: ${currentTime}`
+      );
+
+      const updatedMeeting = {
+        ...meeting,
+        endTime: currentTime,
+        isEnded: true,
+        forceEndedByUser: true,
+        originalEndTime: meeting.endTime,
+        lastUpdated: new Date().toISOString(),
+        endedEarlyAt: new Date().toISOString(),
+      };
+
+      // Update local cache first
+      const updatedData = [...currentData];
+      updatedData[meetingIndex] = updatedMeeting;
+      this.setCachedMeetingData(updatedData);
+
+      console.log("Local cache updated, now syncing with server...");
+
+      // Try to update server
+      try {
+        const serverIP =
+          localStorage.getItem("serverIP") ||
+          window.location.hostname ||
+          "localhost";
+        const response = await fetch(
+          `http://${serverIP}:3000/api/meetings/${meetingId}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(updatedMeeting),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`Server responded with status: ${response.status}`);
+        }
+
+        const serverResponse = await response.json();
+        console.log("Meeting successfully updated on server:", serverResponse);
+
+        this.lastSync = new Date();
+        this.isOnline = true;
+      } catch (serverError) {
+        console.warn(
+          "Failed to update meeting on server, keeping local changes:",
+          serverError
+        );
+        this.isOnline = false;
+        // Continue with local changes even if server update fails
+      }
+
+      // Trigger comprehensive UI updates
+      this._triggerMeetingUpdate(updatedData);
+      this._triggerRoomStatusUpdate(this.getTodayMeetings(updatedData));
+      this._showEndMeetingSuccess();
+
+      // Broadcast the change to other components
+      document.dispatchEvent(
+        new CustomEvent("meetingEndedEarly", {
+          detail: {
+            meeting: updatedMeeting,
+            originalEndTime: meeting.endTime,
+            newEndTime: currentTime,
+          },
+        })
+      );
+
+      console.log("Meeting ended early successfully, all updates completed");
+      return updatedMeeting;
+    } catch (error) {
+      console.error("Error ending meeting early:", error);
+      throw error;
+    }
+  }
+
+  /**
    * End a meeting
    */
   endMeeting(meetingId) {

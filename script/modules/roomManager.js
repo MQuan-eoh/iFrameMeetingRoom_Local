@@ -15,6 +15,11 @@ import {
   CSS_CLASSES,
 } from "../config/constants.js";
 
+/**
+ * Room Manager Module
+ * Handles room status updates, room page rendering, and room-related functionality
+ */
+
 export class RoomManager {
   constructor() {
     this.previousStates = {};
@@ -467,7 +472,9 @@ export class RoomManager {
                       
                       <!-- End Meeting Button in Right Column -->
                       <div class="meeting-actions">
-                        <button class="end-meeting-btn">
+                        <button class="end-meeting-btn" data-meeting-id="${
+                          currentMeeting.id
+                        }" data-room-name="${roomName}">
                           <i class="fas fa-stop-circle"></i>
                           KẾT THÚC CUỘC HỌP
                         </button>
@@ -567,10 +574,69 @@ export class RoomManager {
     `;
   }
   /**
+   * Add global CSS animations for notifications
+   */
+  _addNotificationStyles() {
+    if (document.querySelector("#end-meeting-notification-styles")) return;
+
+    const style = document.createElement("style");
+    style.id = "end-meeting-notification-styles";
+    style.textContent = `
+      /* Animation keyframes for end meeting notifications */
+      @keyframes slideInRight {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      @keyframes slideOutRight {
+        from {
+          transform: translateX(0);
+          opacity: 1;
+        }
+        to {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+      }
+
+      /* Enhanced notification styling */
+      .end-meeting-success-notification .notification-icon,
+      .end-meeting-error-notification .notification-icon {
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+      }
+
+      .end-meeting-success-notification .notification-message,
+      .end-meeting-error-notification .notification-message {
+        line-height: 1.4;
+      }
+
+      /* Hover effects */
+      .end-meeting-success-notification:hover,
+      .end-meeting-error-notification:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        transition: all 0.2s ease;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  /**
    * Setup event handlers for room page
    */
   _setupRoomPageEventHandlers(roomName) {
     console.log(`Setting up event handlers for room page: ${roomName}`);
+
+    // Add notification styles
+    this._addNotificationStyles();
 
     // Back to Home button
     const backToHomeBtn = document.getElementById("backToHomeBtn");
@@ -585,6 +651,7 @@ export class RoomManager {
     if (endMeetingBtn) {
       endMeetingBtn.addEventListener("click", (e) => {
         const meetingId = e.target.dataset.meetingId;
+        const roomName = e.target.dataset.roomName;
         this._handleEndMeeting(meetingId, roomName);
       });
     }
@@ -713,24 +780,291 @@ export class RoomManager {
   }
 
   /**
-   * Handle end meeting action
+   * Handle end meeting action with complete server sync
    */
-  _handleEndMeeting(meetingId, roomName) {
-    if (confirm("Bạn có chắc chắn muốn kết thúc cuộc họp này?")) {
-      console.log(`Ending meeting ${meetingId} in room ${roomName}`);
+  async _handleEndMeeting(meetingId, roomName) {
+    console.log(`####################`);
+    console.log(`Attempting to end meeting ${meetingId} in room ${roomName}`);
 
-      // Dispatch custom event for ending meeting
-      document.dispatchEvent(
-        new CustomEvent("endMeeting", {
-          detail: { meetingId, roomName },
-        })
+    // Validate meetingId
+    if (!meetingId) {
+      console.error("No meeting ID provided for end meeting action");
+      this._showErrorNotification("Không thể xác định cuộc họp cần kết thúc");
+      return;
+    }
+
+    // Show confirmation dialog
+    const confirmResult = confirm(
+      "Bạn có chắc chắn muốn kết thúc cuộc họp này sớm?"
+    );
+    if (!confirmResult) {
+      console.log("User cancelled end meeting action");
+      return;
+    }
+
+    try {
+      console.log(
+        `Processing end meeting request for meeting ID: ${meetingId}`
       );
 
-      // Refresh the page data
+      // Call meeting data manager to end the meeting
+      let endedMeeting = null;
+      if (window.meetingDataManager) {
+        endedMeeting = await window.meetingDataManager.endMeetingEarly(
+          meetingId
+        );
+        console.log(
+          "Meeting ended successfully via MeetingDataManager:",
+          endedMeeting
+        );
+      } else {
+        console.warn("MeetingDataManager not available, using fallback method");
+        // Fallback: direct API call
+        await this._endMeetingDirectAPI(meetingId);
+      }
+
+      // Show success notification
+      this._showSuccessNotification("Cuộc họp đã được kết thúc thành công!");
+
+      // Force refresh all components that display meeting information
+      await this._refreshAllMeetingDisplays();
+
+      // Navigate back to home after successful end
       setTimeout(() => {
-        this._handleRefreshData(roomName);
-      }, 1000);
+        console.log("Auto-navigating back to home after ending meeting");
+        this._handleBackToHome();
+      }, 1500);
+    } catch (error) {
+      console.error("Error ending meeting:", error);
+      this._showErrorNotification(
+        `Lỗi khi kết thúc cuộc họp: ${error.message}`
+      );
     }
+  }
+
+  /**
+   * Fallback method to end meeting via direct API call
+   */
+  async _endMeetingDirectAPI(meetingId) {
+    console.log(`Ending meeting ${meetingId} via direct API call`);
+
+    // Get current time for end time
+    const currentTime = DateTimeUtils.getCurrentTime();
+
+    // Get meeting data first
+    const allMeetings = window.currentMeetingData || [];
+    const meeting = allMeetings.find((m) => m.id === meetingId);
+
+    if (!meeting) {
+      throw new Error("Meeting not found in local data");
+    }
+
+    // Prepare updated meeting data
+    const updatedMeeting = {
+      ...meeting,
+      endTime: currentTime,
+      isEnded: true,
+      forceEndedByUser: true,
+      originalEndTime: meeting.endTime,
+      lastUpdated: new Date().toISOString(),
+    };
+
+    // Update server via API
+    const serverIP =
+      localStorage.getItem("serverIP") ||
+      window.location.hostname ||
+      "localhost";
+    const response = await fetch(
+      `http://${serverIP}:3000/api/meetings/${meetingId}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedMeeting),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Server error: ${response.status}`);
+    }
+
+    const result = await response.json();
+    console.log("Meeting updated on server:", result);
+
+    // Update local cache
+    const updatedData = allMeetings.map((m) =>
+      m.id === meetingId ? updatedMeeting : m
+    );
+    window.currentMeetingData = updatedData;
+
+    return updatedMeeting;
+  }
+
+  /**
+   * Refresh all components that display meeting information
+   */
+  async _refreshAllMeetingDisplays() {
+    console.log("####################");
+    console.log("Refreshing all meeting displays after ending meeting");
+
+    try {
+      // 1. Force refresh meeting data from server
+      if (window.meetingDataManager) {
+        await window.meetingDataManager.forceRefresh();
+        console.log("Meeting data refreshed from server");
+      }
+
+      // 2. Refresh schedule-week-view
+      if (
+        window.scheduleBookingManager &&
+        window.scheduleBookingManager._renderMeetingsForCurrentWeek
+      ) {
+        console.log("Refreshing schedule week view");
+        window.scheduleBookingManager._renderMeetingsForCurrentWeek();
+      }
+
+      // 3. Refresh room status displays
+      if (window.roomManager && window.roomManager.updateRoomStatus) {
+        console.log("Refreshing room status displays");
+        const latestData = window.currentMeetingData || [];
+        window.roomManager.updateRoomStatus(latestData);
+      }
+
+      // 4. Dispatch events for other components
+      const refreshEvents = [
+        new CustomEvent("meetingDataUpdated", {
+          detail: {
+            meetings: window.currentMeetingData || [],
+            source: "endMeeting",
+            action: "meetingEnded",
+          },
+        }),
+        new CustomEvent("roomStatusUpdate", {
+          detail: {
+            todayMeetings:
+              window.meetingDataManager?.getTodayMeetings(
+                window.currentMeetingData || []
+              ) || [],
+          },
+        }),
+        new CustomEvent("scheduleRefresh", {
+          detail: { reason: "meetingEnded" },
+        }),
+      ];
+
+      refreshEvents.forEach((event) => {
+        document.dispatchEvent(event);
+        console.log(`Dispatched ${event.type} event`);
+      });
+
+      console.log("All meeting displays refreshed successfully");
+    } catch (error) {
+      console.error("Error refreshing meeting displays:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Show success notification
+   */
+  _showSuccessNotification(message) {
+    // Add notification styles first
+    this._addNotificationStyles();
+
+    const notification = document.createElement("div");
+    notification.className = "end-meeting-success-notification";
+    notification.innerHTML = `
+      <div class="notification-icon">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <div class="notification-message">${message}</div>
+    `;
+
+    // Add styles
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, #4caf50, #45a049);
+      color: white;
+      padding: 16px 24px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 10000;
+      animation: slideInRight 0.3s ease-out;
+      max-width: 400px;
+      font-size: 14px;
+      font-weight: 500;
+    `;
+
+    document.body.appendChild(notification);
+
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.style.animation = "slideOutRight 0.3s ease-in";
+        setTimeout(() => {
+          if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+          }
+        }, 300);
+      }
+    }, 3000);
+  }
+
+  /**
+   * Show error notification
+   */
+  _showErrorNotification(message) {
+    // Add notification styles first
+    this._addNotificationStyles();
+
+    const notification = document.createElement("div");
+    notification.className = "end-meeting-error-notification";
+    notification.innerHTML = `
+      <div class="notification-icon">
+        <i class="fas fa-exclamation-triangle"></i>
+      </div>
+      <div class="notification-message">${message}</div>
+    `;
+
+    // Add styles
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, #f44336, #d32f2f);
+      color: white;
+      padding: 16px 24px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 10000;
+      animation: slideInRight 0.3s ease-out;
+      max-width: 400px;
+      font-size: 14px;
+      font-weight: 500;
+    `;
+
+    document.body.appendChild(notification);
+
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.style.animation = "slideOutRight 0.3s ease-in";
+        setTimeout(() => {
+          if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+          }
+        }, 300);
+      }
+    }, 5000);
   }
 
   /**
