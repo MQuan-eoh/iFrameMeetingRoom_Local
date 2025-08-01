@@ -237,8 +237,7 @@
   }
 }
 /* Button styles */
-.upload-button,
-.date-picker {
+.upload-button {
   padding: 0.5rem 1rem;
   font-size: 0.9rem;
   border-radius: 20px;
@@ -465,8 +464,7 @@
     align-items: stretch;
   }
 
-  .upload-button,
-  .date-picker {
+  .upload-button {
     width: 100%;
   }
 }
@@ -805,10 +803,6 @@
   .upload-button {
     font-size: 14px; /* Giảm kích thước chữ */
     padding: 0 12px;
-  }
-
-  .date-picker {
-    font-size: 14px;
   }
 }
 
@@ -1426,24 +1420,6 @@ schedule-table {
 }
 /*//=======New update : Selection when user pick any date=====*/
 
-.date-picker {
-  color: #ffffff; /* Màu chữ tối */
-  transition: border-color 0.3s ease; /* Hiệu ứng chuyển màu viền */
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ */
-  background: linear-gradient(
-    135deg,
-    rgb(24 146 121 / 80%),
-    rgb(0 60 49 / 80%)
-  );
-  text-align: center;
-  justify-content: center;
-  margin-left: 65%;
-  height: 40px; /* Cùng chiều cao với button */
-  padding: 0 12px;
-  border: 1px solid #ccc;
-  border-radius: 12px;
-  font-size: 1rem;
-}
 .create-meeting-button {
   color: #ffffff; /* Màu chữ tối */
   transition: border-color 0.3s ease; /* Hiệu ứng chuyển màu viền */
@@ -1462,34 +1438,9 @@ schedule-table {
   border-radius: 12px;
   font-size: 1rem;
 }
-@media (min-width: 1610px) {
-  .date-picker {
-    margin-left: 65%;
-  }
-}
-@media (min-width: 1200px) and (max-width: 1350px) {
-  .date-picker {
-    margin-left: 80%;
-    /* margin-top: -5%; */
-  }
-}
 
-@media (max-width: 991px) {
-  .date-picker {
-    margin-left: 10%;
-  }
-}
-.date-picker:hover {
-  outline: none;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(130, 132, 255, 0.7);
-}
 .upload-button:active {
   transform: translateY(1px);
-}
-.date-picker::placeholder {
-  /* Định dạng placeholder */
-  color: #999999; /* Màu chữ placeholder */
 }
 
 /*========Upgrade with Change Background Feature============*/
@@ -2852,12 +2803,6 @@ schedule-table {
     position: relative;
     justify-content: flex-start;
   }
-
-  .date-picker {
-    position: absolute;
-    right: 0;
-    min-width: 200px;
-  }
 }
 
 /* Utility Classes */
@@ -3397,8 +3342,7 @@ button:hover {
     flex-direction: column; /* Xếp dọc trên màn hình nhỏ */
   }
 
-  .upload-button,
-  .date-picker {
+  .upload-button {
     width: 100%;
     box-sizing: border-box; /* Đảm bảo padding không làm tràn */
   }
@@ -3868,7 +3812,6 @@ button:hover {
     display: none !important;
   }
   .upload-button,
-  .date-picker,
   .room-button {
     width: 100% !important;
     font-size: 13px !important;
@@ -3982,8 +3925,7 @@ button:hover {
     width: 100% !important;
     margin-bottom: 8px !important;
   }
-  .create-meeting-button,
-  .date-picker {
+  .create-meeting-button {
     width: 48% !important;
     min-width: unset !important;
     max-width: unset !important;
@@ -4573,29 +4515,6 @@ button:hover {
   font-size: 14px;
 }
 
-.book-room-btn {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 24px;
-  background: linear-gradient(135deg, #4299e1, #3182ce);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-size: 14px;
-}
-
-.book-room-btn:hover {
-  background: linear-gradient(135deg, #3182ce, #2c5282);
-  transform: translateY(-1px);
-  box-shadow: 0 8px 25px rgba(66, 153, 225, 0.3);
-}
-
 /* Scrollable Upcoming Meetings Panel */
 .upcoming-meetings-panel {
   background: rgba(255, 255, 255, 0.15);
@@ -4704,7 +4623,7 @@ button:hover {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.meeting-priority {
+/* .meeting-priority {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -4723,7 +4642,7 @@ button:hover {
 .meeting-priority:not(.next) {
   background: #cbd5e0;
   color: rgba(255, 255, 255, 0.8);
-}
+} */
 
 @keyframes nextMeetingPulse {
   0% {

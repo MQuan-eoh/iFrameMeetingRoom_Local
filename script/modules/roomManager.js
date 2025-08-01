@@ -491,10 +491,6 @@ export class RoomManager {
                       <h4>Không có cuộc họp</h4>
                       <p>Phòng này hiện tại đang trống</p>
                     </div>
-                    <button class="book-room-btn">
-                      <i class="fas fa-plus-circle"></i>
-                      ĐẶT PHÒNG NGAY
-                    </button>
                   </div>
                 `
                 }
@@ -527,14 +523,6 @@ export class RoomManager {
                           }</div>
                           <div class="meeting-purpose">${meeting.purpose}</div>
                         </div>
-                        <div class="meeting-priority ${
-                          index === 0 ? "next" : ""
-                        }">
-                          ${
-                            index === 0
-                              ? '<i class="fas fa-arrow-right"></i>'
-                              : '<i class="fas fa-clock"></i>'
-                          }
                         </div>
                       </div>
                     `
@@ -657,7 +645,7 @@ export class RoomManager {
     }
 
     // Book room buttons (multiple)
-    const bookRoomBtns = document.querySelectorAll(".book-room-btn, .book-btn");
+    const bookRoomBtns = document.querySelectorAll(".book-btn");
     bookRoomBtns.forEach((btn) => {
       btn.addEventListener("click", (e) => {
         const room = e.target.dataset.room || roomName;

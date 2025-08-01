@@ -452,6 +452,20 @@ export class ScheduleBookingManager {
     );
     if (!dayColumn) return;
 
+    const columnFullDate = dayColumn.dataset.fullDate; // Should be "DD/MM/YYYY" format
+    const currentVietnamDate = DateTimeUtils.getCurrentDate(); // Returns "DD/MM/YYYY"
+
+    if (columnFullDate !== currentVietnamDate) {
+      console.log(
+        `Time indicator skipped - Column date: ${columnFullDate}, Current date: ${currentVietnamDate}`
+      );
+      return; // Not today's actual date, don't show indicator
+    }
+
+    console.log(
+      `Time indicator showing for today: ${currentVietnamDate} at ${currentHour}:${currentMinute}`
+    );
+
     // Find the cell for the current hour
     const currentHourCell = dayColumn.querySelector(
       `.day-cell[data-time="${currentHour.toString().padStart(2, "0")}:00"]`
@@ -471,6 +485,7 @@ export class ScheduleBookingManager {
     timeLabel.textContent = `${currentHour
       .toString()
       .padStart(2, "0")}:${currentMinute.toString().padStart(2, "0")}`;
+
     indicator.appendChild(timeLabel);
 
     currentHourCell.appendChild(indicator);
