@@ -110,21 +110,5 @@
     "createdAt": "2025-08-01T04:37:24.561Z",
     "isEnded": false,
     "forceEndedByUser": false
-  },
-  {
-    "id": "meeting_1754023310385",
-    "room": "Phòng họp lầu 4",
-    "date": "01/08/2025",
-    "dayOfWeek": "6",
-    "startTime": "13:00",
-    "endTime": "14:00",
-    "duration": "1h",
-    "purpose": "Thảo luận",
-    "department": "Nhân sự",
-    "title": "Test dien thoai",
-    "content": "Test dien thoai",
-    "createdAt": "2025-08-01T04:41:50.386Z",
-    "isEnded": false,
-    "forceEndedByUser": false
   }
 ]

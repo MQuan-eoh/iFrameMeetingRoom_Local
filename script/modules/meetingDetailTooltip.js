@@ -399,12 +399,6 @@ class MeetingDetailTooltipManager {
       </div>
       
       <div class="tooltip-footer">
-        <button class="tooltip-action-btn secondary" onclick="window.meetingTooltip.viewDetails('${
-          meetingData.id
-        }')">
-          <i class="fas fa-eye"></i>
-          Xem chi tiết
-        </button>
         <button class="tooltip-action-btn primary" onclick="window.meetingTooltip.editMeeting('${
           meetingData.id
         }')">
