@@ -237,9 +237,31 @@ export class ScheduleBookingManager {
       );
     }
 
-    // Cell click events for booking
+    // Cell click events for booking will be attached after rendering week view
+    // This is moved to _attachDayCellEventListeners() method
+
+    // Initialize time selection behavior like Teams
+    // Use the imported function instead of internal implementation
+    initTeamsTimeDropdown();
+  }
+
+  /**
+   * Attach event listeners to day cells for quick booking
+   * Called after week view is rendered to ensure all cells have listeners
+   */
+  _attachDayCellEventListeners() {
     const dayCells = document.querySelectorAll(".day-cell");
+
+    // Remove existing listeners first to prevent duplicates
     dayCells.forEach((cell) => {
+      // Clone the element to remove all event listeners
+      const newCell = cell.cloneNode(true);
+      cell.parentNode.replaceChild(newCell, cell);
+    });
+
+    // Attach fresh event listeners
+    const freshDayCells = document.querySelectorAll(".day-cell");
+    freshDayCells.forEach((cell) => {
       cell.addEventListener("click", (event) => {
         // Skip if cell contains a meeting already or click was on a meeting
         if (
@@ -251,16 +273,35 @@ export class ScheduleBookingManager {
 
         const timeSlot = cell.getAttribute("data-time");
         const dayColumn = cell.closest(".day-column");
-        const dayIndex = dayColumn.getAttribute("data-day");
-        const dayDate = dayColumn.querySelector(".day-date").textContent;
+        const dayIndex = parseInt(dayColumn.getAttribute("data-day"));
+
+        // Get the full date from the day column dataset (DD/MM/YYYY format)
+        let dayDate = dayColumn.dataset.fullDate;
+
+        // Fallback to parsing from day-date element if dataset not available
+        if (!dayDate) {
+          const dayDateElement = dayColumn.querySelector(".day-date");
+          if (dayDateElement && dayDateElement.dataset.fullDate) {
+            dayDate = dayDateElement.dataset.fullDate;
+          } else if (dayDateElement) {
+            // If only DD/MM format available, add current year
+            const dateText = dayDateElement.textContent.trim();
+            const currentYear = new Date().getFullYear();
+            dayDate = `${dateText}/${currentYear}`;
+          }
+        }
+
+        console.log(
+          `Day cell clicked - Day Index: ${dayIndex}, Full Date: ${dayDate}, Time: ${timeSlot}`
+        );
 
         this._quickBookSlot(dayDate, dayIndex, timeSlot);
       });
     });
 
-    // Initialize time selection behavior like Teams
-    // Use the imported function instead of internal implementation
-    initTeamsTimeDropdown();
+    console.log(
+      `Attached event listeners to ${freshDayCells.length} day cells`
+    );
   }
 
   /**
@@ -295,7 +336,7 @@ export class ScheduleBookingManager {
   _navigatePeriod(direction) {
     if (direction === "today") {
       // Reset to current date
-      this.currentDate = "reset";
+      this.currentDate = new Date();
     } else if (this.currentView === "week") {
       // Move by 7 days
       this.currentDate.setDate(this.currentDate.getDate() + 7 * direction);
@@ -453,15 +494,50 @@ export class ScheduleBookingManager {
   }
 
   /**
-   * Open booking modal for a quick booking
+   * Open booking modal for a quick booking from specific day cell
    */
   _quickBookSlot(dateStr, dayIndex, timeStr) {
-    // Parse date from the display format
-    const [day, month, year] = dateStr.split("/");
-    const date = `${year}-${month}-${day}`;
+    console.log(`Quick booking for date: ${dateStr}, time: ${timeStr}`);
+
+    // Handle different date formats that might come from day-date elements
+    let formattedDate = "";
+
+    if (dateStr && dateStr.includes("/")) {
+      // Check if it's DD/MM format or DD/MM/YYYY format
+      const dateParts = dateStr.split("/");
+
+      if (dateParts.length === 2) {
+        // DD/MM format - need to add current year
+        const [day, month] = dateParts;
+        const currentYear = new Date().getFullYear();
+        formattedDate = `${currentYear}-${month.padStart(
+          2,
+          "0"
+        )}-${day.padStart(2, "0")}`;
+      } else if (dateParts.length === 3) {
+        // DD/MM/YYYY format
+        const [day, month, year] = dateParts;
+        formattedDate = `${year}-${month.padStart(2, "0")}-${day.padStart(
+          2,
+          "0"
+        )}`;
+      }
+    } else {
+      // Fallback to current date if parsing fails
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, "0");
+      const day = String(today.getDate()).padStart(2, "0");
+      formattedDate = `${year}-${month}-${day}`;
+      console.warn(
+        `Failed to parse date: ${dateStr}, using current date: ${formattedDate}`
+      );
+    }
+
+    console.log(`Formatted date for input: ${formattedDate}`);
 
     // Set form values
-    document.getElementById("bookingDate").value = date;
+    document.getElementById("bookingDate").value = formattedDate;
     document.getElementById("bookingStartTime").value = timeStr;
 
     // Calculate end time (default to 1 hour later)
@@ -471,18 +547,54 @@ export class ScheduleBookingManager {
     const endTime = `${endHour.toString().padStart(2, "0")}:${minutes}`;
     document.getElementById("bookingEndTime").value = endTime;
 
-    // Open the modal
-    this._openBookingModal();
+    // Open the modal (but skip auto-fill since we already set the date specifically)
+    this._openBookingModal(true); // Pass flag to indicate date is already set
   }
 
   /**
    * Open booking modal
+   * @param {boolean} skipDateAutoFill - If true, skip auto-filling the date (already set by quick booking)
    */
-  _openBookingModal() {
+  _openBookingModal(skipDateAutoFill = false) {
     this.bookingModal.classList.add("active");
+
+    // Auto-fill current date for convenience only if not skipped
+    if (!skipDateAutoFill) {
+      this._setDefaultBookingDate();
+    }
 
     // Populate start time options when modal opens
     this._populateStartTimeOptions();
+  }
+
+  /**
+   * Set default booking date to current Vietnam date only if not already set
+   */
+  _setDefaultBookingDate() {
+    const bookingDateInput = document.getElementById("bookingDate");
+    if (!bookingDateInput) return;
+
+    // Only auto-fill if the date field is empty or has been reset
+    if (bookingDateInput.value && bookingDateInput.value.trim() !== "") {
+      console.log(
+        `Booking date already set to: ${bookingDateInput.value}, skipping auto-fill`
+      );
+      return;
+    }
+
+    // Get current Vietnam date using DateTimeUtils
+    const vietnamDate = DateTimeUtils.getCurrentDate(); // Returns "DD/MM/YYYY"
+    const [day, month, year] = vietnamDate.split("/");
+
+    // Convert to HTML input date format (YYYY-MM-DD)
+    const htmlDateFormat = `${year}-${month}-${day}`;
+
+    // Set the default date value
+    bookingDateInput.value = htmlDateFormat;
+
+    console.log(
+      `Auto-filled booking date with current date: ${htmlDateFormat}`
+    );
   }
 
   /**
@@ -490,7 +602,26 @@ export class ScheduleBookingManager {
    */
   _closeBookingModal() {
     this.bookingModal.classList.remove("active");
-    document.getElementById("bookingForm").reset();
+
+    // Reset form completely
+    const form = document.getElementById("bookingForm");
+    if (form) {
+      form.reset();
+    }
+
+    // Explicitly clear the date field to ensure fresh start
+    const bookingDateInput = document.getElementById("bookingDate");
+    if (bookingDateInput) {
+      bookingDateInput.value = "";
+    }
+
+    // Clear any existing error messages
+    document.querySelectorAll(".time-error").forEach((error) => error.remove());
+
+    // Remove invalid class from inputs
+    document.querySelectorAll("input.invalid").forEach((input) => {
+      input.classList.remove("invalid");
+    });
   }
 
   /**
@@ -1016,6 +1147,9 @@ export class ScheduleBookingManager {
 
     // Re-render current time indicator after updating the dates
     this._renderTimeIndicator();
+
+    // Attach event listeners to day cells after rendering is complete
+    this._attachDayCellEventListeners();
   }
 
   /**

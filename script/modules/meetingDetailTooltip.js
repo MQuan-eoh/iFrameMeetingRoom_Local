@@ -730,6 +730,9 @@ class MeetingDetailTooltipManager {
       editModal = document.getElementById("editMeetingModal");
     }
 
+    // Reset modal state before opening
+    this.resetEditModalState();
+
     // Pre-populate form fields
     this.populateEditForm(meetingData);
 
@@ -880,14 +883,49 @@ class MeetingDetailTooltipManager {
   }
 
   /**
+   * Reset edit modal state
+   */
+  resetEditModalState() {
+    // Reset save button state
+    const saveBtn = document.getElementById("saveEditMeeting");
+    if (saveBtn) {
+      saveBtn.textContent = "Cập Nhật";
+      saveBtn.disabled = false;
+    }
+
+    // Clear any existing error messages in the modal
+    const existingErrors = document.querySelectorAll(
+      "#editMeetingModal .error-message"
+    );
+    existingErrors.forEach((error) => error.remove());
+
+    // Reset form validation states
+    const formInputs = document.querySelectorAll(
+      "#editMeetingModal .form-control"
+    );
+    formInputs.forEach((input) => {
+      input.classList.remove("error", "success");
+    });
+  }
+
+  /**
    * Close edit modal
    */
   closeEditModal() {
     const editModal = document.getElementById("editMeetingModal");
     if (editModal) {
       editModal.style.display = "none";
-      editModal.classList.remove("show");
+      editModal.classList.remove("show", "active");
       delete editModal.dataset.editingMeetingId;
+
+      // Reset modal state when closing
+      this.resetEditModalState();
+
+      // Clear form data
+      const form = document.getElementById("editMeetingForm");
+      if (form) {
+        form.reset();
+      }
     }
   }
 
@@ -1009,15 +1047,22 @@ class MeetingDetailTooltipManager {
     formData.id = meetingId;
     formData.updatedAt = new Date().toISOString();
 
+    // Get save button and store original state
+    const saveBtn = document.getElementById("saveEditMeeting");
+    const originalText = saveBtn.textContent;
+    const originalDisabled = saveBtn.disabled;
+
     try {
       // Show loading state
-      const saveBtn = document.getElementById("saveEditMeeting");
-      const originalText = saveBtn.textContent;
       saveBtn.textContent = "Đang cập nhật...";
       saveBtn.disabled = true;
 
       // Update meeting via data manager
       await this.updateMeetingData(formData);
+
+      // If we reach here, the update was successful
+      console.log("####################");
+      console.log("Meeting update successful");
 
       // Close modal
       this.closeEditModal();
@@ -1025,19 +1070,40 @@ class MeetingDetailTooltipManager {
       // Show success message
       this.showSuccessMessage("Cuộc họp đã được cập nhật thành công!");
 
-      // Refresh UI
-      this.refreshMeetingDisplay();
+      // Refresh UI (wrapped in try-catch to prevent UI refresh errors from affecting success)
+      try {
+        this.refreshMeetingDisplay();
+      } catch (refreshError) {
+        console.warn(
+          "UI refresh failed but meeting was updated successfully:",
+          refreshError
+        );
+        // Don't throw - the meeting update was successful
+      }
     } catch (error) {
       console.error("Error updating meeting:", error);
-      this.showErrorMessage(
-        "Có lỗi xảy ra khi cập nhật cuộc họp. Vui lòng thử lại."
-      );
+
+      // Determine error message based on error type
+      let errorMessage =
+        "Có lỗi xảy ra khi cập nhật cuộc họp. Vui lòng thử lại.";
+
+      if (error.message && error.message.includes("conflicts")) {
+        errorMessage =
+          "Thời gian họp bị trùng với cuộc họp khác. Vui lòng chọn thời gian khác.";
+      } else if (error.message && error.message.includes("not found")) {
+        errorMessage =
+          "Không tìm thấy cuộc họp để chỉnh sửa. Vui lòng tải lại trang.";
+      } else if (error.message && error.message.includes("network")) {
+        errorMessage =
+          "Lỗi kết nối mạng. Vui lòng kiểm tra kết nối và thử lại.";
+      }
+
+      this.showErrorMessage(errorMessage);
     } finally {
-      // Reset button state
-      const saveBtn = document.getElementById("saveEditMeeting");
+      // Always reset button state properly
       if (saveBtn) {
         saveBtn.textContent = originalText;
-        saveBtn.disabled = false;
+        saveBtn.disabled = originalDisabled;
       }
     }
   }
@@ -1136,50 +1202,155 @@ class MeetingDetailTooltipManager {
    * Update meeting data via data manager and sync
    */
   async updateMeetingData(meetingData) {
-    // Update via meeting data manager
-    if (window.meetingDataManager) {
-      return await window.meetingDataManager.updateMeeting(meetingData);
-    }
+    try {
+      console.log("####################");
+      console.log("Updating meeting data:", meetingData);
 
-    // Fallback: direct API call
-    const serverIP =
-      localStorage.getItem("serverIP") ||
-      window.location.hostname ||
-      "localhost";
-    const response = await fetch(
-      `http://${serverIP}:3000/api/meetings/${meetingData.id}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(meetingData),
+      // Update via meeting data manager if available
+      if (window.meetingDataManager) {
+        // Use the updateMeeting method that accepts a single meetingData object
+        const result = await window.meetingDataManager.updateMeeting(
+          meetingData
+        );
+        console.log("Meeting updated via data manager successfully:", result);
+        return result;
       }
-    );
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      // Fallback: direct API call if meetingDataManager is not available
+      console.log("Fallback to direct API call");
+      const serverIP =
+        localStorage.getItem("serverIP") ||
+        window.location.hostname ||
+        "localhost";
+
+      const response = await fetch(
+        `http://${serverIP}:3000/api/meetings/${meetingData.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(meetingData),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `HTTP error! status: ${response.status}, message: ${response.statusText}`
+        );
+      }
+
+      const result = await response.json();
+      console.log("Meeting updated via direct API successfully:", result);
+      return result;
+    } catch (error) {
+      console.error("Error updating meeting:", error);
+
+      // Re-throw with more specific error information
+      if (error.message.includes("HTTP error")) {
+        throw new Error("network: " + error.message);
+      } else if (error.message.includes("conflicts")) {
+        throw new Error("conflicts: " + error.message);
+      } else if (error.message.includes("not found")) {
+        throw new Error("not found: " + error.message);
+      } else {
+        throw error;
+      }
     }
+  }
 
-    return await response.json();
+  /**
+   * Safely call a method if it exists
+   */
+  _safeMethodCall(object, methodName, ...args) {
+    try {
+      if (object && typeof object[methodName] === "function") {
+        return object[methodName](...args);
+      } else {
+        console.warn(`Method ${methodName} not available on object:`, object);
+        return null;
+      }
+    } catch (error) {
+      console.error(`Error calling ${methodName}:`, error);
+      return null;
+    }
   }
 
   /**
    * Refresh meeting display after update
    */
   refreshMeetingDisplay() {
-    // Trigger UI refresh
-    if (window.scheduleBookingManager) {
-      window.scheduleBookingManager._renderWeekView();
-    }
+    try {
+      console.log("####################");
+      console.log("Refreshing meeting display after update...");
 
-    // Refresh room status
-    if (window.roomManager) {
-      window.roomManager.forceUpdateRoomStatus();
-    }
+      // Trigger UI refresh using safe method call
+      if (window.scheduleBookingManager) {
+        console.log("Refreshing schedule week view...");
+        this._safeMethodCall(window.scheduleBookingManager, "_renderWeekView");
+      } else {
+        console.warn("scheduleBookingManager not available");
+      }
 
-    // Trigger custom refresh event
-    document.dispatchEvent(new CustomEvent("meetingDataUpdated"));
+      // Refresh room status with latest data using safe method call
+      if (window.roomManager) {
+        console.log("Refreshing room status...");
+        // Get latest meeting data for room status update
+        const latestData = window.meetingDataManager
+          ? window.meetingDataManager.getCachedMeetingData()
+          : window.currentMeetingData || [];
+        this._safeMethodCall(
+          window.roomManager,
+          "updateRoomStatus",
+          latestData
+        );
+      } else {
+        console.warn("roomManager not available");
+      }
+
+      // Force refresh meeting data from server using safe method call
+      if (window.meetingDataManager) {
+        console.log("Force refreshing meeting data from server...");
+        const refreshPromise = this._safeMethodCall(
+          window.meetingDataManager,
+          "forceRefresh"
+        );
+        if (refreshPromise && typeof refreshPromise.then === "function") {
+          refreshPromise
+            .then(() =>
+              console.log("Meeting data refreshed from server successfully")
+            )
+            .catch((err) =>
+              console.warn("Failed to refresh meeting data:", err)
+            );
+        }
+      }
+
+      // Trigger custom refresh events
+      document.dispatchEvent(
+        new CustomEvent("meetingDataUpdated", {
+          detail: {
+            source: "tooltip-edit",
+            timestamp: new Date().toISOString(),
+          },
+        })
+      );
+
+      document.dispatchEvent(
+        new CustomEvent("roomStatusUpdate", {
+          detail: {
+            source: "tooltip-edit",
+            timestamp: new Date().toISOString(),
+          },
+        })
+      );
+
+      console.log("Meeting display refresh completed successfully");
+    } catch (error) {
+      console.error("Error refreshing meeting display:", error);
+      // Don't re-throw the error to prevent it from affecting the save success
+      // Just log it and continue
+    }
   }
 
   /**
