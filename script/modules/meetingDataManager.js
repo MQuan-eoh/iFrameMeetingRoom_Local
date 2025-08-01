@@ -78,31 +78,77 @@ export class MeetingDataManager {
    * Set cached meeting data
    */
   setCachedMeetingData(data) {
-    window.currentMeetingData = data;
+    // Ensure data is always a proper array
+    if (!Array.isArray(data)) {
+      console.warn(
+        "Attempted to set non-array data, converting to empty array:",
+        data
+      );
+      data = [];
+    }
+
+    // Validate each meeting object structure
+    const validatedData = data.filter((meeting) => {
+      if (!meeting || typeof meeting !== "object") {
+        console.warn("Invalid meeting object found, excluding:", meeting);
+        return false;
+      }
+      if (!meeting.id || !meeting.date) {
+        console.warn(
+          "Meeting missing required fields (id, date), excluding:",
+          meeting
+        );
+        return false;
+      }
+      return true;
+    });
+
+    if (validatedData.length !== data.length) {
+      console.warn(
+        `Filtered out ${data.length - validatedData.length} invalid meetings`
+      );
+    }
+
+    window.currentMeetingData = validatedData;
 
     // Create a local backup to prevent data loss on page reload/refresh
     try {
-      if (data && Array.isArray(data) && data.length > 0) {
-        localStorage.setItem("meetingDataBackup", JSON.stringify(data));
+      if (validatedData && validatedData.length > 0) {
+        localStorage.setItem(
+          "meetingDataBackup",
+          JSON.stringify(validatedData)
+        );
         localStorage.setItem("meetingDataBackupTime", Date.now().toString());
-        console.log(`📦 Created local backup with ${data.length} meetings`);
+        console.log(
+          `Created local backup with ${validatedData.length} meetings`
+        );
       }
     } catch (error) {
       console.warn("Error creating local data backup:", error);
     }
 
-    return data;
+    return validatedData;
   }
 
   /**
-   * Load meetings from server
+   * Load meetings from server with enhanced sync protection
    */
   async loadMeetingsFromServer() {
     if (this.isLoading) return this.getCachedMeetingData();
 
     this.isLoading = true;
     try {
-      console.log("🔍 Requesting meetings from server...");
+      console.log("Requesting meetings from server...");
+
+      // Check if we're currently saving a new meeting
+      if (window.savingNewMeeting && window.newMeetingData) {
+        console.log(
+          "Detected active meeting save operation, using local data to prevent data loss"
+        );
+        this.isLoading = false;
+        return window.newMeetingData;
+      }
+
       const meetings = await this.dataService.getMeetings();
 
       // Keep track of current data for comparison
@@ -112,18 +158,18 @@ export class MeetingDataManager {
       // Log detailed information about the data we received
       if (Array.isArray(meetings)) {
         console.log(
-          `📥 Server returned ${meetings.length} meetings (previously had ${currentCount})`
+          `Server returned ${meetings.length} meetings (previously had ${currentCount})`
         );
       } else {
-        console.warn("⚠️ Server returned non-array data:", meetings);
+        console.warn("Server returned non-array data:", meetings);
       }
 
-      // Only update if we actually got data back
+      // Enhanced data protection logic
       if (Array.isArray(meetings) && meetings.length > 0) {
         // If meetings decreased drastically (more than 50%), this might be an error
         if (currentCount > 5 && meetings.length < currentCount * 0.5) {
           console.warn(
-            `⚠️ POTENTIAL DATA LOSS DETECTED: Server returned ${meetings.length} meetings but we had ${currentCount} before`
+            `POTENTIAL DATA LOSS DETECTED: Server returned ${meetings.length} meetings but we had ${currentCount} before`
           );
 
           // Show a warning to the user
@@ -132,10 +178,31 @@ export class MeetingDataManager {
           );
         }
 
-        // Update cached data regardless - server is source of truth
+        // Special check: if we just created a meeting and server data doesn't include it
+        if (
+          window.newMeetingData &&
+          window.newMeetingData.length > meetings.length
+        ) {
+          const latestMeeting =
+            window.newMeetingData[window.newMeetingData.length - 1];
+          const serverHasLatest = meetings.some(
+            (m) => m.id === latestMeeting.id
+          );
+
+          if (!serverHasLatest) {
+            console.warn(
+              "Server data missing recently created meeting, retaining local data"
+            );
+            this.setCachedMeetingData(window.newMeetingData);
+            this.isLoading = false;
+            return window.newMeetingData;
+          }
+        }
+
+        // Update cached data - server is source of truth
         this.setCachedMeetingData(meetings);
         console.log(
-          `✅ Updated cache with ${meetings.length} meetings from server`
+          `Updated cache with ${meetings.length} meetings from server`
         );
       } else if (
         Array.isArray(meetings) &&
@@ -145,7 +212,7 @@ export class MeetingDataManager {
         // If we got an empty array and we had data before, this might be an error
         // Keep the existing data to prevent data loss
         console.warn(
-          "⚠️ Server returned empty meetings array but we have data locally. Keeping existing data to prevent loss."
+          "Server returned empty meetings array but we have data locally. Keeping existing data to prevent loss."
         );
 
         // Show a warning to the user
@@ -161,10 +228,9 @@ export class MeetingDataManager {
       this.lastSync = new Date();
 
       // Get today's meetings for room status updates
-      const todayMeetings = this.getTodayMeetings(
-        meetings.length > 0 ? meetings : currentData
-      );
-      console.log(`🗓️ ${todayMeetings.length} meetings found for today`);
+      const finalData = meetings.length > 0 ? meetings : currentData;
+      const todayMeetings = this.getTodayMeetings(finalData);
+      console.log(`${todayMeetings.length} meetings found for today`);
 
       // Update localStorage with sync timestamp to help cross-window coordination
       localStorage.setItem("lastServerSync", Date.now().toString());
@@ -173,8 +239,9 @@ export class MeetingDataManager {
       document.dispatchEvent(
         new CustomEvent("meetingDataUpdated", {
           detail: {
-            meetings: meetings.length > 0 ? meetings : currentData,
+            meetings: finalData,
             todayMeetings,
+            source: "server",
           },
         })
       );
@@ -189,15 +256,15 @@ export class MeetingDataManager {
       document.dispatchEvent(
         new CustomEvent("dashboardUpdate", {
           detail: {
-            meetings: meetings.length > 0 ? meetings : currentData,
+            meetings: finalData,
             todayMeetings,
           },
         })
       );
 
-      return meetings.length > 0 ? meetings : currentData;
+      return finalData;
     } catch (error) {
-      console.error("❌ Failed to load meetings from server:", error);
+      console.error("Failed to load meetings from server:", error);
       this.isOnline = false;
       return this.getCachedMeetingData();
     } finally {
@@ -251,12 +318,18 @@ export class MeetingDataManager {
   }
 
   /**
-   * Setup periodic sync with server
+   * Setup periodic sync with enhanced protection
    */
   _setupPeriodicSync() {
     // More aggressive sync - every 30 seconds for better real-time updates across network
     setInterval(() => {
-      console.log("🔄 Performing periodic server data sync...");
+      // Skip periodic sync if we're actively saving new meetings
+      if (window.savingNewMeeting) {
+        console.log("Skipping periodic sync - new meeting save in progress");
+        return;
+      }
+
+      console.log("Performing periodic server data sync...");
       this.loadMeetingsFromServer()
         .then((meetings) => {
           console.log(`Periodic sync complete - ${meetings.length} meetings`);
@@ -276,7 +349,14 @@ export class MeetingDataManager {
         return;
       }
 
-      console.log("🔄 Performing quick initial sync...");
+      // Skip if saving new meeting
+      if (window.savingNewMeeting) {
+        console.log("Skipping quick sync - new meeting save in progress");
+        quickSyncCount++;
+        return;
+      }
+
+      console.log("Performing quick initial sync...");
       this.loadMeetingsFromServer()
         .then(() => console.log("Quick sync complete"))
         .catch((err) => console.warn("Quick sync error:", err));
@@ -693,11 +773,42 @@ export class MeetingDataManager {
   }
 
   /**
-   * Get meetings for today
+   * Get meetings for today with enhanced debugging
    */
   getTodayMeetings(data) {
     const today = DateTimeUtils.getCurrentDate();
-    return data.filter((meeting) => meeting.date === today);
+    console.log(`Looking for meetings on date: ${today}`);
+
+    if (!Array.isArray(data)) {
+      console.warn("getTodayMeetings received non-array data:", data);
+      return [];
+    }
+
+    console.log(`Searching through ${data.length} total meetings`);
+
+    // Log all meeting dates for debugging
+    data.forEach((meeting, index) => {
+      console.log(
+        `Meeting ${index}: date="${meeting.date}", title="${
+          meeting.title || meeting.content
+        }"`
+      );
+    });
+
+    const todayMeetings = data.filter((meeting) => {
+      const isToday = meeting.date === today;
+      if (isToday) {
+        console.log(
+          `Found today's meeting: ${meeting.title || meeting.content} at ${
+            meeting.startTime
+          }`
+        );
+      }
+      return isToday;
+    });
+
+    console.log(`Found ${todayMeetings.length} meetings for today (${today})`);
+    return todayMeetings;
   }
 
   /**

@@ -419,7 +419,7 @@ class DataService {
     try {
       console.log("Updating all meetings:", meetings.length);
 
-      const response = await this._makeApiRequest("/meetings", {
+      const response = await this._makeApiRequest("/meetings/batch", {
         method: "POST",
         body: JSON.stringify(meetings),
       });

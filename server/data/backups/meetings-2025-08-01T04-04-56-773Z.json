@@ -14,21 +14,5 @@
     "createdAt": "2025-08-01T04:03:40.815Z",
     "isEnded": false,
     "forceEndedByUser": false
-  },
-  {
-    "id": "meeting_1754021096459",
-    "room": "Phòng họp lầu 3",
-    "date": "01/08/2025",
-    "dayOfWeek": "6",
-    "startTime": "12:00",
-    "endTime": "13:00",
-    "duration": "1h",
-    "purpose": "Báo cáo",
-    "department": "Marketing",
-    "title": "test bug 2 ",
-    "content": "test bug 2",
-    "createdAt": "2025-08-01T04:04:56.459Z",
-    "isEnded": false,
-    "forceEndedByUser": false
   }
 ]

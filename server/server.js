@@ -126,6 +126,9 @@ try {
 // Initialize meetings file if it doesn't exist
 if (!fs.existsSync(MEETINGS_FILE)) {
   fs.writeFileSync(MEETINGS_FILE, JSON.stringify([]));
+} else {
+  // Create initial backup on server startup to ensure backup directory is functional
+  createInitialBackup();
 }
 
 // Initialize backgrounds config if it doesn't exist
@@ -448,6 +451,36 @@ app.post("/api/meetings/batch", (req, res) => {
     res.status(500).json({ error: "Failed to update meetings" });
   }
 });
+
+/**
+ * Create initial backup on server startup
+ */
+function createInitialBackup() {
+  try {
+    if (fs.existsSync(MEETINGS_FILE)) {
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const backupFile = path.join(
+        BACKUP_DIR,
+        `meetings-startup-${timestamp}.json`
+      );
+
+      // Ensure backup directory exists
+      fsExtra.ensureDirSync(BACKUP_DIR);
+
+      // Create startup backup
+      fsExtra.copySync(MEETINGS_FILE, backupFile);
+
+      console.log(`Startup backup created: ${backupFile}`);
+
+      // Clean up old backups
+      cleanupBackups();
+
+      return backupFile;
+    }
+  } catch (error) {
+    console.error("Failed to create startup backup:", error);
+  }
+}
 
 /**
  * Create a backup of meetings data with enhanced error handling

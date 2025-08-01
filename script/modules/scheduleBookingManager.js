@@ -37,7 +37,19 @@ export class ScheduleBookingManager {
 
     // Listen for meeting data updates to refresh calendar
     document.addEventListener("meetingDataUpdated", (event) => {
-      console.log("Meeting data updated, refreshing schedule view");
+      const source = event.detail?.source || "unknown";
+      const isNewMeeting = event.detail?.isNewMeeting || false;
+
+      console.log(
+        `Meeting data updated from ${source}, refreshing schedule view`
+      );
+
+      // Skip refresh if this update is from a new meeting creation to prevent conflicts
+      if (isNewMeeting && source === "scheduleBookingManager") {
+        console.log("Skipping refresh for self-generated meeting update");
+        return;
+      }
+
       // Small delay to ensure data is fully updated
       setTimeout(() => {
         this._renderMeetingsForCurrentWeek();
@@ -686,17 +698,35 @@ export class ScheduleBookingManager {
   }
 
   /**
-   * Add meeting to storage
+   * Add meeting to storage with enhanced sync coordination
    */
   _addMeetingToStorage(meeting) {
-    // Get current meeting data
+    // Get current meeting data and ensure it's a proper array
     let meetingData = window.currentMeetingData || [];
+
+    // Validate that meetingData is actually an array
+    if (!Array.isArray(meetingData)) {
+      console.warn(
+        "meetingData is not an array, resetting to empty array:",
+        meetingData
+      );
+      meetingData = [];
+    }
 
     // Add new meeting
     meetingData.push(meeting);
 
-    // Update storage
+    // Update storage immediately
     window.currentMeetingData = meetingData;
+
+    // Create a temporary flag to prevent periodic sync from overwriting during save
+    window.savingNewMeeting = true;
+    window.newMeetingData = [...meetingData]; // Create a clean copy
+
+    console.log(
+      `Added meeting to local storage. Total meetings: ${meetingData.length}`
+    );
+    console.log("Current meeting data structure:", meetingData);
 
     // Try to save to server if MeetingDataManager is available
     if (
@@ -706,15 +736,34 @@ export class ScheduleBookingManager {
     ) {
       window.meetingRoomApp.managers.meetingDataManager
         .saveMeetingsToServer()
-        .catch((err) =>
-          console.error("Failed to save meeting from booking manager:", err)
-        );
+        .then(() => {
+          console.log("Meeting successfully saved to server");
+          // Clear the flag after successful save
+          window.savingNewMeeting = false;
+          window.newMeetingData = null;
+
+          // Force a server refresh after a short delay to ensure consistency
+          setTimeout(() => {
+            console.log(
+              "Performing post-save server sync to confirm data consistency"
+            );
+            window.meetingRoomApp.managers.meetingDataManager.loadMeetingsFromServer();
+          }, 1000);
+        })
+        .catch((err) => {
+          console.error("Failed to save meeting from booking manager:", err);
+          // Clear flag even on error to allow normal sync to resume
+          window.savingNewMeeting = false;
+          window.newMeetingData = null;
+        });
     }
 
     // Dispatch event for other modules
     const event = new CustomEvent("meetingDataUpdated", {
       detail: {
         meetings: meetingData,
+        source: "scheduleBookingManager",
+        isNewMeeting: true,
       },
     });
     document.dispatchEvent(event);
