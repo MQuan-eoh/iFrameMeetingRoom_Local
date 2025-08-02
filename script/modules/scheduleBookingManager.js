@@ -444,10 +444,7 @@ export class ScheduleBookingManager {
     const minutesSinceMidnight = currentHour * 60 + currentMinute;
     const minutesSince7am = minutesSinceMidnight - 7 * 60; // Adjust for 7am start
 
-    if (minutesSince7am < 0 || minutesSince7am > 12 * 60) {
-      // Outside of display hours (7am to 7pm)
-      return;
-    }
+    // Allow time indicator to show 24/7 instead of limiting to working hours
 
     // Get proper Vietnam date for today calculation
     const vietnamDate = DateTimeUtils.getCurrentDate(); // Returns "DD/MM/YYYY"
@@ -521,21 +518,18 @@ export class ScheduleBookingManager {
       `#################### Current time indicator created and added for ${currentHour}:${currentMinute} at ${percentage}%`
     );
 
-    // Scroll to current time if during work hours
-    if (minutesSince7am >= 0 && minutesSince7am <= 12 * 60) {
-      // Auto scroll to current time position (with offset to show it in the middle)
-      const weekView = document.getElementById("weekView");
-      if (weekView) {
-        const hourHeight = 60; // Height of each hour cell in pixels
-        const scrollPosition =
-          (currentHour - 7) * hourHeight + (currentMinute / 60) * hourHeight;
-        // Scroll to position with offset to center current time
-        const offset = weekView.clientHeight / 2;
-        weekView.scrollTo({
-          top: Math.max(0, scrollPosition - offset),
-          behavior: "smooth",
-        });
-      }
+    // Auto scroll to current time position for any hour (24/7 support)
+    const weekView = document.getElementById("weekView");
+    if (weekView) {
+      const hourHeight = 60; // Height of each hour cell in pixels
+      const scrollPosition =
+        (currentHour - 7) * hourHeight + (currentMinute / 60) * hourHeight;
+      // Scroll to position with offset to center current time
+      const offset = weekView.clientHeight / 2;
+      weekView.scrollTo({
+        top: Math.max(0, scrollPosition - offset),
+        behavior: "smooth",
+      });
     }
   }
 
@@ -589,7 +583,8 @@ export class ScheduleBookingManager {
     // Calculate end time (default to 1 hour later)
     const [hours, minutes] = timeStr.split(":");
     let endHour = parseInt(hours) + 1;
-    if (endHour > 18) endHour = 18;
+    // Allow 24/7 scheduling - remove 18 hour limit
+    if (endHour >= 24) endHour = 23; // Max is 23:59
     const endTime = `${endHour.toString().padStart(2, "0")}:${minutes}`;
     document.getElementById("bookingEndTime").value = endTime;
 
@@ -692,12 +687,10 @@ export class ScheduleBookingManager {
       suggestedHour += 1;
     }
 
-    // If it's past working hours, suggest from 7 AM next day (or current time if during working hours)
-    if (suggestedHour >= 19) {
-      suggestedHour = 7;
-      suggestedMinute = 0;
-    } else if (suggestedHour < 7) {
-      suggestedHour = 7;
+    // Allow 24/7 scheduling - no longer limit to working hours
+    // Keep current time as suggestion instead of forcing 7AM-7PM range
+    if (suggestedHour >= 24) {
+      suggestedHour = 0;
       suggestedMinute = 0;
     }
 
@@ -755,20 +748,6 @@ export class ScheduleBookingManager {
 
     input.parentNode.appendChild(errorMsg);
   }
-
-  /**
-   * Show working hours error message
-   */
-  _showWorkingHoursError(input) {
-    this._clearTimeFormatError(input);
-
-    const errorMsg = document.createElement("small");
-    errorMsg.className = "form-text text-danger time-error";
-    errorMsg.textContent = "Thời gian phải trong khoảng 07:00 - 19:00";
-
-    input.parentNode.appendChild(errorMsg);
-  }
-
   /**
    * Clear time format error message
    */

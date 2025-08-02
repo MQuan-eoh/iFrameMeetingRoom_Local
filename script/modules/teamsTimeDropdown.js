@@ -214,7 +214,7 @@ export function createFullDayTimeOptions() {
     `End dropdown children count: ${endTimeDropdown.children.length}`
   );
 
-  // Get current time to highlight suggested options
+  // Get current time to highlight suggested options (but don't limit working hours)
   const now = new Date();
   const currentHour = now.getHours();
   const currentMinute = now.getMinutes();
@@ -227,12 +227,10 @@ export function createFullDayTimeOptions() {
     suggestedHour += 1;
   }
 
-  // If it's past working hours, suggest from 7 AM next day
-  if (suggestedHour >= 19) {
-    suggestedHour = 7;
-    suggestedMinute = 0;
-  } else if (suggestedHour < 7) {
-    suggestedHour = 7;
+  // Allow 24/7 scheduling - no longer limit to working hours
+  // Keep current time as suggestion instead of forcing 7AM-7PM range
+  if (suggestedHour >= 24) {
+    suggestedHour = 0;
     suggestedMinute = 0;
   }
 

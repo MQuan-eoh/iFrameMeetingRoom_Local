@@ -1153,6 +1153,14 @@ export class UIManager {
       meetingScreen.style.backgroundImage = `url(${savedMainBackground})`;
       meetingScreen.style.backgroundSize = "cover";
       meetingScreen.style.backgroundPosition = "center";
+
+      // If in fullscreen mode, also sync to fullscreen container
+      if (document.fullscreenElement) {
+        const meetingContainer = document.querySelector(".meeting-container");
+        if (meetingContainer) {
+          this._syncBackgroundToFullscreen(meetingContainer);
+        }
+      }
     }
   }
 

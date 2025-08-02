@@ -7,8 +7,8 @@
 export class AuthenticationManager {
   constructor() {
     this.sessionKey = "meetingBookingSession";
-    // this.sessionDuration = 8 * 60 * 60 * 1000; // 8 hours in milliseconds (original)
-    this.sessionDuration = 1 * 60 * 1000; // 1 minute for testing
+    this.sessionDuration = 8 * 60 * 60 * 1000; // 8 hours in milliseconds (original)
+
     this.passwordModal = null;
     this.isAuthenticated = false;
     this.sessionTimer = null;
@@ -16,8 +16,7 @@ export class AuthenticationManager {
     // Configuration
     this.config = {
       password: "1234", // Simple 4-digit PIN for demo
-      // sessionWarningTime: 30 * 60 * 1000, // 30 minutes before expiry (original)
-      sessionWarningTime: 30 * 1000, // 30 seconds before expiry for testing
+      sessionWarningTime: 30 * 60 * 1000, // 30 minutes before expiry (original)
       maxAttempts: 3,
       lockoutDuration: 15 * 60 * 1000, // 15 minutes lockout
     };

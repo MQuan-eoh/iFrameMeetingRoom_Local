@@ -1153,15 +1153,6 @@ class MeetingDetailTooltipManager {
       return null;
     }
 
-    // Working hours validation
-    if (
-      !this.isWithinWorkingHours(startTime) ||
-      !this.isWithinWorkingHours(endTime)
-    ) {
-      this.showErrorMessage("Thời gian phải trong khoảng 07:00 - 19:00.");
-      return null;
-    }
-
     // Format date for display
     const [year, month, day] = date.split("-");
     const formattedDate = `${day}/${month}/${year}`;

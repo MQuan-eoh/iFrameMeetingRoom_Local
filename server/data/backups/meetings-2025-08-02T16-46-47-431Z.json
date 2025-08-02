@@ -484,11 +484,11 @@
     "purpose": "Thảo luận",
     "department": "Nhân sự",
     "title": "test khuuya",
-    "content": "test khuya A A",
+    "content": "test khuya A",
     "createdAt": "2025-08-02T16:36:50.581Z",
     "isEnded": false,
     "forceEndedByUser": false,
-    "description": "test khuya A A",
-    "updatedAt": "2025-08-02T16:46:47.435Z"
+    "description": "test khuya A",
+    "updatedAt": "2025-08-02T16:46:33.242Z"
   }
 ]
