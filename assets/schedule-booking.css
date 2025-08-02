@@ -477,6 +477,24 @@
   align-items: center;
 }
 
+/* Ensure modal works properly in fullscreen mode */
+.meeting-container .booking-modal {
+  position: absolute;
+  z-index: 10000;
+}
+
+/* Additional fallback for fullscreen modal positioning */
+.meeting-container:fullscreen .booking-modal,
+.meeting-container:-webkit-full-screen .booking-modal,
+.meeting-container:-moz-full-screen .booking-modal {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 10000 !important;
+}
+
 .booking-modal.active {
   display: flex;
 }

@@ -2423,6 +2423,55 @@ schedule-table {
   }
 }
 
+/* Fullscreen Mode - Ensure modals work properly in fullscreen */
+.meeting-container:fullscreen .booking-modal,
+.meeting-container:-webkit-full-screen .booking-modal,
+.meeting-container:-moz-full-screen .booking-modal {
+  position: fixed;
+  z-index: 10000;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+}
+
+.meeting-container:fullscreen #editMeetingModal,
+.meeting-container:-webkit-full-screen #editMeetingModal,
+.meeting-container:-moz-full-screen #editMeetingModal {
+  position: fixed;
+  z-index: 10000;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+}
+
+.meeting-container:fullscreen .meeting-detail-tooltip,
+.meeting-container:-webkit-full-screen .meeting-detail-tooltip,
+.meeting-container:-moz-full-screen .meeting-detail-tooltip {
+  position: fixed;
+  z-index: 10000;
+}
+
+.meeting-container:fullscreen .modal-container,
+.meeting-container:-webkit-full-screen .modal-container,
+.meeting-container:-moz-full-screen .modal-container {
+  position: fixed;
+  z-index: 10000;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* Ensure booking modal content is properly positioned in fullscreen */
+.meeting-container:fullscreen .booking-modal-content,
+.meeting-container:-webkit-full-screen .booking-modal-content,
+.meeting-container:-moz-full-screen .booking-modal-content {
+  position: relative;
+  z-index: 10001;
+}
+
 /* Đảm bảo .content-wrapper xếp dọc trên mobile */
 @media (max-width: 600px) {
   .content-wrapper {

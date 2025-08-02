@@ -728,6 +728,11 @@ class MeetingDetailTooltipManager {
     if (!editModal) {
       this.createEditModal();
       editModal = document.getElementById("editMeetingModal");
+
+      // Handle fullscreen mode for newly created modal
+      if (window.uiManager && window.uiManager.handleNewModalInFullscreen) {
+        window.uiManager.handleNewModalInFullscreen();
+      }
     }
 
     // Reset modal state before opening

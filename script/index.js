@@ -53,6 +53,7 @@ class MeetingRoomApp {
       window.roomManager = this.managers.roomManager;
       window.meetingDataManager = this.managers.meetingDataManager;
       window.deviceManager = this.managers.deviceManager;
+      window.uiManager = this.managers.uiManager;
 
       // Also expose PeopleDetectionSystem for direct access
       window.PeopleDetectionSystem =

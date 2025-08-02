@@ -25,6 +25,20 @@
   font-family: "Inter", "Roboto", sans-serif;
 }
 
+/* Fullscreen Mode - Ensure tooltip works properly in fullscreen */
+.meeting-container .meeting-detail-tooltip {
+  position: absolute;
+  z-index: 10000;
+}
+
+/* Additional fallback for fullscreen tooltip positioning */
+.meeting-container:fullscreen .meeting-detail-tooltip,
+.meeting-container:-webkit-full-screen .meeting-detail-tooltip,
+.meeting-container:-moz-full-screen .meeting-detail-tooltip {
+  position: fixed !important;
+  z-index: 10000 !important;
+}
+
 /* Show state - slides in from left */
 .meeting-detail-tooltip.show {
   opacity: 1;

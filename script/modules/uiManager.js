@@ -403,7 +403,193 @@ export class UIManager {
     document.addEventListener("fullscreenchange", () => {
       const isFullscreen = !!document.fullscreenElement;
       document.body.classList.toggle("fullscreen-mode", isFullscreen);
+
+      // Move booking modal to fullscreen container when entering fullscreen
+      this._handleModalInFullscreen(isFullscreen);
     });
+  }
+
+  /**
+   * Handle modal positioning in fullscreen mode
+   */
+  _handleModalInFullscreen(isFullscreen) {
+    const bookingModal = document.getElementById("bookingModal");
+    const editMeetingModal = document.getElementById("editMeetingModal");
+    const meetingDetailTooltip = document.getElementById(
+      "meeting-detail-tooltip"
+    );
+    const meetingContainer = document.querySelector(".meeting-container");
+    const modalContainer = document.querySelector(".modal-container");
+
+    if (!meetingContainer) return;
+
+    if (isFullscreen) {
+      // Move booking modal into fullscreen container
+      if (bookingModal && bookingModal.parentNode !== meetingContainer) {
+        // Store original parent for restoration
+        bookingModal.setAttribute("data-original-parent", "body");
+        meetingContainer.appendChild(bookingModal);
+
+        // Update booking modal reference in ScheduleBookingManager if it exists
+        this._updateBookingModalReference();
+      }
+
+      // Move edit meeting modal into fullscreen container
+      if (
+        editMeetingModal &&
+        editMeetingModal.parentNode !== meetingContainer
+      ) {
+        // Store original parent for restoration
+        editMeetingModal.setAttribute("data-original-parent", "body");
+        meetingContainer.appendChild(editMeetingModal);
+
+        console.log("Moved edit meeting modal to fullscreen container");
+      }
+
+      // Move meeting detail tooltip into fullscreen container
+      if (
+        meetingDetailTooltip &&
+        meetingDetailTooltip.parentNode !== meetingContainer
+      ) {
+        // Store original parent for restoration
+        meetingDetailTooltip.setAttribute("data-original-parent", "body");
+        meetingContainer.appendChild(meetingDetailTooltip);
+
+        // Update tooltip reference in MeetingDetailTooltip if it exists
+        this._updateMeetingDetailTooltipReference();
+      }
+
+      // Also move modal-container if it exists
+      if (modalContainer && modalContainer.parentNode !== meetingContainer) {
+        modalContainer.setAttribute("data-original-parent", "body");
+        meetingContainer.appendChild(modalContainer);
+      }
+
+      console.log("Moved modals and tooltips to fullscreen container");
+    } else {
+      // Restore booking modal to original position
+      if (
+        bookingModal &&
+        bookingModal.getAttribute("data-original-parent") === "body"
+      ) {
+        document.body.appendChild(bookingModal);
+        bookingModal.removeAttribute("data-original-parent");
+
+        // Update booking modal reference in ScheduleBookingManager if it exists
+        this._updateBookingModalReference();
+      }
+
+      // Restore edit meeting modal to original position
+      if (
+        editMeetingModal &&
+        editMeetingModal.getAttribute("data-original-parent") === "body"
+      ) {
+        document.body.appendChild(editMeetingModal);
+        editMeetingModal.removeAttribute("data-original-parent");
+
+        console.log("Restored edit meeting modal to original position");
+      }
+
+      // Restore meeting detail tooltip to original position
+      if (
+        meetingDetailTooltip &&
+        meetingDetailTooltip.getAttribute("data-original-parent") === "body"
+      ) {
+        document.body.appendChild(meetingDetailTooltip);
+        meetingDetailTooltip.removeAttribute("data-original-parent");
+
+        // Update tooltip reference in MeetingDetailTooltip if it exists
+        this._updateMeetingDetailTooltipReference();
+      }
+
+      // Restore modal-container
+      if (
+        modalContainer &&
+        modalContainer.getAttribute("data-original-parent") === "body"
+      ) {
+        document.body.appendChild(modalContainer);
+        modalContainer.removeAttribute("data-original-parent");
+      }
+
+      console.log("Restored modals and tooltips to original positions");
+    }
+  }
+
+  /**
+   * Update booking modal reference in other managers
+   */
+  _updateBookingModalReference() {
+    // Update reference in ScheduleBookingManager if it exists
+    if (
+      window.scheduleBookingManager &&
+      window.scheduleBookingManager.bookingModal
+    ) {
+      window.scheduleBookingManager.bookingModal =
+        document.getElementById("bookingModal");
+      console.log("Updated booking modal reference in ScheduleBookingManager");
+    }
+  }
+
+  /**
+   * Update meeting detail tooltip reference in other managers
+   */
+  _updateMeetingDetailTooltipReference() {
+    // Update reference in MeetingDetailTooltip if it exists
+    if (
+      window.meetingDetailTooltip &&
+      window.meetingDetailTooltip.currentTooltip
+    ) {
+      window.meetingDetailTooltip.currentTooltip = document.getElementById(
+        "meeting-detail-tooltip"
+      );
+      console.log(
+        "Updated meeting detail tooltip reference in MeetingDetailTooltip"
+      );
+    }
+  }
+
+  /**
+   * Check and move any new modals to fullscreen container if currently in fullscreen
+   */
+  _handleDynamicModalInFullscreen() {
+    // Only do this if we're currently in fullscreen mode
+    if (!document.fullscreenElement) return;
+
+    const meetingContainer = document.querySelector(".meeting-container");
+    if (!meetingContainer) return;
+
+    // Check for editMeetingModal that might have been created after fullscreen
+    const editMeetingModal = document.getElementById("editMeetingModal");
+    if (editMeetingModal && editMeetingModal.parentNode === document.body) {
+      editMeetingModal.setAttribute("data-original-parent", "body");
+      meetingContainer.appendChild(editMeetingModal);
+      console.log(
+        "Moved newly created edit meeting modal to fullscreen container"
+      );
+    }
+
+    // Check for any other dynamic modals with booking-modal class
+    const dynamicModals = document.querySelectorAll("body > .booking-modal");
+    dynamicModals.forEach((modal) => {
+      if (
+        modal.parentNode === document.body &&
+        !modal.getAttribute("data-original-parent")
+      ) {
+        modal.setAttribute("data-original-parent", "body");
+        meetingContainer.appendChild(modal);
+        console.log(
+          "Moved newly created modal to fullscreen container:",
+          modal.id
+        );
+      }
+    });
+  }
+
+  /**
+   * Expose method for external use when modals are created dynamically
+   */
+  handleNewModalInFullscreen() {
+    this._handleDynamicModalInFullscreen();
   }
 
   /**
