@@ -415,6 +415,7 @@ export class UIManager {
   _handleModalInFullscreen(isFullscreen) {
     const bookingModal = document.getElementById("bookingModal");
     const editMeetingModal = document.getElementById("editMeetingModal");
+    const passwordModal = document.getElementById("passwordModal");
     const meetingDetailTooltip = document.getElementById(
       "meeting-detail-tooltip"
     );
@@ -447,6 +448,17 @@ export class UIManager {
         meetingContainer.appendChild(editMeetingModal);
 
         console.log("Moved edit meeting modal to fullscreen container");
+      }
+
+      // Move password modal into fullscreen container
+      if (passwordModal && passwordModal.parentNode !== meetingContainer) {
+        // Store original parent for restoration
+        passwordModal.setAttribute("data-original-parent", "body");
+        meetingContainer.appendChild(passwordModal);
+
+        console.log(
+          "#################### Moved password modal to fullscreen container"
+        );
       }
 
       // Move meeting detail tooltip into fullscreen container
@@ -491,6 +503,19 @@ export class UIManager {
         editMeetingModal.removeAttribute("data-original-parent");
 
         console.log("Restored edit meeting modal to original position");
+      }
+
+      // Restore password modal to original position
+      if (
+        passwordModal &&
+        passwordModal.getAttribute("data-original-parent") === "body"
+      ) {
+        document.body.appendChild(passwordModal);
+        passwordModal.removeAttribute("data-original-parent");
+
+        console.log(
+          "#################### Restored password modal to original position"
+        );
       }
 
       // Restore meeting detail tooltip to original position
@@ -571,6 +596,16 @@ export class UIManager {
       meetingContainer.appendChild(editMeetingModal);
       console.log(
         "Moved newly created edit meeting modal to fullscreen container"
+      );
+    }
+
+    // Check for passwordModal that might have been created after fullscreen
+    const passwordModal = document.getElementById("passwordModal");
+    if (passwordModal && passwordModal.parentNode === document.body) {
+      passwordModal.setAttribute("data-original-parent", "body");
+      meetingContainer.appendChild(passwordModal);
+      console.log(
+        "#################### Moved newly created password modal to fullscreen container"
       );
     }
 

@@ -420,5 +420,39 @@
     "createdAt": "2025-08-01T09:17:49.510Z",
     "isEnded": false,
     "forceEndedByUser": false
+  },
+  {
+    "id": "meeting_1754134142310",
+    "room": "Phòng họp lầu 3",
+    "date": "02/08/2025",
+    "dayOfWeek": "7",
+    "startTime": "09:00",
+    "endTime": "10:30",
+    "duration": "1h",
+    "purpose": "Đào tạo",
+    "department": "Kinh doanh",
+    "title": "dfgdf",
+    "content": "dfgdgdf",
+    "createdAt": "2025-08-02T11:29:02.310Z",
+    "isEnded": false,
+    "forceEndedByUser": false,
+    "description": "dfgdgdf",
+    "updatedAt": "2025-08-02T15:47:12.950Z"
+  },
+  {
+    "id": "meeting_1754148292172",
+    "room": "Phòng họp lầu 3",
+    "date": "02/08/2025",
+    "dayOfWeek": "7",
+    "startTime": "22:00",
+    "endTime": "23:00",
+    "duration": "1h",
+    "purpose": "Phỏng vấn",
+    "department": "Kế toán",
+    "title": "ádasd",
+    "content": "adasd",
+    "createdAt": "2025-08-02T15:24:52.172Z",
+    "isEnded": false,
+    "forceEndedByUser": false
   }
 ]

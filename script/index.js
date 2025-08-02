@@ -16,6 +16,7 @@ import EventHandlers from "./modules/eventHandlers.js";
 import ScheduleBookingManager from "./modules/scheduleBookingManager.js";
 import ConnectionStatusManager from "./modules/connectionStatusManager.js";
 import MeetingDetailTooltipManager from "./modules/meetingDetailTooltip.js";
+import AuthenticationManager from "./modules/authenticationManager.js";
 
 // Import utilities and constants
 import { DateTimeUtils } from "./utils/core.js";
@@ -49,11 +50,15 @@ class MeetingRoomApp {
       this.managers.roomManager = new RoomManager();
       this.managers.deviceManager = new DeviceManager();
 
+      // Initialize authentication manager early
+      this.managers.authenticationManager = new AuthenticationManager();
+
       // Expose managers globally for cross-component access
       window.roomManager = this.managers.roomManager;
       window.meetingDataManager = this.managers.meetingDataManager;
       window.deviceManager = this.managers.deviceManager;
       window.uiManager = this.managers.uiManager;
+      window.authenticationManager = this.managers.authenticationManager;
 
       // Also expose PeopleDetectionSystem for direct access
       window.PeopleDetectionSystem =

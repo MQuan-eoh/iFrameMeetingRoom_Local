@@ -10,6 +10,7 @@ import {
   updateEndTimeOptions,
   toggleTimeDropdown,
 } from "./teamsTimeDropdown.js";
+import AuthenticationManager from "./authenticationManager.js";
 
 export class ScheduleBookingManager {
   constructor() {
@@ -22,6 +23,9 @@ export class ScheduleBookingManager {
     this.selectedStartTime = null;
     this.selectedEndTime = null;
     this.selectedRoom = null;
+
+    // Initialize authentication manager
+    this.authManager = new AuthenticationManager();
 
     this._initialize();
   }
@@ -196,10 +200,16 @@ export class ScheduleBookingManager {
     // Add event listener for Today button
     todayButton.addEventListener("click", () => this._navigatePeriod("today"));
 
-    // Create meeting button
+    // Create meeting button with authentication check
     document
       .getElementById("createMeetingBtn")
-      .addEventListener("click", () => this._openBookingModal());
+      .addEventListener("click", async () => {
+        // Request authentication before opening booking modal
+        const isAuthenticated = await this.authManager.requestAuthentication();
+        if (isAuthenticated) {
+          this._openBookingModal();
+        }
+      });
 
     // Modal actions
     document
@@ -295,13 +305,25 @@ export class ScheduleBookingManager {
           `Day cell clicked - Day Index: ${dayIndex}, Full Date: ${dayDate}, Time: ${timeSlot}`
         );
 
-        this._quickBookSlot(dayDate, dayIndex, timeSlot);
+        // Check authentication before allowing quick booking
+        this._quickBookSlotWithAuth(dayDate, dayIndex, timeSlot);
       });
     });
 
     console.log(
       `Attached event listeners to ${freshDayCells.length} day cells`
     );
+  }
+
+  /**
+   * Quick book slot with authentication check
+   */
+  async _quickBookSlotWithAuth(dayDate, dayIndex, timeSlot) {
+    // Request authentication before opening booking modal
+    const isAuthenticated = await this.authManager.requestAuthentication();
+    if (isAuthenticated) {
+      this._quickBookSlot(dayDate, dayIndex, timeSlot);
+    }
   }
 
   /**
@@ -470,7 +492,12 @@ export class ScheduleBookingManager {
     const currentHourCell = dayColumn.querySelector(
       `.day-cell[data-time="${currentHour.toString().padStart(2, "0")}:00"]`
     );
-    if (!currentHourCell) return;
+    if (!currentHourCell) {
+      console.log(
+        `#################### Current hour cell not found for ${currentHour}:00`
+      );
+      return;
+    }
 
     // Create and position the indicator
     const indicator = document.createElement("div");
@@ -489,6 +516,10 @@ export class ScheduleBookingManager {
     indicator.appendChild(timeLabel);
 
     currentHourCell.appendChild(indicator);
+
+    console.log(
+      `#################### Current time indicator created and added for ${currentHour}:${currentMinute} at ${percentage}%`
+    );
 
     // Scroll to current time if during work hours
     if (minutesSince7am >= 0 && minutesSince7am <= 12 * 60) {
