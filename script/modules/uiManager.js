@@ -424,6 +424,9 @@ export class UIManager {
     if (!meetingContainer) return;
 
     if (isFullscreen) {
+      // Sync background from meeting-screen to fullscreen container
+      this._syncBackgroundToFullscreen(meetingContainer);
+
       // Move booking modal into fullscreen container
       if (bookingModal && bookingModal.parentNode !== meetingContainer) {
         // Store original parent for restoration
@@ -511,6 +514,9 @@ export class UIManager {
         modalContainer.removeAttribute("data-original-parent");
       }
 
+      // Clear background styles when exiting fullscreen
+      this._clearFullscreenBackground(meetingContainer);
+
       console.log("Restored modals and tooltips to original positions");
     }
   }
@@ -590,6 +596,49 @@ export class UIManager {
    */
   handleNewModalInFullscreen() {
     this._handleDynamicModalInFullscreen();
+  }
+
+  /**
+   * Sync background from meeting-screen to fullscreen container
+   */
+  _syncBackgroundToFullscreen(meetingContainer) {
+    const meetingScreen = document.querySelector(".meeting-screen");
+
+    if (!meetingScreen) return;
+
+    // Get computed style from meeting-screen
+    const computedStyle = window.getComputedStyle(meetingScreen);
+    const backgroundImage = computedStyle.backgroundImage;
+    const backgroundSize = computedStyle.backgroundSize;
+    const backgroundPosition = computedStyle.backgroundPosition;
+    const backgroundRepeat = computedStyle.backgroundRepeat;
+
+    // Apply background to fullscreen container
+    if (backgroundImage && backgroundImage !== "none") {
+      meetingContainer.style.backgroundImage = backgroundImage;
+      meetingContainer.style.backgroundSize = backgroundSize;
+      meetingContainer.style.backgroundPosition = backgroundPosition;
+      meetingContainer.style.backgroundRepeat = backgroundRepeat;
+
+      console.log(
+        "#################### Background synced to fullscreen container"
+      );
+    }
+  }
+
+  /**
+   * Clear background styles when exiting fullscreen
+   */
+  _clearFullscreenBackground(meetingContainer) {
+    if (!meetingContainer) return;
+
+    // Remove inline background styles so CSS rules take over
+    meetingContainer.style.backgroundImage = "";
+    meetingContainer.style.backgroundSize = "";
+    meetingContainer.style.backgroundPosition = "";
+    meetingContainer.style.backgroundRepeat = "";
+
+    console.log("#################### Cleared fullscreen background styles");
   }
 
   /**
@@ -855,6 +904,15 @@ export class UIManager {
           targetElement.style.backgroundSize = "cover";
           targetElement.style.backgroundPosition = "center";
 
+          // If in fullscreen mode, also sync to fullscreen container
+          if (document.fullscreenElement) {
+            const meetingContainer =
+              document.querySelector(".meeting-container");
+            if (meetingContainer) {
+              this._syncBackgroundToFullscreen(meetingContainer);
+            }
+          }
+
           console.log(
             ` ${type} background uploaded successfully:`,
             result.filename
@@ -947,6 +1005,16 @@ export class UIManager {
         if (result.success) {
           meetingScreen.style.backgroundImage =
             "url(assets/imgs/background.jpg)";
+
+          // If in fullscreen mode, also sync to fullscreen container
+          if (document.fullscreenElement) {
+            const meetingContainer =
+              document.querySelector(".meeting-container");
+            if (meetingContainer) {
+              this._syncBackgroundToFullscreen(meetingContainer);
+            }
+          }
+
           console.log(" Main background reset successfully");
           this._showNotification("Hình nền chính đã được reset!", "success");
         } else {
@@ -1010,6 +1078,16 @@ export class UIManager {
           meetingScreen.style.backgroundImage = `url(${imageUrl})`;
           meetingScreen.style.backgroundSize = "cover";
           meetingScreen.style.backgroundPosition = "center";
+
+          // If in fullscreen mode, also sync to fullscreen container
+          if (document.fullscreenElement) {
+            const meetingContainer =
+              document.querySelector(".meeting-container");
+            if (meetingContainer) {
+              this._syncBackgroundToFullscreen(meetingContainer);
+            }
+          }
+
           console.log(
             "✅ Applied stored main background:",
             backgrounds.mainBackground

@@ -2424,6 +2424,15 @@ schedule-table {
 }
 
 /* Fullscreen Mode - Ensure modals work properly in fullscreen */
+.meeting-container:fullscreen,
+.meeting-container:-webkit-full-screen,
+.meeting-container:-moz-full-screen {
+  background-image: url(imgs/background.jpg);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
 .meeting-container:fullscreen .booking-modal,
 .meeting-container:-webkit-full-screen .booking-modal,
 .meeting-container:-moz-full-screen .booking-modal {
