@@ -1021,14 +1021,23 @@ export class ScheduleBookingManager {
 
     // Add event listener for click
     meetingEl.addEventListener("click", (e) => {
-      e.stopPropagation();
-      
       // Check if we're in delete mode and let delete manager handle it
-      if (window.deleteMeetingManager && window.deleteMeetingManager.isInDeleteMode()) {
-        // Don't handle the click here, let the delete manager's event listener handle it
+      if (
+        window.deleteMeetingManager &&
+        window.deleteMeetingManager.isInDeleteMode()
+      ) {
+        console.log(
+          "#################### In delete mode, letting delete manager handle"
+        );
+        // Don't stop propagation, let delete manager handle it
         return;
       }
-      
+
+      // Only stop propagation in normal mode
+      e.stopPropagation();
+      console.log(
+        "#################### Not in delete mode, showing meeting details"
+      );
       // Normal mode - show meeting details
       this._showMeetingDetails(meeting);
     });
