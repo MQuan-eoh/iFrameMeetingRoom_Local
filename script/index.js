@@ -17,6 +17,7 @@ import ScheduleBookingManager from "./modules/scheduleBookingManager.js";
 import ConnectionStatusManager from "./modules/connectionStatusManager.js";
 import MeetingDetailTooltipManager from "./modules/meetingDetailTooltip.js";
 import AuthenticationManager from "./modules/authenticationManager.js";
+import DeleteMeetingManager from "./modules/deleteMeetingManager.js";
 
 // Import utilities and constants
 import { DateTimeUtils } from "./utils/core.js";
@@ -71,8 +72,18 @@ class MeetingRoomApp {
       this.managers.meetingDetailTooltipManager =
         new MeetingDetailTooltipManager();
 
+      // Initialize delete meeting manager (requires auth and data service)
+      this.managers.deleteMeetingManager = new DeleteMeetingManager(
+        this.managers.authenticationManager,
+        this.managers.meetingDataManager.dataService,
+        this.managers.scheduleBookingManager
+      );
+
       // Expose tooltip manager globally for action buttons
       window.meetingTooltip = this.managers.meetingDetailTooltipManager;
+
+      // Expose delete manager globally for cross-component access
+      window.deleteMeetingManager = this.managers.deleteMeetingManager;
 
       // Initialize event handlers (must be last as it depends on other managers)
       this.managers.eventHandlers = new EventHandlers(this.managers);

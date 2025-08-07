@@ -1,0 +1,785 @@
+/* 
+ * Delete Meeting CSS
+ * Styles for the meeting deletion system with authentication
+ */
+
+/* Delete Meeting Button - Following create-meeting-button design */
+.delete-meeting-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
+  position: relative;
+  overflow: hidden;
+  min-width: 140px;
+  font-family: "Inter", "Roboto", sans-serif;
+  text-transform: none;
+  letter-spacing: 0.5px;
+}
+
+.delete-meeting-button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.delete-meeting-button:hover {
+  background: linear-gradient(135deg, #e53935 0%, #c62828 100%);
+  box-shadow: 0 6px 20px rgba(211, 47, 47, 0.4);
+  transform: translateY(-2px);
+}
+
+.delete-meeting-button:hover::before {
+  left: 100%;
+}
+
+.delete-meeting-button:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 8px rgba(211, 47, 47, 0.3);
+}
+
+.delete-meeting-button:disabled {
+  background: linear-gradient(135deg, #9e9e9e 0%, #757575 100%);
+  cursor: not-allowed;
+  box-shadow: 0 2px 6px rgba(158, 158, 158, 0.2);
+}
+
+.delete-meeting-button i {
+  font-size: 16px;
+  opacity: 0.9;
+}
+
+/* Delete Mode States */
+.delete-mode-active {
+  position: relative;
+}
+
+.delete-mode-active::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(211, 47, 47, 0.1);
+  backdrop-filter: blur(2px);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Delete Mode Controls */
+.delete-mode-controls {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 16px 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  border: 2px solid rgba(211, 47, 47, 0.2);
+  z-index: 2000;
+  display: none;
+  align-items: center;
+  gap: 16px;
+  font-family: "Inter", "Roboto", sans-serif;
+  backdrop-filter: blur(8px);
+}
+
+.delete-mode-controls.show {
+  display: flex;
+  animation: slideDownDelete 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+@keyframes slideDownDelete {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.delete-mode-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #d32f2f;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.delete-mode-info i {
+  font-size: 16px;
+}
+
+.delete-mode-counter {
+  background: rgba(211, 47, 47, 0.1);
+  color: #d32f2f;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  border: 1px solid rgba(211, 47, 47, 0.3);
+}
+
+.delete-action-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.delete-save-btn,
+.delete-cancel-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.delete-save-btn {
+  background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(211, 47, 47, 0.3);
+}
+
+.delete-save-btn:hover {
+  background: linear-gradient(135deg, #e53935 0%, #c62828 100%);
+  box-shadow: 0 4px 12px rgba(211, 47, 47, 0.4);
+  transform: translateY(-1px);
+}
+
+.delete-save-btn:disabled {
+  background: linear-gradient(135deg, #9e9e9e 0%, #757575 100%);
+  cursor: not-allowed;
+  box-shadow: 0 1px 4px rgba(158, 158, 158, 0.2);
+}
+
+.delete-cancel-btn {
+  background: linear-gradient(135deg, #757575 0%, #616161 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(117, 117, 117, 0.3);
+}
+
+.delete-cancel-btn:hover {
+  background: linear-gradient(135deg, #616161 0%, #424242 100%);
+  box-shadow: 0 4px 12px rgba(117, 117, 117, 0.4);
+  transform: translateY(-1px);
+}
+
+/* Meeting Selection in Delete Mode */
+.meeting-event.delete-selectable {
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.meeting-event.delete-selectable::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
+  border: 2px dashed rgba(211, 47, 47, 0.4);
+  border-radius: 6px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.meeting-event.delete-selectable:hover::before {
+  opacity: 1;
+}
+
+.meeting-event.delete-selectable:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 16px rgba(211, 47, 47, 0.3);
+  filter: brightness(0.95);
+}
+
+/* Selected Meeting for Deletion */
+.meeting-event.delete-selected {
+  background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%) !important;
+  border: 3px solid #d32f2f !important;
+  box-shadow: 0 4px 20px rgba(211, 47, 47, 0.4) !important;
+  transform: scale(1.05) !important;
+  z-index: 10 !important;
+  position: relative;
+}
+
+.meeting-event.delete-selected::before {
+  content: "";
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  background: linear-gradient(45deg, #d32f2f, #f44336, #e57373, #d32f2f);
+  background-size: 400% 400%;
+  border-radius: 8px;
+  z-index: -1;
+  animation: deleteSelectionGlow 2s ease-in-out infinite;
+}
+
+.meeting-event.delete-selected::after {
+  content: "✓";
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: #d32f2f;
+  color: #ffffff;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  animation: checkmarkPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes deleteSelectionGlow {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes checkmarkPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+}
+
+/* Delete Confirmation Modal - Following password modal design */
+.delete-confirm-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  z-index: 3000;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.delete-confirm-modal-overlay.show {
+  opacity: 1;
+  animation: fadeInDeleteConfirm 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+@keyframes fadeInDeleteConfirm {
+  0% {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  100% {
+    opacity: 1;
+    backdrop-filter: blur(8px);
+  }
+}
+
+.delete-confirm-modal {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 0 8px 32px rgba(0, 0, 0, 0.12),
+    0 4px 16px rgba(0, 0, 0, 0.08);
+  min-width: 450px;
+  max-width: 500px;
+  border: 2px solid rgba(211, 47, 47, 0.2);
+  overflow: hidden;
+  font-family: "Inter", "Roboto", sans-serif;
+  transform: translateY(-20px) scale(0.9);
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.delete-confirm-modal-overlay.show .delete-confirm-modal {
+  transform: translateY(0) scale(1);
+  animation: slideInDeleteConfirm 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+@keyframes slideInDeleteConfirm {
+  0% {
+    transform: translateY(-30px) scale(0.8);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.delete-confirm-header {
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+  color: #ffffff;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.delete-confirm-header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  pointer-events: none;
+}
+
+.delete-confirm-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  color: #ffffff;
+  position: relative;
+  z-index: 1;
+  line-height: 1.3;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.delete-confirm-icon {
+  font-size: 16px;
+  opacity: 0.95;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+}
+
+.delete-confirm-body {
+  padding: 24px;
+  background: #ffffff;
+  color: #333333;
+}
+
+.delete-confirm-info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.delete-confirm-warning,
+.delete-confirm-count,
+.delete-confirm-list {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.delete-confirm-warning {
+  background: rgba(255, 152, 0, 0.1);
+  border: 1px solid rgba(255, 152, 0, 0.3);
+}
+
+.delete-confirm-count {
+  background: rgba(211, 47, 47, 0.1);
+  border: 1px solid rgba(211, 47, 47, 0.3);
+}
+
+.delete-confirm-list {
+  background: rgba(33, 150, 243, 0.1);
+  border: 1px solid rgba(33, 150, 243, 0.3);
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.delete-info-icon {
+  font-size: 16px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.delete-info-icon.warning {
+  color: #ff9800;
+}
+
+.delete-info-icon.count {
+  color: #d32f2f;
+}
+
+.delete-info-icon.list {
+  color: #2196f3;
+}
+
+.delete-info-content {
+  flex: 1;
+}
+
+.delete-info-label {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 4px;
+  line-height: 1.2;
+}
+
+.delete-info-value {
+  font-size: 13px;
+  line-height: 1.4;
+  color: #555555;
+}
+
+.delete-meetings-list {
+  margin-top: 8px;
+  max-height: 120px;
+  overflow-y: auto;
+  border: 1px solid rgba(33, 150, 243, 0.2);
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.delete-meeting-item {
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(33, 150, 243, 0.1);
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.delete-meeting-item:last-child {
+  border-bottom: none;
+}
+
+.delete-meeting-item-title {
+  font-weight: 600;
+  color: #333333;
+  margin-bottom: 2px;
+}
+
+.delete-meeting-item-details {
+  color: #666666;
+  font-size: 11px;
+}
+
+.delete-confirm-footer {
+  padding: 20px 24px;
+  background: rgba(245, 245, 245, 0.8);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.delete-confirm-btn,
+.delete-decline-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  font-family: inherit;
+  position: relative;
+  overflow: hidden;
+}
+
+.delete-confirm-btn::before,
+.delete-decline-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.delete-confirm-btn {
+  background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
+}
+
+.delete-confirm-btn:hover {
+  background: linear-gradient(135deg, #e53935 0%, #c62828 100%);
+  box-shadow: 0 6px 20px rgba(211, 47, 47, 0.4);
+  transform: translateY(-2px);
+}
+
+.delete-confirm-btn:hover::before {
+  left: 100%;
+}
+
+.delete-decline-btn {
+  background: linear-gradient(135deg, #757575 0%, #616161 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(117, 117, 117, 0.3);
+}
+
+.delete-decline-btn:hover {
+  background: linear-gradient(135deg, #616161 0%, #424242 100%);
+  box-shadow: 0 6px 20px rgba(117, 117, 117, 0.4);
+  transform: translateY(-2px);
+}
+
+.delete-decline-btn:hover::before {
+  left: 100%;
+}
+
+/* Delete Notifications */
+.delete-notification {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 16px 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  border-left: 4px solid;
+  z-index: 3001;
+  max-width: 400px;
+  opacity: 0;
+  transform: translateX(100%);
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  font-family: "Inter", "Roboto", sans-serif;
+}
+
+.delete-notification.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.delete-notification-success {
+  border-left-color: #4caf50;
+  background: linear-gradient(135deg, #ffffff 0%, #f1f8e9 100%);
+}
+
+.delete-notification-error {
+  border-left-color: #f44336;
+  background: linear-gradient(135deg, #ffffff 0%, #ffebee 100%);
+}
+
+.delete-notification-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.delete-notification i {
+  font-size: 18px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.delete-notification-success i {
+  color: #4caf50;
+}
+
+.delete-notification-error i {
+  color: #f44336;
+}
+
+.delete-notification-text {
+  flex: 1;
+}
+
+.delete-notification-title {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 4px;
+  line-height: 1.2;
+}
+
+.delete-notification-message {
+  font-size: 13px;
+  line-height: 1.4;
+  color: #666666;
+}
+
+.delete-notification-close {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #999999;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 8px;
+  flex-shrink: 0;
+  transition: color 0.2s ease;
+}
+
+.delete-notification-close:hover {
+  color: #666666;
+}
+
+/* Fullscreen Support for Delete Mode */
+.meeting-container .delete-mode-controls {
+  position: fixed;
+  z-index: 3000;
+}
+
+.meeting-container .delete-confirm-modal-overlay {
+  position: fixed;
+  z-index: 3000;
+}
+
+.meeting-container:fullscreen .delete-mode-controls,
+.meeting-container:-webkit-full-screen .delete-mode-controls,
+.meeting-container:-moz-full-screen .delete-mode-controls {
+  position: fixed;
+  z-index: 3000;
+}
+
+.meeting-container:fullscreen .delete-confirm-modal-overlay,
+.meeting-container:-webkit-full-screen .delete-confirm-modal-overlay,
+.meeting-container:-moz-full-screen .delete-confirm-modal-overlay {
+  position: fixed;
+  z-index: 3000;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .delete-meeting-button {
+    min-width: 120px;
+    padding: 10px 20px;
+    font-size: 13px;
+  }
+
+  .delete-mode-controls {
+    flex-direction: column;
+    gap: 12px;
+    left: 10px;
+    right: 10px;
+    transform: none;
+    border-radius: 12px;
+  }
+
+  .delete-action-buttons {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .delete-confirm-modal {
+    min-width: 320px;
+    max-width: 90vw;
+    margin: 0 10px;
+  }
+
+  .delete-confirm-footer {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .delete-confirm-btn,
+  .delete-decline-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .delete-notification {
+    bottom: 10px;
+    right: 10px;
+    left: 10px;
+    max-width: none;
+  }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .delete-meeting-button {
+    border: 2px solid #ffffff;
+  }
+
+  .meeting-event.delete-selected {
+    border-width: 4px !important;
+  }
+
+  .delete-confirm-modal {
+    border-width: 3px;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .delete-meeting-button,
+  .meeting-event.delete-selectable,
+  .delete-confirm-modal,
+  .delete-notification {
+    transition: none;
+  }
+
+  .delete-meeting-button::before,
+  .meeting-event.delete-selected::before,
+  .meeting-event.delete-selected::after {
+    animation: none;
+  }
+
+  @keyframes deleteSelectionGlow {
+    0%,
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  @keyframes checkmarkPulse {
+    0%,
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+}

@@ -1022,6 +1022,14 @@ export class ScheduleBookingManager {
     // Add event listener for click
     meetingEl.addEventListener("click", (e) => {
       e.stopPropagation();
+      
+      // Check if we're in delete mode and let delete manager handle it
+      if (window.deleteMeetingManager && window.deleteMeetingManager.isInDeleteMode()) {
+        // Don't handle the click here, let the delete manager's event listener handle it
+        return;
+      }
+      
+      // Normal mode - show meeting details
       this._showMeetingDetails(meeting);
     });
   }
@@ -1256,6 +1264,24 @@ export class ScheduleBookingManager {
     // Month view implementation
     // This would generate a full month calendar view
     console.log("Month view not yet implemented");
+  }
+
+  /**
+   * Load meetings from server (public method for delete manager)
+   */
+  async loadMeetings() {
+    try {
+      if (
+        window.meetingRoomApp &&
+        window.meetingRoomApp.managers &&
+        window.meetingRoomApp.managers.meetingDataManager
+      ) {
+        await window.meetingRoomApp.managers.meetingDataManager.loadMeetingsFromServer();
+        console.log("Meetings reloaded from server");
+      }
+    } catch (error) {
+      console.error("Failed to reload meetings:", error);
+    }
   }
 
   /**

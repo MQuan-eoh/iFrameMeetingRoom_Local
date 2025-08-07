@@ -871,13 +871,6 @@ class MeetingDetailTooltipManager {
       });
     });
 
-    // Click outside to close
-    editModal.addEventListener("click", (e) => {
-      if (e.target === editModal) {
-        this.closeEditModal();
-      }
-    });
-
     // Save button handler
     saveBtn.addEventListener("click", () => {
       this.saveEditedMeeting();

@@ -440,15 +440,106 @@ app.post("/api/meetings/batch", (req, res) => {
     // Save meetings data
     fs.writeFileSync(MEETINGS_FILE, JSON.stringify(req.body, null, 2));
 
-    // Log success
+    res.json({
+      success: true,
+      updated: req.body.length,
+      meetings: req.body,
+    });
+  } catch (error) {
+    console.error("Error in batch update:", error);
+    res.status(500).json({ error: "Failed to update meetings" });
+  }
+});
+
+/**
+ * Delete multiple meetings (batch delete)
+ */
+app.delete("/api/meetings/batch", (req, res) => {
+  try {
+    // Check if deletion is enabled
+    if (process.env.ENABLE_MEETING_DELETION !== "true") {
+      return res.status(403).json({
+        success: false,
+        error: "Meeting deletion is disabled on this server",
+      });
+    }
+
+    const { meetingIds } = req.body;
+
+    // Validate request body
+    if (!Array.isArray(meetingIds) || meetingIds.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: "Request body must contain an array of meeting IDs",
+      });
+    }
+
+    // Check batch limit
+    const batchLimit = parseInt(process.env.BATCH_DELETE_LIMIT) || 25;
+    if (meetingIds.length > batchLimit) {
+      return res.status(400).json({
+        success: false,
+        error: `Cannot delete more than ${batchLimit} meetings at once`,
+      });
+    }
+
+    console.log(`Batch delete received: ${meetingIds.length} meeting IDs`);
+
+    // Read existing meetings
+    const meetings = JSON.parse(fs.readFileSync(MEETINGS_FILE, "utf8"));
+
+    // Create backup before deleting
+    createBackup();
+
+    // Track deletion results
+    const deletedMeetings = [];
+    const notFoundIds = [];
+
+    // Remove meetings
+    const filteredMeetings = meetings.filter((meeting) => {
+      if (meetingIds.includes(meeting.id)) {
+        deletedMeetings.push(meeting);
+        return false; // Remove this meeting
+      }
+      return true; // Keep this meeting
+    });
+
+    // Find IDs that weren't found
+    meetingIds.forEach((id) => {
+      if (!deletedMeetings.find((m) => m.id === id)) {
+        notFoundIds.push(id);
+      }
+    });
+
+    // Save updated meetings
+    fs.writeFileSync(MEETINGS_FILE, JSON.stringify(filteredMeetings, null, 2));
+
+    const response = {
+      success: true,
+      deleted: deletedMeetings.length,
+      deletedMeetings: deletedMeetings,
+      notFound: notFoundIds.length,
+      notFoundIds: notFoundIds,
+      remaining: filteredMeetings.length,
+    };
+
+    if (notFoundIds.length > 0) {
+      response.message = `${deletedMeetings.length} meetings deleted, ${notFoundIds.length} meetings not found`;
+    } else {
+      response.message = `${deletedMeetings.length} meetings deleted successfully`;
+    }
+
     console.log(
-      `Meetings batch update successful. Saved ${req.body.length} meetings.`
+      `Batch delete completed: ${deletedMeetings.length} deleted, ${notFoundIds.length} not found`
     );
 
-    res.json({ success: true, count: req.body.length });
+    res.json(response);
   } catch (error) {
-    console.error("Error batch updating meetings:", error);
-    res.status(500).json({ error: "Failed to update meetings" });
+    console.error("Error in batch delete:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to delete meetings",
+    });
   }
 });
 

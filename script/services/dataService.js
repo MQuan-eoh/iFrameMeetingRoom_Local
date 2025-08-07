@@ -413,6 +413,39 @@ class DataService {
   }
 
   /**
+   * Delete multiple meetings (batch delete)
+   */
+  async deleteMeetingsBatch(meetingIds) {
+    try {
+      console.log(`Batch deleting meetings:`, meetingIds);
+
+      const response = await this._makeApiRequest("/meetings/batch", {
+        method: "DELETE",
+        body: JSON.stringify({ meetingIds }),
+      });
+
+      const data = await response.json();
+      console.log("Batch delete completed:", data);
+
+      // Dispatch event for real-time updates
+      window.dispatchEvent(
+        new CustomEvent("meetingsBatchDeleted", {
+          detail: {
+            deletedIds: meetingIds,
+            result: data,
+          },
+        })
+      );
+
+      return data;
+    } catch (error) {
+      console.error("Failed to batch delete meetings:", error);
+      this._handleApiError(error);
+      throw error;
+    }
+  }
+
+  /**
    * Update all meetings (bulk update)
    */
   async updateAllMeetings(meetings) {
