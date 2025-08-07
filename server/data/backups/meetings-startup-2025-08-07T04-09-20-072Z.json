@@ -490,37 +490,5 @@
     "forceEndedByUser": false,
     "description": "test khuya A A",
     "updatedAt": "2025-08-02T16:46:47.435Z"
-  },
-  {
-    "id": "meeting_1754472620749",
-    "room": "Phòng họp lầu 3",
-    "date": "06/08/2025",
-    "dayOfWeek": "4",
-    "startTime": "16:00",
-    "endTime": "17:00",
-    "duration": "1h",
-    "purpose": "Phỏng vấn",
-    "department": "Ban Giám đốc",
-    "title": "sunday",
-    "content": "sunday",
-    "createdAt": "2025-08-06T09:30:20.749Z",
-    "isEnded": false,
-    "forceEndedByUser": false
-  },
-  {
-    "id": "meeting_1754472914297",
-    "room": "Phòng họp lầu 4",
-    "date": "06/08/2025",
-    "dayOfWeek": "4",
-    "startTime": "17:00",
-    "endTime": "18:00",
-    "duration": "1h",
-    "purpose": "Báo cáo",
-    "department": "Marketing",
-    "title": "sunday",
-    "content": "sunday king play 1 2121",
-    "createdAt": "2025-08-06T09:35:14.298Z",
-    "isEnded": false,
-    "forceEndedByUser": false
   }
 ]

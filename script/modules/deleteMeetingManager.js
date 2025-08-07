@@ -3,11 +3,16 @@
  * Handles meeting deletion functionality with authentication and confirmation
  */
 
+import DeleteAuthenticationManager from "./deleteAuthenticationManager.js";
+
 class DeleteMeetingManager {
   constructor(authManager, dataService, scheduleManager) {
-    this.authManager = authManager;
+    this.authManager = authManager; // Keep for potential future use
     this.dataService = dataService;
     this.scheduleManager = scheduleManager;
+
+    // Create dedicated delete authentication manager
+    this.deleteAuthManager = new DeleteAuthenticationManager();
 
     // State management
     this.isDeleteMode = false;
@@ -47,10 +52,7 @@ class DeleteMeetingManager {
     const deleteButton = document.createElement("button");
     deleteButton.className = "delete-meeting-button";
     deleteButton.id = "deleteMeetingBtn";
-    deleteButton.innerHTML = `
-      <i class="fas fa-trash-alt"></i>
-      Delete Meeting
-    `;
+    deleteButton.innerHTML = `Delete Meeting`;
 
     // Insert after create meeting button
     const createButton = scheduleActions.querySelector(
@@ -73,7 +75,6 @@ class DeleteMeetingManager {
     const controlsHtml = `
       <div id="deleteModeControls" class="delete-mode-controls">
         <div class="delete-mode-info">
-          <i class="fas fa-trash-alt"></i>
           Chế độ xóa cuộc họp
         </div>
         <div class="delete-mode-counter">
@@ -81,11 +82,9 @@ class DeleteMeetingManager {
         </div>
         <div class="delete-action-buttons">
           <button class="delete-save-btn" id="deleteSaveBtn" disabled>
-            <i class="fas fa-check"></i>
             Xóa
           </button>
           <button class="delete-cancel-btn" id="deleteCancelBtn">
-            <i class="fas fa-times"></i>
             Hủy
           </button>
         </div>
@@ -105,7 +104,6 @@ class DeleteMeetingManager {
         <div class="delete-confirm-modal">
           <div class="delete-confirm-header">
             <h3 class="delete-confirm-title">
-              <i class="fas fa-exclamation-triangle delete-confirm-icon"></i>
               Xác nhận xóa cuộc họp
             </h3>
           </div>
@@ -113,7 +111,6 @@ class DeleteMeetingManager {
           <div class="delete-confirm-body">
             <div class="delete-confirm-info-grid">
               <div class="delete-confirm-warning">
-                <i class="fas fa-exclamation-triangle delete-info-icon warning"></i>
                 <div class="delete-info-content">
                   <div class="delete-info-label">Cảnh báo quan trọng</div>
                   <div class="delete-info-value">Hành động này không thể hoàn tác. Tất cả dữ liệu cuộc họp sẽ bị xóa vĩnh viễn.</div>
@@ -121,7 +118,6 @@ class DeleteMeetingManager {
               </div>
               
               <div class="delete-confirm-count">
-                <i class="fas fa-list-ol delete-info-icon count"></i>
                 <div class="delete-info-content">
                   <div class="delete-info-label">Số cuộc họp sẽ xóa</div>
                   <div class="delete-info-value" id="deleteCountText">0 cuộc họp</div>
@@ -129,7 +125,6 @@ class DeleteMeetingManager {
               </div>
               
               <div class="delete-confirm-list">
-                <i class="fas fa-calendar-alt delete-info-icon list"></i>
                 <div class="delete-info-content">
                   <div class="delete-info-label">Danh sách cuộc họp sẽ xóa</div>
                   <div class="delete-meetings-list" id="deleteMeetingsList">
@@ -142,11 +137,9 @@ class DeleteMeetingManager {
           
           <div class="delete-confirm-footer">
             <button class="delete-decline-btn" id="deleteDeclineBtn">
-              <i class="fas fa-times"></i>
               Không
             </button>
             <button class="delete-confirm-btn" id="deleteConfirmBtn">
-              <i class="fas fa-trash-alt"></i>
               Chắc chắn
             </button>
           </div>
@@ -224,8 +217,9 @@ class DeleteMeetingManager {
    */
   async handleDeleteButtonClick() {
     try {
-      // Request authentication
-      const isAuthenticated = await this.authManager.requestAuthentication();
+      // Request delete authentication - always ask for password
+      const isAuthenticated =
+        await this.deleteAuthManager.requestDeleteAuthentication();
 
       if (!isAuthenticated) {
         this.showNotification(
@@ -540,10 +534,10 @@ class DeleteMeetingManager {
     notification.className = `delete-notification delete-notification-${type}`;
 
     const iconMap = {
-      success: "fas fa-check-circle",
-      error: "fas fa-exclamation-circle",
-      info: "fas fa-info-circle",
-      warning: "fas fa-exclamation-triangle",
+      success: "",
+      error: "",
+      info: "",
+      warning: "",
     };
 
     const titleMap = {
@@ -555,7 +549,6 @@ class DeleteMeetingManager {
 
     notification.innerHTML = `
       <div class="delete-notification-content">
-        <i class="${iconMap[type]}"></i>
         <div class="delete-notification-text">
           <div class="delete-notification-title">${titleMap[type]}</div>
           <div class="delete-notification-message">${message}</div>
@@ -619,6 +612,11 @@ class DeleteMeetingManager {
    */
   destroy() {
     this.exitDeleteMode();
+
+    // Destroy delete authentication manager
+    if (this.deleteAuthManager) {
+      this.deleteAuthManager.destroy();
+    }
 
     // Remove UI elements
     if (this.deleteButton) {

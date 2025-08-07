@@ -484,11 +484,27 @@
     "purpose": "Thảo luận",
     "department": "Nhân sự",
     "title": "test khuuya",
-    "content": "test khuya A",
+    "content": "test khuya A A",
     "createdAt": "2025-08-02T16:36:50.581Z",
     "isEnded": false,
     "forceEndedByUser": false,
-    "description": "test khuya A",
-    "updatedAt": "2025-08-02T16:46:33.242Z"
+    "description": "test khuya A A",
+    "updatedAt": "2025-08-02T16:46:47.435Z"
+  },
+  {
+    "id": "meeting_1754540455442",
+    "room": "Phòng họp lầu 4",
+    "date": "07/08/2025",
+    "dayOfWeek": "5",
+    "startTime": "11:00",
+    "endTime": "12:00",
+    "duration": "1h",
+    "purpose": "Đào tạo",
+    "department": "Nhân sự",
+    "title": "vxv",
+    "content": "xcvxcvxc",
+    "createdAt": "2025-08-07T04:20:55.442Z",
+    "isEnded": false,
+    "forceEndedByUser": false
   }
 ]

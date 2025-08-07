@@ -390,37 +390,6 @@ app.put("/api/meetings/:id", (req, res) => {
 });
 
 /**
- * Delete a meeting
- */
-app.delete("/api/meetings/:id", (req, res) => {
-  try {
-    // Read existing meetings
-    const meetings = JSON.parse(fs.readFileSync(MEETINGS_FILE, "utf8"));
-
-    // Find meeting index
-    const index = meetings.findIndex((m) => m.id === req.params.id);
-
-    if (index === -1) {
-      return res.status(404).json({ error: "Meeting not found" });
-    }
-
-    // Create backup before deleting
-    createBackup();
-
-    // Remove meeting
-    const removedMeeting = meetings.splice(index, 1)[0];
-
-    // Save updated meetings
-    fs.writeFileSync(MEETINGS_FILE, JSON.stringify(meetings, null, 2));
-
-    res.json(removedMeeting);
-  } catch (error) {
-    console.error("Error deleting meeting:", error);
-    res.status(500).json({ error: "Failed to delete meeting" });
-  }
-});
-
-/**
  * Update multiple meetings (batch update)
  */
 app.post("/api/meetings/batch", (req, res) => {
@@ -540,6 +509,37 @@ app.delete("/api/meetings/batch", (req, res) => {
       success: false,
       error: "Failed to delete meetings",
     });
+  }
+});
+
+/**
+ * Delete a meeting
+ */
+app.delete("/api/meetings/:id", (req, res) => {
+  try {
+    // Read existing meetings
+    const meetings = JSON.parse(fs.readFileSync(MEETINGS_FILE, "utf8"));
+
+    // Find meeting index
+    const index = meetings.findIndex((m) => m.id === req.params.id);
+
+    if (index === -1) {
+      return res.status(404).json({ error: "Meeting not found" });
+    }
+
+    // Create backup before deleting
+    createBackup();
+
+    // Remove meeting
+    const removedMeeting = meetings.splice(index, 1)[0];
+
+    // Save updated meetings
+    fs.writeFileSync(MEETINGS_FILE, JSON.stringify(meetings, null, 2));
+
+    res.json(removedMeeting);
+  } catch (error) {
+    console.error("Error deleting meeting:", error);
+    res.status(500).json({ error: "Failed to delete meeting" });
   }
 });
 

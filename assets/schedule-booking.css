@@ -526,7 +526,12 @@
   justify-content: space-between;
   align-items: center;
   padding: 15px 20px;
-  background-color: #0c332b; /* Simplified from gradient */
+  background: linear-gradient(
+    135deg,
+    rgba(6, 63, 51, 0.95),
+    rgb(24 146 121 / 92%),
+    rgba(1, 101, 82, 0.88)
+  );
   color: #fff;
   border-radius: 8px 8px 0 0;
 }

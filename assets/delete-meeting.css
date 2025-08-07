@@ -3,28 +3,48 @@
  * Styles for the meeting deletion system with authentication
  */
 
-/* Delete Meeting Button - Following create-meeting-button design */
 .delete-meeting-button {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   padding: 12px 24px;
-  background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+  background: linear-gradient(
+    135deg,
+    rgb(24 146 121 / 80%),
+    rgb(0 60 49 / 80%)
+  );
   color: #ffffff;
-  border: none;
+  border: 1px solid #ccc;
   border-radius: 12px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
+  box-shadow: 0 4px 12px rgba(24, 146, 121, 0.3);
   position: relative;
   overflow: hidden;
   min-width: 140px;
   font-family: "Inter", "Roboto", sans-serif;
   text-transform: none;
   letter-spacing: 0.5px;
+  height: 50px;
+  margin-left: auto; /* Push button to the right */
+}
+
+/* Schedule Actions Container Layout - Ensure proper alignment */
+.schedule-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+}
+
+/* Ensure delete button stays on the right */
+.schedule-actions .delete-meeting-button {
+  order: 999; /* Force button to appear last */
+  flex-shrink: 0; /* Prevent button from shrinking */
 }
 
 .delete-meeting-button::before {
@@ -44,9 +64,10 @@
 }
 
 .delete-meeting-button:hover {
-  background: linear-gradient(135deg, #e53935 0%, #c62828 100%);
+  background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
   box-shadow: 0 6px 20px rgba(211, 47, 47, 0.4);
   transform: translateY(-2px);
+  border-color: #d32f2f;
 }
 
 .delete-meeting-button:hover::before {
@@ -62,11 +83,6 @@
   background: linear-gradient(135deg, #9e9e9e 0%, #757575 100%);
   cursor: not-allowed;
   box-shadow: 0 2px 6px rgba(158, 158, 158, 0.2);
-}
-
-.delete-meeting-button i {
-  font-size: 16px;
-  opacity: 0.9;
 }
 
 /* Delete Mode States */
@@ -129,10 +145,6 @@
   color: #d32f2f;
   font-weight: 600;
   font-size: 14px;
-}
-
-.delete-mode-info i {
-  font-size: 16px;
 }
 
 .delete-mode-counter {
@@ -417,7 +429,7 @@
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  padding: 12px 16px;
+  padding: 16px;
   border-radius: 12px;
   transition: all 0.3s ease;
 }
@@ -437,24 +449,6 @@
   border: 1px solid rgba(33, 150, 243, 0.3);
   flex-direction: column;
   align-items: stretch;
-}
-
-.delete-info-icon {
-  font-size: 16px;
-  margin-top: 2px;
-  flex-shrink: 0;
-}
-
-.delete-info-icon.warning {
-  color: #ff9800;
-}
-
-.delete-info-icon.count {
-  color: #d32f2f;
-}
-
-.delete-info-icon.list {
-  color: #2196f3;
 }
 
 .delete-info-content {
@@ -529,6 +523,8 @@
   font-family: inherit;
   position: relative;
   overflow: hidden;
+  min-width: 100px;
+  justify-content: center;
 }
 
 .delete-confirm-btn::before,
@@ -613,24 +609,20 @@
   background: linear-gradient(135deg, #ffffff 0%, #ffebee 100%);
 }
 
+.delete-notification-info {
+  border-left-color: #2196f3;
+  background: linear-gradient(135deg, #ffffff 0%, #e3f2fd 100%);
+}
+
+.delete-notification-warning {
+  border-left-color: #ff9800;
+  background: linear-gradient(135deg, #ffffff 0%, #fff3e0 100%);
+}
+
 .delete-notification-content {
   display: flex;
   align-items: flex-start;
   gap: 12px;
-}
-
-.delete-notification i {
-  font-size: 18px;
-  margin-top: 2px;
-  flex-shrink: 0;
-}
-
-.delete-notification-success i {
-  color: #4caf50;
-}
-
-.delete-notification-error i {
-  color: #f44336;
 }
 
 .delete-notification-text {
