@@ -257,6 +257,7 @@ if (NODE_ENV === "production") {
     res.set("X-XSS-Protection", "1; mode=block");
     res.set("Referrer-Policy", "strict-origin-when-cross-origin");
     res.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+    res.set('Access-Control-Allow-Private-Network', 'true');
     next();
   });
 }

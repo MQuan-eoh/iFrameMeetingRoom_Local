@@ -501,9 +501,27 @@
     "duration": "1h",
     "purpose": "Đào tạo",
     "department": "Nhân sự",
-    "title": "vxv",
+    "title": "aaaa ử43232325",
     "content": "xcvxcvxc",
     "createdAt": "2025-08-07T04:20:55.442Z",
+    "isEnded": false,
+    "forceEndedByUser": false,
+    "description": "xcvxcvxc",
+    "updatedAt": "2025-08-07T04:54:19.642Z"
+  },
+  {
+    "id": "meeting_1754542450287",
+    "room": "Phòng họp lầu 4",
+    "date": "07/08/2025",
+    "dayOfWeek": "5",
+    "startTime": "12:00",
+    "endTime": "13:00",
+    "duration": "1h",
+    "purpose": "Đào tạo",
+    "department": "Kế toán",
+    "title": "vcxvcxv 4343",
+    "content": "vbttt 564654",
+    "createdAt": "2025-08-07T04:54:10.287Z",
     "isEnded": false,
     "forceEndedByUser": false
   }
