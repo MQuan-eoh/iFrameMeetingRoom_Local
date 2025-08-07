@@ -684,12 +684,12 @@ export class MeetingDataManager {
 
       // Try to update server
       try {
-        const serverIP =
-          localStorage.getItem("serverIP") ||
+        const domain =
+          localStorage.getItem("domain") ||
           window.location.hostname ||
-          "localhost";
+          "http://localhost";
         const response = await fetch(
-          `http://${serverIP}:3000/api/meetings/${meetingId}`,
+          `${domain}/api/meetings/${meetingId}`,
           {
             method: "PUT",
             headers: {
@@ -1161,12 +1161,13 @@ export class MeetingDataManager {
 
       // Try to save to server
       try {
-        const serverIP =
-          localStorage.getItem("serverIP") ||
-          window.location.hostname ||
-          "localhost";
+        const domain =
+          localStorage.getItem("domain") ||
+          window.location.origin ||
+          "http://localhost";
+
         const response = await fetch(
-          `http://${serverIP}:3000/api/meetings/${meetingData.id}`,
+          `${domain}/api/meetings/${meetingData.id}`,
           {
             method: "PUT",
             headers: {

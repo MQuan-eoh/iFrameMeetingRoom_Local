@@ -1207,13 +1207,13 @@ class MeetingDetailTooltipManager {
 
       // Fallback: direct API call if meetingDataManager is not available
       console.log("Fallback to direct API call");
-      const serverIP =
-        localStorage.getItem("serverIP") ||
+      const domain =
+        localStorage.getItem("domain") ||
         window.location.hostname ||
-        "localhost";
+        "http://localhost";
 
       const response = await fetch(
-        `http://${serverIP}:3000/api/meetings/${meetingData.id}`,
+        `${domain}/api/meetings/${meetingData.id}`,
         {
           method: "PUT",
           headers: {
