@@ -686,7 +686,7 @@ export class MeetingDataManager {
       try {
         const domain =
           localStorage.getItem("domain") ||
-          window.location.hostname ||
+          window.location.origin ||
           "http://localhost";
         const response = await fetch(
           `${domain}/api/meetings/${meetingId}`,

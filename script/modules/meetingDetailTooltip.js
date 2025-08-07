@@ -1209,7 +1209,7 @@ class MeetingDetailTooltipManager {
       console.log("Fallback to direct API call");
       const domain =
         localStorage.getItem("domain") ||
-        window.location.hostname ||
+        window.location.origin ||
         "http://localhost";
 
       const response = await fetch(
