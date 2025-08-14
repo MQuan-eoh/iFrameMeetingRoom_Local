@@ -1626,3 +1626,271 @@
     transition: opacity 0.2s ease, transform 0.2s ease;
   }
 }
+
+/* ========== EXCEL EXPORT MODAL STYLES ========== */
+/* Export Excel Button - Following create-meeting-button design */
+.export-excel-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: linear-gradient(
+    135deg,
+    rgb(24 146 121 / 80%),
+    rgb(0 60 49 / 80%)
+  );
+  color: #ffffff;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  height: 50px;
+  min-width: 140px;
+  font-family: "Inter", "Roboto", sans-serif;
+}
+
+/* Ensure schedule-actions centers both buttons properly */
+.schedule-actions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 12px !important;
+  flex-wrap: wrap !important;
+}
+
+/* Ensure both buttons have consistent spacing */
+.schedule-actions .create-meeting-button,
+.schedule-actions .export-excel-button {
+  flex-shrink: 0;
+  margin: 0 !important;
+}
+
+.export-excel-button:hover {
+  background: linear-gradient(135deg, rgb(16 122 101), rgb(12 97 81));
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(24, 146, 121, 0.3);
+}
+
+.export-excel-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(24, 146, 121, 0.2);
+}
+
+.export-excel-button i {
+  font-size: 16px;
+}
+
+/* Export Excel Modal - Inheriting from booking-modal design */
+.export-excel-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Ensure export modal works properly in fullscreen mode */
+.meeting-container .export-excel-modal {
+  position: absolute;
+  z-index: 10000;
+}
+
+.meeting-container:fullscreen .export-excel-modal,
+.meeting-container:-webkit-full-screen .export-excel-modal,
+.meeting-container:-moz-full-screen .export-excel-modal {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 10000 !important;
+}
+
+.export-excel-modal.active {
+  display: flex;
+}
+
+.export-excel-modal .booking-modal-content {
+  background-color: #fff;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  animation: modalFadeIn 0.3s ease;
+}
+
+/* Export Form Styles */
+.export-form {
+  display: block;
+  gap: 20px;
+}
+
+.export-form .form-group {
+  margin-bottom: 20px;
+}
+
+.export-form .form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.export-form .form-control {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.export-form .form-control:focus {
+  border-color: rgb(24 146 121 / 80%);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(24, 146, 121, 0.1);
+}
+
+.export-form .form-text.text-muted {
+  font-size: 12px;
+  color: #666;
+  margin-top: 5px;
+  font-style: italic;
+}
+
+/* Export Info Panel */
+.export-info-panel {
+  background: linear-gradient(
+    135deg,
+    rgba(24, 146, 121, 0.1),
+    rgba(0, 60, 49, 0.05)
+  );
+  border: 2px solid rgba(24, 146, 121, 0.2);
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 10px;
+}
+
+.export-info-panel h4 {
+  margin: 0 0 15px 0;
+  color: #189279;
+  font-size: 16px;
+  font-weight: 600;
+  border-bottom: 2px solid rgba(24, 146, 121, 0.2);
+  padding-bottom: 8px;
+}
+
+.export-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.export-preview p {
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(24, 146, 121, 0.1);
+}
+
+.export-preview p:last-child {
+  border-bottom: none;
+}
+
+.export-preview p strong {
+  color: #333;
+  font-weight: 600;
+  min-width: 120px;
+}
+
+.export-preview p span {
+  color: #189279;
+  font-weight: 500;
+  text-align: right;
+  flex: 1;
+}
+
+/* Export Notification Styles */
+.export-notification {
+  font-family: "Inter", "Roboto", sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  line-height: 1.4;
+}
+
+.export-notification::before {
+  content: "";
+  width: 4px;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* Responsive Design for Export Modal */
+@media (max-width: 768px) {
+  .export-excel-modal .booking-modal-content {
+    width: 95%;
+    margin: 10px;
+    max-height: 95vh;
+  }
+
+  .export-excel-button {
+    min-width: 120px;
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+
+  .export-info-panel {
+    padding: 15px;
+  }
+
+  .export-preview p {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+
+  .export-preview p strong {
+    min-width: auto;
+  }
+
+  .export-preview p span {
+    text-align: left;
+  }
+}
+
+@media (max-width: 480px) {
+  .export-excel-button {
+    min-width: 100px;
+    padding: 8px 12px;
+    font-size: 12px;
+    height: 40px;
+  }
+
+  .export-form .form-control {
+    padding: 10px;
+    font-size: 13px;
+  }
+
+  .export-info-panel h4 {
+    font-size: 14px;
+  }
+}

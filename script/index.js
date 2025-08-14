@@ -18,6 +18,7 @@ import ConnectionStatusManager from "./modules/connectionStatusManager.js";
 import MeetingDetailTooltipManager from "./modules/meetingDetailTooltip.js";
 import AuthenticationManager from "./modules/authenticationManager.js";
 import DeleteMeetingManager from "./modules/deleteMeetingManager.js";
+import ExcelExportManager from "./modules/excelExportManager.js";
 
 // Import utilities and constants
 import { DateTimeUtils } from "./utils/core.js";
@@ -79,11 +80,17 @@ class MeetingRoomApp {
         this.managers.scheduleBookingManager
       );
 
+      // Initialize Excel export manager
+      this.managers.excelExportManager = new ExcelExportManager();
+
       // Expose tooltip manager globally for action buttons
       window.meetingTooltip = this.managers.meetingDetailTooltipManager;
 
       // Expose delete manager globally for cross-component access
       window.deleteMeetingManager = this.managers.deleteMeetingManager;
+
+      // Expose excel export manager globally for cross-component access
+      window.excelExportManager = this.managers.excelExportManager;
 
       // Initialize event handlers (must be last as it depends on other managers)
       this.managers.eventHandlers = new EventHandlers(this.managers);
@@ -934,6 +941,10 @@ class MeetingRoomApp {
 
     if (this.managers.eventHandlers) {
       this.managers.eventHandlers.cleanup();
+    }
+
+    if (this.managers.excelExportManager) {
+      this.managers.excelExportManager.cleanup();
     }
 
     this.initialized = false;

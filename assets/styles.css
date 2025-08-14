@@ -978,6 +978,8 @@
   gap: 12px;
   width: 100%;
   max-width: 100%;
+  align-items: center;
+  justify-content: center; /* Changed from flex-start to center for centered buttons */
 }
 
 .upload-button {
@@ -2859,7 +2861,7 @@ schedule-table {
   }
   .schedule-actions {
     position: relative;
-    justify-content: flex-start;
+    justify-content: center; /* Changed from flex-start to center for centered buttons */
   }
 }
 
@@ -3978,7 +3980,7 @@ button:hover {
   .schedule-actions {
     flex-direction: row !important;
     align-items: center !important;
-    justify-content: space-between !important;
+    justify-content: center !important; /* Changed from space-between to center */
     gap: 6px !important;
     width: 100% !important;
     margin-bottom: 8px !important;

@@ -76,7 +76,7 @@ export class AuthenticationManager {
                   <div class="password-input-container">
                     <input type="password" id="passwordInput" class="password-input" placeholder="Nhập mật khẩu..." maxlength="10" autocomplete="off">
                     <button type="button" id="togglePasswordVisibility" class="toggle-password-btn">
-                      <i class="fas fa-eye"></i>
+                        <i class="fas fa-eye"></i>
                     </button>
                   </div>
                 </div>
