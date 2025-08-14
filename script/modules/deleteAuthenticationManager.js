@@ -126,11 +126,6 @@ export class DeleteAuthenticationManager {
       this.hidePasswordModal(false);
     });
 
-    // Toggle password visibility
-    toggleBtn.addEventListener("click", () => {
-      this.togglePasswordVisibility();
-    });
-
     // Prevent background click to close - force user decision
     this.passwordModal.addEventListener("click", (e) => {
       if (e.target === this.passwordModal) {
@@ -187,20 +182,20 @@ export class DeleteAuthenticationManager {
     if (passwordInput) passwordInput.value = "";
     if (errorRow) errorRow.style.display = "none";
   }
-
   /**
    * Toggle password visibility
    */
   togglePasswordVisibility() {
     const passwordInput = document.getElementById("deletePasswordInput");
     const toggleBtn = document.getElementById("deleteTogglePasswordVisibility");
+    const icon = toggleBtn.querySelector("i");
 
     if (passwordInput.type === "password") {
       passwordInput.type = "text";
-      toggleBtn.textContent = "Ẩn";
+      icon.className = "fas fa-eye-slash";
     } else {
       passwordInput.type = "password";
-      toggleBtn.textContent = "Hiện";
+      icon.className = "fas fa-eye";
     }
   }
 

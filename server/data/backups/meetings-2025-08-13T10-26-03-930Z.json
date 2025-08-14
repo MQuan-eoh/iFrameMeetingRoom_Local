@@ -574,53 +574,5 @@
     "createdAt": "2025-08-13T10:18:35.766Z",
     "isEnded": false,
     "forceEndedByUser": false
-  },
-  {
-    "id": "meeting_1755080763613",
-    "room": "Phòng họp lầu 4",
-    "date": "14/08/2025",
-    "dayOfWeek": "5",
-    "startTime": "08:00",
-    "endTime": "09:00",
-    "duration": "1h",
-    "purpose": "Đào tạo",
-    "department": "Nhân sự",
-    "title": "Họp team nhân sự",
-    "content": "Họp",
-    "createdAt": "2025-08-13T10:26:03.613Z",
-    "isEnded": false,
-    "forceEndedByUser": false
-  },
-  {
-    "id": "meeting_1755080779449",
-    "room": "Phòng họp lầu 4",
-    "date": "12/08/2025",
-    "dayOfWeek": "3",
-    "startTime": "08:00",
-    "endTime": "09:00",
-    "duration": "1h",
-    "purpose": "Khác",
-    "department": "Marketing",
-    "title": "Họp ",
-    "content": "Họp ",
-    "createdAt": "2025-08-13T10:26:19.449Z",
-    "isEnded": false,
-    "forceEndedByUser": false
-  },
-  {
-    "id": "meeting_1755080790757",
-    "room": "Phòng họp lầu 4",
-    "date": "13/08/2025",
-    "dayOfWeek": "4",
-    "startTime": "07:00",
-    "endTime": "08:00",
-    "duration": "1h",
-    "purpose": "Báo cáo",
-    "department": "Nhân sự",
-    "title": "Họp ",
-    "content": "Họp",
-    "createdAt": "2025-08-13T10:26:30.757Z",
-    "isEnded": false,
-    "forceEndedByUser": false
   }
 ]

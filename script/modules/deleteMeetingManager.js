@@ -222,10 +222,7 @@ class DeleteMeetingManager {
         await this.deleteAuthManager.requestDeleteAuthentication();
 
       if (!isAuthenticated) {
-        this.showNotification(
-          "Cần xác thực để sử dụng chức năng xóa cuộc họp",
-          "error"
-        );
+        console.log("Cancel Model delete operation");
         return;
       }
 
