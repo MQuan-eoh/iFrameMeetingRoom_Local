@@ -665,7 +665,7 @@
     "date": "19/08/2025",
     "dayOfWeek": "3",
     "startTime": "14:30",
-    "endTime": "14:40",
+    "endTime": "14:37:00",
     "duration": "10m",
     "purpose": "Phỏng vấn",
     "department": "Marketing",
@@ -673,6 +673,32 @@
     "content": "czxcz",
     "createdAt": "2025-08-19T07:36:43.708Z",
     "isEnded": false,
-    "forceEndedByUser": false
+    "forceEndedByUser": false,
+    "endedEarlyByUser": true,
+    "originalEndTime": "14:40",
+    "lastUpdated": "2025-08-19T07:37:00.601Z",
+    "endedEarlyAt": "2025-08-19T07:37:00.601Z",
+    "updatedAt": "2025-08-19T07:37:00.630Z"
+  },
+  {
+    "id": "meeting_1755599809201",
+    "room": "Phòng họp lầu 4",
+    "date": "19/08/2025",
+    "dayOfWeek": "3",
+    "startTime": "17:00",
+    "endTime": "17:36:54",
+    "duration": "1h",
+    "purpose": "Đào tạo",
+    "department": "Nhân sự",
+    "title": "gfgfg",
+    "content": "fgfgf",
+    "createdAt": "2025-08-19T10:36:49.201Z",
+    "isEnded": false,
+    "forceEndedByUser": false,
+    "endedEarlyByUser": true,
+    "originalEndTime": "18:00",
+    "lastUpdated": "2025-08-19T10:36:54.648Z",
+    "endedEarlyAt": "2025-08-19T10:36:54.648Z",
+    "updatedAt": "2025-08-19T10:36:54.661Z"
   }
 ]
