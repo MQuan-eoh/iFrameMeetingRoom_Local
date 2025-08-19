@@ -26,6 +26,204 @@
   }
 }
 
+/* End Meeting Confirmation Modal */
+.end-meeting-confirm-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  z-index: 2147483646;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.end-meeting-confirm-modal-overlay.show {
+  opacity: 1;
+}
+
+.end-meeting-confirm-modal {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 0 8px 32px rgba(0, 0, 0, 0.12);
+  min-width: 450px;
+  max-width: 500px;
+  border: 2px solid rgba(220, 53, 69, 0.2);
+  overflow: hidden;
+  font-family: "Inter", "Roboto", sans-serif;
+  transform: translateY(-20px) scale(0.9);
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.end-meeting-confirm-modal-overlay.show .end-meeting-confirm-modal {
+  transform: translateY(0) scale(1);
+}
+
+.end-meeting-confirm-header {
+  padding: 24px;
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.end-meeting-confirm-icon {
+  font-size: 24px;
+  opacity: 0.95;
+}
+
+.end-meeting-confirm-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  color: #ffffff;
+}
+
+.end-meeting-confirm-body {
+  padding: 24px;
+}
+
+.end-meeting-confirm-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.meeting-info-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.meeting-info-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.meeting-info-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  padding: 8px 12px;
+  background: rgba(220, 53, 69, 0.1);
+  border-radius: 6px;
+  border-left: 3px solid #dc3545;
+}
+
+.warning-section {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(255, 193, 7, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.warning-icon {
+  color: #ffc107;
+  font-size: 20px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.warning-text {
+  flex: 1;
+}
+
+.warning-text strong {
+  display: block;
+  margin-bottom: 8px;
+  color: #333;
+  font-size: 14px;
+}
+
+.warning-text p {
+  margin: 0;
+  color: #666;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.end-meeting-confirm-footer {
+  padding: 20px 24px;
+  background: rgba(245, 245, 245, 0.8);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.end-meeting-confirm-btn,
+.end-meeting-cancel-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  min-width: 120px;
+  justify-content: center;
+}
+
+.end-meeting-confirm-btn {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.end-meeting-confirm-btn:hover {
+  background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+  box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+  transform: translateY(-2px);
+}
+
+.end-meeting-cancel-btn {
+  background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+}
+
+.end-meeting-cancel-btn:hover {
+  background: linear-gradient(135deg, #5a6268 0%, #495057 100%);
+  box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+  transform: translateY(-2px);
+}
+
+/* Enhanced fullscreen support for end meeting modal */
+body:fullscreen .end-meeting-confirm-modal-overlay,
+body:-webkit-full-screen .end-meeting-confirm-modal-overlay,
+body:-moz-full-screen .end-meeting-confirm-modal-overlay,
+html:fullscreen .end-meeting-confirm-modal-overlay,
+html:-webkit-full-screen .end-meeting-confirm-modal-overlay,
+html:-moz-full-screen .end-meeting-confirm-modal-overlay,
+.meeting-container:fullscreen .end-meeting-confirm-modal-overlay,
+.meeting-container:-webkit-full-screen .end-meeting-confirm-modal-overlay,
+.meeting-container:-moz-full-screen .end-meeting-confirm-modal-overlay,
+*:fullscreen .end-meeting-confirm-modal-overlay,
+*:-webkit-full-screen .end-meeting-confirm-modal-overlay,
+*:-moz-full-screen .end-meeting-confirm-modal-overlay {
+  position: fixed !important;
+  z-index: 2147483646 !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
 /* Enhanced End Meeting Button Styles */
 .end-meeting-btn {
   background: linear-gradient(135deg, #dc3545, #c82333) !important;
@@ -90,37 +288,6 @@
   transition: all 0.2s ease !important;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .end-meeting-success-notification,
-  .end-meeting-error-notification {
-    top: 10px !important;
-    right: 10px !important;
-    left: 10px !important;
-    max-width: none !important;
-    padding: 12px 16px !important;
-    font-size: 13px !important;
-  }
-
-  .end-meeting-btn {
-    padding: 10px 20px !important;
-    font-size: 13px !important;
-  }
-}
-
-/* Loading state for end meeting button */
-.end-meeting-btn.loading {
-  opacity: 0.7 !important;
-  cursor: not-allowed !important;
-  pointer-events: none !important;
-}
-
-.end-meeting-btn.loading::after {
-  content: " Đang xử lý..." !important;
-  font-size: 12px !important;
-  opacity: 0.8 !important;
-}
-
 /* Additional notification styles for better visibility */
 .end-meeting-success-notification {
   border-left: 4px solid #28a745 !important;
@@ -143,4 +310,97 @@
 
 .end-meeting-error-notification {
   animation: pulseGlow 2s ease-in-out infinite !important;
+}
+
+/* Loading state for end meeting button */
+.end-meeting-btn.loading {
+  opacity: 0.7 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+}
+
+.end-meeting-btn.loading::after {
+  content: " Đang xử lý..." !important;
+  font-size: 12px !important;
+  opacity: 0.8 !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .end-meeting-confirm-modal {
+    min-width: 320px;
+    max-width: 90vw;
+    margin: 20px;
+  }
+
+  .end-meeting-confirm-header {
+    padding: 20px;
+  }
+
+  .end-meeting-confirm-body {
+    padding: 20px;
+  }
+
+  .end-meeting-confirm-footer {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .end-meeting-confirm-btn,
+  .end-meeting-cancel-btn {
+    width: 100%;
+  }
+
+  .end-meeting-success-notification,
+  .end-meeting-error-notification {
+    top: 10px !important;
+    right: 10px !important;
+    left: 10px !important;
+    max-width: none !important;
+    padding: 12px 16px !important;
+    font-size: 13px !important;
+  }
+
+  .end-meeting-btn {
+    padding: 10px 20px !important;
+    font-size: 13px !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .end-meeting-confirm-modal {
+    border: 3px solid #000;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  }
+
+  .end-meeting-confirm-header {
+    background: #dc3545;
+    color: #fff;
+  }
+
+  .end-meeting-confirm-btn {
+    background: #dc3545;
+    color: #fff;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .end-meeting-confirm-modal-overlay {
+    transition: opacity 0.2s ease;
+  }
+
+  .end-meeting-confirm-modal {
+    transition: opacity 0.2s ease;
+  }
+
+  .end-meeting-confirm-btn,
+  .end-meeting-cancel-btn {
+    transition: background-color 0.2s ease;
+  }
+
+  .end-meeting-error-notification {
+    animation: none;
+  }
 }

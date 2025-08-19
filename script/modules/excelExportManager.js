@@ -64,6 +64,37 @@ export class ExcelExportManager {
    * Create Export Modal with same design as booking modal
    */
   _createExportModal() {
+    // ####################
+    // FULLSCREEN CONTAINER DETECTION
+    // Detect if we're in fullscreen mode and append to appropriate container
+    // ####################
+    let targetContainer = document.body;
+
+    // Check for fullscreen element
+    const fullscreenElement =
+      document.fullscreenElement ||
+      document.webkitFullscreenElement ||
+      document.mozFullScreenElement ||
+      document.msFullscreenElement;
+
+    if (fullscreenElement) {
+      targetContainer = fullscreenElement;
+      console.log(
+        "Fullscreen detected, appending export modal to:",
+        targetContainer
+      );
+    } else {
+      // Check for custom fullscreen containers
+      const fullscreenContainer =
+        document.querySelector(".fullscreen") ||
+        document.querySelector(".fullscreen-mode") ||
+        document.querySelector('[data-fullscreen="true"]');
+      if (fullscreenContainer) {
+        targetContainer = fullscreenContainer;
+        console.log("Custom fullscreen container detected:", targetContainer);
+      }
+    }
+
     // Create modal overlay
     const modalOverlay = document.createElement("div");
     modalOverlay.className = "booking-modal export-excel-modal";
@@ -124,11 +155,97 @@ export class ExcelExportManager {
       </div>
     `;
 
-    // Add to DOM
-    document.body.appendChild(modalOverlay);
+    // Add to appropriate container (fullscreen aware)
+    targetContainer.appendChild(modalOverlay);
     this.exportModal = modalOverlay;
 
-    console.log("Export Excel modal created successfully");
+    // ####################
+    // INLINE CSS FOR FULLSCREEN SUPPORT
+    // Ensure modal works in fullscreen without separate CSS file
+    // ####################
+    modalOverlay.style.zIndex = "2147483647";
+
+    console.log(
+      "Export Excel modal created successfully and appended to:",
+      targetContainer
+    );
+  }
+
+  /**
+   * Create Export Modal in specific container (helper method for fullscreen support)
+   */
+  _createExportModalInContainer(targetContainer) {
+    // Create modal overlay
+    const modalOverlay = document.createElement("div");
+    modalOverlay.className = "booking-modal export-excel-modal";
+    modalOverlay.id = "exportExcelModal";
+
+    // Create modal content (same as original)
+    modalOverlay.innerHTML = `
+      <div class="booking-modal-content">
+        <div class="booking-modal-header">
+          <h2 class="booking-modal-title">Xuất Dữ Liệu Excel</h2>
+          <button class="modal-close" id="closeExportModal">&times;</button>
+        </div>
+
+        <div class="booking-modal-body">
+          <div class="export-form">
+            <!-- Export Period Selection -->
+            <div class="form-group form-full-width">
+              <label for="exportPeriod">Chọn thời gian xuất dữ liệu:</label>
+              <select id="exportPeriod" class="form-control" required>
+                <option value="day">Theo Ngày</option>
+                <option value="week" selected>Theo Tuần</option>
+                <option value="month">Theo Tháng</option>
+              </select>
+            </div>
+
+            <!-- Date Selection -->
+            <div class="form-group form-full-width">
+              <label for="exportDate">Chọn ngày/tuần/tháng:</label>
+              <input 
+                type="date" 
+                id="exportDate" 
+                class="form-control" 
+                required
+              />
+              <small class="form-text text-muted" id="dateHelperText">
+                Chọn một ngày trong tuần để xuất dữ liệu cả tuần
+              </small>
+            </div>
+
+            <!-- Export Info Display -->
+            <div class="form-group form-full-width">
+              <div class="export-info-panel">
+                <h4>Thông tin xuất dữ liệu:</h4>
+                <div class="export-preview">
+                  <p><strong>Thời gian xuất:</strong> <span id="exportPeriodDisplay">-</span></p>
+                  <p><strong>Số cuộc họp:</strong> <span id="exportMeetingCount">0 cuộc họp</span></p>
+                  <p><strong>Tên file:</strong> <span id="exportFileName">meeting-export.xlsx</span></p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="booking-modal-footer">
+          <button class="btn btn-cancel" id="cancelExport">Hủy</button>
+          <button class="btn btn-save" id="saveExport">Xuất Excel</button>
+        </div>
+      </div>
+    `;
+
+    // Add to target container
+    targetContainer.appendChild(modalOverlay);
+    this.exportModal = modalOverlay;
+
+    // ####################
+    // INLINE CSS FOR FULLSCREEN SUPPORT
+    // Ensure modal works in fullscreen without separate CSS file
+    // ####################
+    modalOverlay.style.zIndex = "2147483647";
+
+    console.log("Export Excel modal recreated in container:", targetContainer);
   }
 
   /**
@@ -172,6 +289,43 @@ export class ExcelExportManager {
    * Open export modal
    */
   _openExportModal() {
+    // ####################
+    // FULLSCREEN AWARE MODAL OPENING
+    // Check if modal needs to be recreated for fullscreen compatibility
+    // ####################
+
+    // Check if modal exists and is in the correct container
+    const currentFullscreenElement =
+      document.fullscreenElement ||
+      document.webkitFullscreenElement ||
+      document.mozFullScreenElement ||
+      document.msFullscreenElement;
+
+    const fullscreenContainer =
+      document.querySelector(".fullscreen") ||
+      document.querySelector(".fullscreen-mode") ||
+      document.querySelector('[data-fullscreen="true"]');
+
+    let targetContainer =
+      currentFullscreenElement || fullscreenContainer || document.body;
+
+    // If modal doesn't exist or is in wrong container, recreate it
+    if (!this.exportModal || !targetContainer.contains(this.exportModal)) {
+      console.log(
+        "Recreating export modal for current container:",
+        targetContainer
+      );
+
+      // Remove existing modal if it exists
+      if (this.exportModal && this.exportModal.parentNode) {
+        this.exportModal.parentNode.removeChild(this.exportModal);
+      }
+
+      // Recreate modal in correct container
+      this._createExportModalInContainer(targetContainer);
+      this._attachEventListeners();
+    }
+
     if (!this.exportModal) return;
 
     // Set default date to current date

@@ -741,8 +741,8 @@ export class RoomManager {
         const month = months[vietnamDate.getMonth()];
         const year = vietnamDate.getFullYear();
 
-        const dateString = `${dayOfWeek}, ${day} ${month}, ${year}`;
-        currentDateElement.textContent = dateString;
+        const dateString = `${dayOfWeek}<br>${day} ${month}, ${year}`;
+        currentDateElement.innerHTML = dateString;
       }
     }
 
@@ -774,11 +774,12 @@ export class RoomManager {
       return;
     }
 
-    // Show confirmation dialog
-    const confirmResult = confirm(
-      "Bạn có chắc chắn muốn kết thúc cuộc họp này sớm?"
+    // Show beautiful confirmation modal instead of basic confirm
+    const confirmed = await this._showEndMeetingConfirmModal(
+      meetingId,
+      roomName
     );
-    if (!confirmResult) {
+    if (!confirmed) {
       console.log("User cancelled end meeting action");
       return;
     }
@@ -824,8 +825,147 @@ export class RoomManager {
   }
 
   /**
-   * Fallback method to end meeting via direct API call
+   * Show beautiful end meeting confirmation modal
    */
+  async _showEndMeetingConfirmModal(meetingId, roomName) {
+    return new Promise((resolve) => {
+      // Get meeting details
+      const allMeetings = window.currentMeetingData || [];
+      const meeting = allMeetings.find((m) => m.id === meetingId);
+      const meetingTitle = meeting
+        ? meeting.content || meeting.purpose || "Cuộc họp không có tiêu đề"
+        : "Cuộc họp";
+
+      // Create modal HTML
+      const modalHTML = `
+        <div id="endMeetingConfirmModal" class="end-meeting-confirm-modal-overlay">
+          <div class="end-meeting-confirm-modal">
+            <div class="end-meeting-confirm-header">
+              <div class="end-meeting-confirm-icon">
+                <i class="fas fa-stop-circle"></i>
+              </div>
+              <h3 class="end-meeting-confirm-title">Kết thúc cuộc họp sớm</h3>
+            </div>
+            
+            <div class="end-meeting-confirm-body">
+              <div class="end-meeting-confirm-content">
+                <div class="meeting-info-section">
+                  <div class="meeting-info-label">Cuộc họp:</div>
+                  <div class="meeting-info-value">${meetingTitle}</div>
+                </div>
+                
+                <div class="meeting-info-section">
+                  <div class="meeting-info-label">Phòng:</div>
+                  <div class="meeting-info-value">${roomName}</div>
+                </div>
+                
+                <div class="warning-section">
+                  <div class="warning-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                  </div>
+                  <div class="warning-text">
+                    <strong>Bạn có chắc chắn muốn kết thúc cuộc họp này sớm?</strong>
+                    <p>Cuộc họp sẽ được đánh dấu là đã kết thúc tại thời điểm hiện tại và vẫn được giữ trong lịch với thời gian kết thúc mới.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="end-meeting-confirm-footer">
+              <button class="end-meeting-cancel-btn" id="endMeetingCancelBtn">
+                <i class="fas fa-times"></i>
+                Hủy bỏ
+              </button>
+              <button class="end-meeting-confirm-btn" id="endMeetingConfirmBtn">
+                <i class="fas fa-stop-circle"></i>
+                Kết thúc ngay
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Determine the best container for the modal
+      let targetContainer = document.body;
+
+      // Check if we're in fullscreen mode
+      const fullscreenElement =
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.mozFullScreenElement ||
+        document.msFullscreenElement;
+
+      if (fullscreenElement) {
+        targetContainer = fullscreenElement;
+      } else {
+        const meetingContainer = document.querySelector(".meeting-container");
+        const fullscreenContainer =
+          document.querySelector('[data-fullscreen="true"]') ||
+          document.querySelector(".fullscreen") ||
+          document.querySelector(".fullscreen-mode");
+
+        if (fullscreenContainer) {
+          targetContainer = fullscreenContainer;
+        } else if (meetingContainer) {
+          targetContainer = meetingContainer;
+        }
+      }
+
+      // Add modal to DOM
+      targetContainer.insertAdjacentHTML("beforeend", modalHTML);
+
+      const modal = document.getElementById("endMeetingConfirmModal");
+      const confirmBtn = document.getElementById("endMeetingConfirmBtn");
+      const cancelBtn = document.getElementById("endMeetingCancelBtn");
+
+      // Show modal with animation
+      setTimeout(() => {
+        modal.classList.add("show");
+      }, 10);
+
+      // Handle confirm
+      confirmBtn.addEventListener("click", () => {
+        this._hideEndMeetingConfirmModal(modal);
+        resolve(true);
+      });
+
+      // Handle cancel
+      cancelBtn.addEventListener("click", () => {
+        this._hideEndMeetingConfirmModal(modal);
+        resolve(false);
+      });
+
+      // Handle ESC key
+      const handleEsc = (e) => {
+        if (e.key === "Escape") {
+          this._hideEndMeetingConfirmModal(modal);
+          resolve(false);
+          document.removeEventListener("keydown", handleEsc);
+        }
+      };
+      document.addEventListener("keydown", handleEsc);
+
+      // Handle background click
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) {
+          this._hideEndMeetingConfirmModal(modal);
+          resolve(false);
+        }
+      });
+    });
+  }
+
+  /**
+   * Hide end meeting confirmation modal
+   */
+  _hideEndMeetingConfirmModal(modal) {
+    modal.classList.remove("show");
+    setTimeout(() => {
+      if (modal && modal.parentNode) {
+        modal.parentNode.removeChild(modal);
+      }
+    }, 300);
+  }
   async _endMeetingDirectAPI(meetingId) {
     console.log(`Ending meeting ${meetingId} via direct API call`);
 
