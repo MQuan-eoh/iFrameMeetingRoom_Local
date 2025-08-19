@@ -365,6 +365,33 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   z-index: 10;
 }
+
+/* Overlapping meetings styling */
+.meeting-event.overlapping-meeting {
+  /* Additional shadow for overlapping meetings */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  /* Slightly smaller font for better fit */
+  font-size: 11px;
+  /* Tighter padding */
+  padding: 3px 6px;
+}
+
+/* Enhanced styling for overlapping meetings text */
+.meeting-event.overlapping-meeting .event-room {
+  font-size: 9px;
+  margin-bottom: 1px;
+}
+
+.meeting-event.overlapping-meeting .event-title {
+  font-size: 10px;
+  line-height: 1.2;
+  margin-bottom: 1px;
+}
+
+.meeting-event.overlapping-meeting .event-time {
+  font-size: 9px;
+  opacity: 0.9;
+}
 .meeting-event.purpose-hop {
   background-color: #2196f3;
   border-left: 4px solid #1565c0;

@@ -939,19 +939,28 @@ export class ScheduleBookingManager {
   }
 
   /**
-   * Create meeting element in UI
+   * Create meeting element in UI with overlap support
+   * @param {Object} meeting - Meeting data
+   * @param {Element} dayColumn - Day column element (optional, will be found if not provided)
+   * @param {number} totalOverlapping - Total number of overlapping meetings in this time slot
+   * @param {number} overlapIndex - Index of this meeting in the overlap group (0-based)
    */
-  _createMeetingElement(meeting) {
+  _createMeetingElement(
+    meeting,
+    dayColumn = null,
+    totalOverlapping = 1,
+    overlapIndex = 0
+  ) {
     // Get day of week from date (0 = Sunday, 1 = Monday, etc.)
     const dayParts = meeting.date.split("/");
     const dateObj = new Date(`${dayParts[2]}-${dayParts[1]}-${dayParts[0]}`);
     const dayOfWeek = dateObj.getDay(); // 0 = Sunday, 1 = Monday, ...
     const dayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Convert to our 0 = Monday format
 
-    // Find day column
-    const dayColumn = document.querySelector(
-      `.day-column[data-day="${dayIndex}"]`
-    );
+    // Find day column if not provided
+    if (!dayColumn) {
+      dayColumn = document.querySelector(`.day-column[data-day="${dayIndex}"]`);
+    }
     if (!dayColumn) return;
 
     // Find start hour cell
@@ -975,6 +984,10 @@ export class ScheduleBookingManager {
     // Calculate top offset for partial hours (e.g., 9:30)
     const topOffset = (startM / 60) * 100; // As percentage of cell height
 
+    // Calculate positioning for overlapping meetings
+    const meetingWidth = 100 / totalOverlapping; // Percentage width
+    const meetingLeft = (100 / totalOverlapping) * overlapIndex; // Percentage left position
+
     // Determine purpose class
     const purposeClass = this._getPurposeClass(meeting.purpose);
 
@@ -985,15 +998,43 @@ export class ScheduleBookingManager {
     meetingEl.style.height = `${height}px`;
     meetingEl.dataset.id = meeting.id;
 
+    // Apply overlap positioning
+    if (totalOverlapping > 1) {
+      meetingEl.style.left = `${meetingLeft}%`;
+      meetingEl.style.width = `${meetingWidth - 1}%`; // Subtract 1% for gap between meetings
+      meetingEl.style.right = "auto"; // Override default right positioning
+      meetingEl.classList.add("overlapping-meeting");
+
+      // Add visual indicator for overlapping
+      meetingEl.style.borderWidth = "1px";
+      meetingEl.style.borderStyle = "solid";
+      meetingEl.style.borderColor = "rgba(255, 255, 255, 0.5)";
+    }
+
+    // Adjust content based on width for overlapping meetings
+    const displayRoom =
+      totalOverlapping > 2
+        ? meeting.room.substring(0, 8) + "..."
+        : meeting.room;
+    const displayTitle =
+      totalOverlapping > 2
+        ? (meeting.title || meeting.content).substring(0, 15) + "..."
+        : meeting.title || meeting.content;
+
     meetingEl.innerHTML = `
-      <div class="event-room">${meeting.room}</div>
-      <div class="event-title">${meeting.title || meeting.content}</div>
+      <div class="event-room">${displayRoom}</div>
+      <div class="event-title">${displayTitle}</div>
       <div class="event-time">${meeting.startTime} - ${meeting.endTime}</div>
     `;
 
-    // Add tooltip
+    // Add tooltip with enhanced information for overlapping meetings
     const tooltip = document.createElement("div");
     tooltip.className = "meeting-tooltip";
+    const overlapInfo =
+      totalOverlapping > 1
+        ? `<p><em>Ghi chú: ${totalOverlapping} cuộc họp cùng thời gian</em></p>`
+        : "";
+
     tooltip.innerHTML = `
       <div class="tooltip-title">${meeting.title || "Cuộc họp"}</div>
       <div class="tooltip-content">
@@ -1012,6 +1053,7 @@ export class ScheduleBookingManager {
             ? `<p><strong>Nội dung:</strong> ${meeting.content}</p>`
             : ""
         }
+        ${overlapInfo}
       </div>
     `;
     meetingEl.appendChild(tooltip);
@@ -1026,18 +1068,14 @@ export class ScheduleBookingManager {
         window.deleteMeetingManager &&
         window.deleteMeetingManager.isInDeleteMode()
       ) {
-        console.log(
-          "#################### In delete mode, letting delete manager handle"
-        );
+        console.log("In delete mode, letting delete manager handle");
         // Don't stop propagation, let delete manager handle it
         return;
       }
 
       // Only stop propagation in normal mode
       e.stopPropagation();
-      console.log(
-        "#################### Not in delete mode, showing meeting details"
-      );
+      console.log("Not in delete mode, showing meeting details");
       // Normal mode - show meeting details
       this._showMeetingDetails(meeting);
     });
@@ -1219,8 +1257,8 @@ export class ScheduleBookingManager {
       return;
     }
 
-    // Process each meeting and add to appropriate day
-    let meetingsRendered = 0;
+    // Group meetings by day and detect overlaps
+    const meetingsByDay = {};
 
     allMeetings.forEach((meeting) => {
       // Skip ended meetings (but not early ended meetings which should still be shown)
@@ -1242,12 +1280,23 @@ export class ScheduleBookingManager {
         return;
       }
 
-      // Render this meeting in the matching column
-      this._createMeetingElement(meeting);
-      meetingsRendered++;
+      // Add to meetings for this day
+      const dayIndex = matchingColumn.dataset.day;
+      if (!meetingsByDay[dayIndex]) {
+        meetingsByDay[dayIndex] = [];
+      }
+      meetingsByDay[dayIndex].push({
+        meeting: meeting,
+        column: matchingColumn,
+      });
     });
 
-    console.log(`Rendered ${meetingsRendered} meetings in week view`);
+    // Process each day's meetings and handle overlaps
+    Object.keys(meetingsByDay).forEach((dayIndex) => {
+      this._renderMeetingsForDay(meetingsByDay[dayIndex]);
+    });
+
+    console.log(`Rendered meetings in week view with overlap detection`);
 
     // Auto-apply current room filter if one is active
     if (
@@ -1267,12 +1316,75 @@ export class ScheduleBookingManager {
   }
 
   /**
-   * Render month view
+   * Render meetings for a specific day with overlap detection
    */
-  _renderMonthView() {
-    // Month view implementation
-    // This would generate a full month calendar view
-    console.log("Month view not yet implemented");
+  _renderMeetingsForDay(dayMeetings) {
+    if (!dayMeetings || dayMeetings.length === 0) return;
+
+    // Group meetings by time overlap
+    const timeGroups = this._groupMeetingsByTimeOverlap(dayMeetings);
+
+    // Render each group
+    timeGroups.forEach((group) => {
+      if (group.length === 1) {
+        // Single meeting - render normally
+        this._createMeetingElement(group[0].meeting, null, 1, 0);
+      } else {
+        // Multiple overlapping meetings - render side by side
+        group.forEach((meetingData, index) => {
+          this._createMeetingElement(
+            meetingData.meeting,
+            null,
+            group.length,
+            index
+          );
+        });
+      }
+    });
+  }
+
+  /**
+   * Group meetings by time overlap
+   */
+  _groupMeetingsByTimeOverlap(dayMeetings) {
+    const groups = [];
+    const processed = new Set();
+
+    dayMeetings.forEach((meetingData, index) => {
+      if (processed.has(index)) return;
+
+      const group = [meetingData];
+      processed.add(index);
+
+      // Find all meetings that overlap with this one
+      for (let i = index + 1; i < dayMeetings.length; i++) {
+        if (processed.has(i)) continue;
+
+        if (
+          this._meetingsOverlap(meetingData.meeting, dayMeetings[i].meeting)
+        ) {
+          group.push(dayMeetings[i]);
+          processed.add(i);
+        }
+      }
+
+      groups.push(group);
+    });
+
+    return groups;
+  }
+
+  /**
+   * Check if two meetings have overlapping time ranges
+   */
+  _meetingsOverlap(meeting1, meeting2) {
+    const start1 = this._timeToMinutes(meeting1.startTime);
+    const end1 = this._timeToMinutes(meeting1.endTime);
+    const start2 = this._timeToMinutes(meeting2.startTime);
+    const end2 = this._timeToMinutes(meeting2.endTime);
+
+    // Check if meetings overlap
+    return start1 < end2 && start2 < end1;
   }
 
   /**
@@ -1291,6 +1403,15 @@ export class ScheduleBookingManager {
     } catch (error) {
       console.error("Failed to reload meetings:", error);
     }
+  }
+
+  /**
+   * Render month view
+   */
+  _renderMonthView() {
+    // Month view implementation
+    // This would generate a full month calendar view
+    console.log("Month view not yet implemented");
   }
 
   /**
