@@ -29,22 +29,37 @@
   text-transform: none;
   letter-spacing: 0.5px;
   height: 50px;
-  margin-left: auto; /* Push button to the right */
+  /* margin-left: auto; - Removed to allow center alignment */
 }
 
-/* Schedule Actions Container Layout - Ensure proper alignment */
+/* Schedule Actions Container Layout - 3-column layout */
 .schedule-actions {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: space-between; /* Space buttons apart */
   gap: 16px;
   width: 100%;
+  flex-wrap: nowrap; /* Prevent wrapping to maintain 3-column layout */
 }
 
-/* Ensure delete button stays on the right */
+/* Position delete button in center */
 .schedule-actions .delete-meeting-button {
-  order: 999; /* Force button to appear last */
-  flex-shrink: 0; /* Prevent button from shrinking */
+  flex-shrink: 0;
+  margin: 0 auto; /* Center the delete button */
+  order: 2; /* Place in middle */
+}
+
+/* Ensure all buttons in schedule-actions follow 3-column layout */
+.schedule-actions .create-meeting-button {
+  flex-shrink: 0;
+  margin: 0 !important;
+  order: 1; /* Place first (left) */
+}
+
+.schedule-actions .export-excel-button {
+  flex-shrink: 0;
+  margin: 0 !important;
+  order: 3; /* Place last (right) */
 }
 
 .delete-meeting-button::before {

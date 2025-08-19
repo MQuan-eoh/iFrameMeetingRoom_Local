@@ -310,6 +310,7 @@
   justify-content: start;
   border-radius: 16px; /* Thêm border-radius */
   margin-bottom: 20px;
+  flex: 1; /* Cho phép room sections có cùng height */
 }
 
 .meeting-info {
@@ -449,6 +450,9 @@
   overflow-y: auto;
   padding-bottom: 20px;
   -webkit-overflow-scrolling: touch; /* Smooth scrolling trên iOS */
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* Khoảng cách đồng đều giữa các room sections */
 }
 /* Điều chỉnh khi màn hình nhỏ hoặc các thiết bị di động */
 @media (max-width: 767px) {
@@ -2760,7 +2764,7 @@ schedule-table {
     padding: 8px 10px;
     margin: 4px 0;
     margin-bottom: 4%;
-    min-height: 115px;
+    min-height: 160px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;

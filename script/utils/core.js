@@ -552,8 +552,7 @@ export class ValidationUtils {
 
     return (
       DateTimeUtils.isTimeInRangeWithSeconds(currentTime, startTime, endTime) &&
-      !meeting.isEnded &&
-      !meeting.forceEndedByUser
+      !meeting.isEnded
     );
   }
 }

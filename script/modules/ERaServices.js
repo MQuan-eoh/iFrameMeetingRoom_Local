@@ -18,8 +18,8 @@ const humi = document.getElementById("humidity-eRa");
 const pm25Index = document.getElementById("current-eRa");
 const pm10Index = document.getElementById("voltage-eRa");
 
-const temp2 = document.getElementById("temperature-eRa2");
-const humi2 = document.getElementById("humidity-eRa2");
+const temp2 = null;
+const humi2 = null;
 const currentIndex2 = document.getElementById("current-eRa2");
 const powerIndex2 = document.getElementById("power-eRa2");
 
@@ -186,15 +186,9 @@ function initEraWidget() {
         if (pm10Index) pm10Index.textContent = pm10Value;
       }
 
-      if (configTemp2 && values[configTemp2.id]) {
-        const tempValue2 = values[configTemp2.id].value;
-        if (temp2) temp2.textContent = tempValue2;
-      }
+      // Room 2 environmental data - Removed temperature and humidity updates
+      // No longer updating temperature-eRa2 and humidity-eRa2 elements
 
-      if (configHumi2 && values[configHumi2.id]) {
-        const humidValue2 = values[configHumi2.id].value;
-        if (humi2) humi2.textContent = humidValue2;
-      }
       if (configPeopleDetection1 && values[configPeopleDetection1.id]) {
         // Use helper function for safe access
         updatePeopleDetectionStatus(

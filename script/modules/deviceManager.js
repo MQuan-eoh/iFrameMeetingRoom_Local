@@ -134,16 +134,8 @@ export class DeviceManager {
       if (humiElement) humiElement.textContent = values[humi.id].value;
     }
 
-    // Room 2 sensors
-    if (temp2 && values[temp2.id]) {
-      const temp2Element = document.getElementById("temperature-eRa2");
-      if (temp2Element) temp2Element.textContent = values[temp2.id].value;
-    }
-
-    if (humi2 && values[humi2.id]) {
-      const humi2Element = document.getElementById("humidity-eRa2");
-      if (humi2Element) humi2Element.textContent = values[humi2.id].value;
-    }
+    // Room 2 sensors - Removed temperature and humidity
+    // These sensors are no longer displayed for Room 4
 
     // Air quality sensors
     if (pm25 && values[pm25.id]) {

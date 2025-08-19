@@ -668,8 +668,7 @@ export class MeetingDataManager {
       const updatedMeeting = {
         ...meeting,
         endTime: currentTime,
-        isEnded: true,
-        forceEndedByUser: true,
+        endedEarlyByUser: true,
         originalEndTime: meeting.endTime,
         lastUpdated: new Date().toISOString(),
         endedEarlyAt: new Date().toISOString(),
@@ -688,16 +687,13 @@ export class MeetingDataManager {
           localStorage.getItem("domain") ||
           window.location.origin ||
           "http://localhost";
-        const response = await fetch(
-          `${domain}/api/meetings/${meetingId}`,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(updatedMeeting),
-          }
-        );
+        const response = await fetch(`${domain}/api/meetings/${meetingId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updatedMeeting),
+        });
 
         if (!response.ok) {
           throw new Error(`Server responded with status: ${response.status}`);
@@ -805,10 +801,9 @@ export class MeetingDataManager {
         updatedData[currentMeetingIndex] = {
           ...currentMeeting,
           endTime: currentTime,
-          isEnded: true,
+          endedEarlyByUser: true,
           lastUpdated: new Date().getTime(),
           originalEndTime: currentMeeting.endTime,
-          forceEndedByUser: true,
         };
 
         this.setCachedMeetingData(updatedData);
@@ -943,9 +938,7 @@ export class MeetingDataManager {
           currentTime,
           meeting.startTime,
           meeting.endTime
-        ) &&
-        !meeting.isEnded &&
-        !meeting.forceEndedByUser
+        ) && !meeting.isEnded
     );
   }
 
@@ -959,9 +952,7 @@ export class MeetingDataManager {
     return roomMeetings.filter(
       (meeting) =>
         DateTimeUtils.timeToMinutes(meeting.startTime) >
-          DateTimeUtils.timeToMinutes(currentTime) &&
-        !meeting.isEnded &&
-        !meeting.forceEndedByUser
+          DateTimeUtils.timeToMinutes(currentTime) && !meeting.isEnded
     );
   }
 

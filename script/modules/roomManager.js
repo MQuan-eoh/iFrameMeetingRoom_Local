@@ -233,9 +233,7 @@ export class RoomManager {
           currentTime,
           meeting.startTime,
           meeting.endTime
-        ) &&
-        !meeting.isEnded &&
-        !meeting.forceEndedByUser
+        ) && !meeting.isEnded
       );
     });
 
@@ -283,8 +281,7 @@ export class RoomManager {
       return (
         currentTimeStr >= startTime &&
         currentTimeStr <= endTime &&
-        !meeting.isEnded &&
-        !meeting.forceEndedByUser
+        !meeting.isEnded
       );
     });
     console.log("Current meeting:", currentMeeting);
@@ -293,11 +290,7 @@ export class RoomManager {
     const upcomingMeetings = filteredData
       .filter((meeting) => {
         const startTime = meeting.startTime;
-        return (
-          currentTimeStr <= startTime &&
-          !meeting.isEnded &&
-          !meeting.forceEndedByUser
-        );
+        return currentTimeStr <= startTime && !meeting.isEnded;
       })
       .sort((a, b) => {
         const timeA = a.startTime.split(":").map(Number);
@@ -851,8 +844,7 @@ export class RoomManager {
     const updatedMeeting = {
       ...meeting,
       endTime: currentTime,
-      isEnded: true,
-      forceEndedByUser: true,
+      endedEarlyByUser: true,
       originalEndTime: meeting.endTime,
       lastUpdated: new Date().toISOString(),
     };
@@ -862,16 +854,13 @@ export class RoomManager {
       localStorage.getItem("domain") ||
       window.location.origin ||
       "http://localhost";
-    const response = await fetch(
-      `${domain}/api/meetings/${meetingId}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updatedMeeting),
-      }
-    );
+    const response = await fetch(`${domain}/api/meetings/${meetingId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updatedMeeting),
+    });
 
     if (!response.ok) {
       throw new Error(`Server error: ${response.status}`);
@@ -1483,8 +1472,7 @@ export class RoomManager {
       const isActive =
         currentMinutes >= startMinutes &&
         currentMinutes <= endMinutes &&
-        !meeting.isEnded &&
-        !meeting.forceEndedByUser;
+        !meeting.isEnded;
 
       if (isActive) {
         console.log(
@@ -1543,7 +1531,6 @@ export class RoomManager {
       const upcomingMeeting = allMeetings.find(
         (meeting) =>
           !meeting.isEnded &&
-          !meeting.forceEndedByUser &&
           DateTimeUtils.timeToMinutes(meeting.startTime) >
             DateTimeUtils.timeToMinutes(normalizedCurrentTime)
       );

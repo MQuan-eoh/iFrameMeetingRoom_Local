@@ -1223,8 +1223,8 @@ export class ScheduleBookingManager {
     let meetingsRendered = 0;
 
     allMeetings.forEach((meeting) => {
-      // Skip ended meetings
-      if (meeting.isEnded || meeting.forceEndedByUser) {
+      // Skip ended meetings (but not early ended meetings which should still be shown)
+      if (meeting.isEnded) {
         return;
       }
 
