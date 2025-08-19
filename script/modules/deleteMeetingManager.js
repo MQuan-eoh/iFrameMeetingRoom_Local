@@ -36,6 +36,63 @@ class DeleteMeetingManager {
     this.createDeleteModeControls();
     this.createConfirmModal();
     this.attachEventListeners();
+    this.setupFullscreenHandlers();
+  }
+
+  /**
+   * Setup fullscreen event handlers
+   */
+  setupFullscreenHandlers() {
+    // Listen for fullscreen changes to reposition elements if needed
+    const fullscreenEvents = [
+      "fullscreenchange",
+      "webkitfullscreenchange",
+      "mozfullscreenchange",
+      "MSFullscreenChange",
+    ];
+
+    fullscreenEvents.forEach((eventName) => {
+      document.addEventListener(eventName, () => {
+        // If delete mode is active or modals are visible, recreate them in the correct container
+        const deleteControlsVisible =
+          this.deleteModeControls &&
+          this.deleteModeControls.classList.contains("show");
+        const confirmModalVisible =
+          this.confirmModal && this.confirmModal.style.display === "flex";
+
+        if (deleteControlsVisible || confirmModalVisible) {
+          // Store states
+          const wasInDeleteMode = this.isDeleteMode;
+          const selectedMeetings = new Set(this.selectedMeetings);
+
+          // Recreate elements
+          if (this.deleteModeControls) {
+            this.deleteModeControls.remove();
+          }
+          if (this.confirmModal) {
+            this.confirmModal.remove();
+          }
+
+          setTimeout(() => {
+            this.createDeleteModeControls();
+            this.createConfirmModal();
+            this.attachEventListeners();
+
+            // Restore states
+            if (wasInDeleteMode) {
+              this.selectedMeetings = selectedMeetings;
+              this.deleteModeControls?.classList.add("show");
+              this.updateSelectedCounter();
+            }
+
+            if (confirmModalVisible) {
+              // Note: We'd need to restore the modal content here if needed
+              // For now, the user would need to retry the delete action
+            }
+          }, 100);
+        }
+      });
+    });
   }
 
   /**
@@ -91,7 +148,34 @@ class DeleteMeetingManager {
       </div>
     `;
 
-    document.body.insertAdjacentHTML("beforeend", controlsHtml);
+    // Determine the best container for the delete mode controls
+    let targetContainer = document.body;
+
+    // Check if we're in fullscreen mode and find the appropriate container
+    const fullscreenElement =
+      document.fullscreenElement ||
+      document.webkitFullscreenElement ||
+      document.mozFullScreenElement ||
+      document.msFullscreenElement;
+
+    if (fullscreenElement) {
+      targetContainer = fullscreenElement;
+    } else {
+      // Check for common fullscreen containers
+      const meetingContainer = document.querySelector(".meeting-container");
+      const fullscreenContainer =
+        document.querySelector('[data-fullscreen="true"]') ||
+        document.querySelector(".fullscreen") ||
+        document.querySelector(".fullscreen-mode");
+
+      if (fullscreenContainer) {
+        targetContainer = fullscreenContainer;
+      } else if (meetingContainer) {
+        targetContainer = meetingContainer;
+      }
+    }
+
+    targetContainer.insertAdjacentHTML("beforeend", controlsHtml);
     this.deleteModeControls = document.getElementById("deleteModeControls");
   }
 
@@ -147,7 +231,34 @@ class DeleteMeetingManager {
       </div>
     `;
 
-    document.body.insertAdjacentHTML("beforeend", modalHtml);
+    // Determine the best container for the confirmation modal
+    let targetContainer = document.body;
+
+    // Check if we're in fullscreen mode and find the appropriate container
+    const fullscreenElement =
+      document.fullscreenElement ||
+      document.webkitFullscreenElement ||
+      document.mozFullScreenElement ||
+      document.msFullscreenElement;
+
+    if (fullscreenElement) {
+      targetContainer = fullscreenElement;
+    } else {
+      // Check for common fullscreen containers
+      const meetingContainer = document.querySelector(".meeting-container");
+      const fullscreenContainer =
+        document.querySelector('[data-fullscreen="true"]') ||
+        document.querySelector(".fullscreen") ||
+        document.querySelector(".fullscreen-mode");
+
+      if (fullscreenContainer) {
+        targetContainer = fullscreenContainer;
+      } else if (meetingContainer) {
+        targetContainer = meetingContainer;
+      }
+    }
+
+    targetContainer.insertAdjacentHTML("beforeend", modalHtml);
     this.confirmModal = document.getElementById("deleteConfirmModal");
   }
 

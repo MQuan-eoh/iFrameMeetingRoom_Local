@@ -11,7 +11,7 @@
   height: 100%;
   background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(8px);
-  z-index: 3000;
+  z-index: 2147483647;
   display: none;
   justify-content: center;
   align-items: center;
@@ -64,6 +64,31 @@
     opacity: 1;
     transform: translateY(0) scale(1);
   }
+}
+
+/* Shake animation for modal attention */
+@keyframes deleteModalShake {
+  0%,
+  100% {
+    transform: translateY(0) scale(1) translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateY(0) scale(1) translateX(-5px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateY(0) scale(1) translateX(5px);
+  }
+}
+
+.delete-password-modal.shake {
+  animation: deleteModalShake 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 /* Delete Password Modal Header - Matching tooltip header design */
@@ -451,7 +476,7 @@
   color: white;
   padding: 16px 20px;
   border-radius: 12px;
-  z-index: 4000;
+  z-index: 2147483648;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -519,17 +544,43 @@
 }
 
 /* Fullscreen Mode - Ensure delete password modal works properly in fullscreen */
-.meeting-container .delete-password-modal-overlay {
-  position: absolute;
-  z-index: 10001;
+.delete-password-modal-overlay {
+  position: fixed !important;
+  z-index: 2147483647 !important;
 }
 
-/* Additional fallback for fullscreen delete password modal positioning */
+/* Enhanced fullscreen support for delete password modal */
+body:fullscreen .delete-password-modal-overlay,
+body:-webkit-full-screen .delete-password-modal-overlay,
+body:-moz-full-screen .delete-password-modal-overlay,
+html:fullscreen .delete-password-modal-overlay,
+html:-webkit-full-screen .delete-password-modal-overlay,
+html:-moz-full-screen .delete-password-modal-overlay,
 .meeting-container:fullscreen .delete-password-modal-overlay,
 .meeting-container:-webkit-full-screen .delete-password-modal-overlay,
-.meeting-container:-moz-full-screen .delete-password-modal-overlay {
+.meeting-container:-moz-full-screen .delete-password-modal-overlay,
+*:fullscreen .delete-password-modal-overlay,
+*:-webkit-full-screen .delete-password-modal-overlay,
+*:-moz-full-screen .delete-password-modal-overlay {
   position: fixed !important;
-  z-index: 10001 !important;
+  z-index: 2147483647 !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Force modal to appear above all fullscreen content */
+.delete-password-modal-overlay {
+  isolation: isolate;
+}
+
+/* Additional support for specific fullscreen scenarios */
+.fullscreen .delete-password-modal-overlay,
+.fullscreen-mode .delete-password-modal-overlay,
+[data-fullscreen="true"] .delete-password-modal-overlay {
+  position: fixed !important;
+  z-index: 2147483647 !important;
 }
 
 /* Responsive design for delete password modal */

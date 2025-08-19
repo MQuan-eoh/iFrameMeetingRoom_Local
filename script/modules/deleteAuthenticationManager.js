@@ -28,6 +28,36 @@ export class DeleteAuthenticationManager {
    */
   init() {
     this.createPasswordModal();
+    this.setupFullscreenHandlers();
+  }
+
+  /**
+   * Setup fullscreen event handlers
+   */
+  setupFullscreenHandlers() {
+    // Listen for fullscreen changes to reposition modal if needed
+    const fullscreenEvents = [
+      "fullscreenchange",
+      "webkitfullscreenchange",
+      "mozfullscreenchange",
+      "MSFullscreenChange",
+    ];
+
+    fullscreenEvents.forEach((eventName) => {
+      document.addEventListener(eventName, () => {
+        if (this.passwordModal && this.passwordModal.style.display === "flex") {
+          // Modal is currently visible, recreate it in the correct container
+          const wasVisible = true;
+          this.hidePasswordModal(false);
+          setTimeout(() => {
+            this.createPasswordModal();
+            if (wasVisible) {
+              this.showPasswordModal();
+            }
+          }, 100);
+        }
+      });
+    });
   }
 
   /**
@@ -95,7 +125,34 @@ export class DeleteAuthenticationManager {
       </div>
     `;
 
-    document.body.insertAdjacentHTML("beforeend", modalHtml);
+    // Determine the best container for the modal
+    let targetContainer = document.body;
+
+    // Check if we're in fullscreen mode and find the appropriate container
+    const fullscreenElement =
+      document.fullscreenElement ||
+      document.webkitFullscreenElement ||
+      document.mozFullScreenElement ||
+      document.msFullscreenElement;
+
+    if (fullscreenElement) {
+      targetContainer = fullscreenElement;
+    } else {
+      // Check for common fullscreen containers
+      const meetingContainer = document.querySelector(".meeting-container");
+      const fullscreenContainer =
+        document.querySelector('[data-fullscreen="true"]') ||
+        document.querySelector(".fullscreen") ||
+        document.querySelector(".fullscreen-mode");
+
+      if (fullscreenContainer) {
+        targetContainer = fullscreenContainer;
+      } else if (meetingContainer) {
+        targetContainer = meetingContainer;
+      }
+    }
+
+    targetContainer.insertAdjacentHTML("beforeend", modalHtml);
     this.passwordModal = document.getElementById("deletePasswordModal");
     this.attachPasswordModalEvents();
   }
@@ -124,6 +181,11 @@ export class DeleteAuthenticationManager {
     // Cancel button
     cancelBtn.addEventListener("click", () => {
       this.hidePasswordModal(false);
+    });
+
+    // Toggle password visibility
+    toggleBtn.addEventListener("click", () => {
+      this.togglePasswordVisibility();
     });
 
     // Prevent background click to close - force user decision

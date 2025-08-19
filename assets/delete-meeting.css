@@ -129,7 +129,7 @@
   padding: 16px 24px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
   border: 2px solid rgba(211, 47, 47, 0.2);
-  z-index: 2000;
+  z-index: 2147483646;
   display: none;
   align-items: center;
   gap: 16px;
@@ -328,7 +328,7 @@
   height: 100%;
   background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(8px);
-  z-index: 3000;
+  z-index: 2147483646;
   display: none;
   justify-content: center;
   align-items: center;
@@ -601,7 +601,7 @@
   padding: 16px 20px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
   border-left: 4px solid;
-  z-index: 3001;
+  z-index: 2147483647;
   max-width: 400px;
   opacity: 0;
   transform: translateX(100%);
@@ -673,29 +673,93 @@
   color: #666666;
 }
 
-/* Fullscreen Support for Delete Mode */
-.meeting-container .delete-mode-controls {
-  position: fixed;
-  z-index: 3000;
+/* Enhanced Fullscreen Support for Delete Mode */
+.delete-mode-controls {
+  position: fixed !important;
+  z-index: 2147483646 !important;
 }
 
-.meeting-container .delete-confirm-modal-overlay {
-  position: fixed;
-  z-index: 3000;
+.delete-confirm-modal-overlay {
+  position: fixed !important;
+  z-index: 2147483646 !important;
 }
 
+/* Enhanced fullscreen support for delete mode controls and modals */
+body:fullscreen .delete-mode-controls,
+body:-webkit-full-screen .delete-mode-controls,
+body:-moz-full-screen .delete-mode-controls,
+html:fullscreen .delete-mode-controls,
+html:-webkit-full-screen .delete-mode-controls,
+html:-moz-full-screen .delete-mode-controls,
 .meeting-container:fullscreen .delete-mode-controls,
 .meeting-container:-webkit-full-screen .delete-mode-controls,
-.meeting-container:-moz-full-screen .delete-mode-controls {
-  position: fixed;
-  z-index: 3000;
+.meeting-container:-moz-full-screen .delete-mode-controls,
+*:fullscreen .delete-mode-controls,
+*:-webkit-full-screen .delete-mode-controls,
+*:-moz-full-screen .delete-mode-controls {
+  position: fixed !important;
+  z-index: 2147483646 !important;
+  top: 20px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
 }
 
+body:fullscreen .delete-confirm-modal-overlay,
+body:-webkit-full-screen .delete-confirm-modal-overlay,
+body:-moz-full-screen .delete-confirm-modal-overlay,
+html:fullscreen .delete-confirm-modal-overlay,
+html:-webkit-full-screen .delete-confirm-modal-overlay,
+html:-moz-full-screen .delete-confirm-modal-overlay,
 .meeting-container:fullscreen .delete-confirm-modal-overlay,
 .meeting-container:-webkit-full-screen .delete-confirm-modal-overlay,
-.meeting-container:-moz-full-screen .delete-confirm-modal-overlay {
-  position: fixed;
-  z-index: 3000;
+.meeting-container:-moz-full-screen .delete-confirm-modal-overlay,
+*:fullscreen .delete-confirm-modal-overlay,
+*:-webkit-full-screen .delete-confirm-modal-overlay,
+*:-moz-full-screen .delete-confirm-modal-overlay {
+  position: fixed !important;
+  z-index: 2147483646 !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+body:fullscreen .delete-notification,
+body:-webkit-full-screen .delete-notification,
+body:-moz-full-screen .delete-notification,
+html:fullscreen .delete-notification,
+html:-webkit-full-screen .delete-notification,
+html:-moz-full-screen .delete-notification,
+.meeting-container:fullscreen .delete-notification,
+.meeting-container:-webkit-full-screen .delete-notification,
+.meeting-container:-moz-full-screen .delete-notification,
+*:fullscreen .delete-notification,
+*:-webkit-full-screen .delete-notification,
+*:-moz-full-screen .delete-notification {
+  position: fixed !important;
+  z-index: 2147483647 !important;
+}
+
+/* Additional support for specific fullscreen scenarios */
+.fullscreen .delete-mode-controls,
+.fullscreen-mode .delete-mode-controls,
+[data-fullscreen="true"] .delete-mode-controls {
+  position: fixed !important;
+  z-index: 2147483646 !important;
+}
+
+.fullscreen .delete-confirm-modal-overlay,
+.fullscreen-mode .delete-confirm-modal-overlay,
+[data-fullscreen="true"] .delete-confirm-modal-overlay {
+  position: fixed !important;
+  z-index: 2147483646 !important;
+}
+
+.fullscreen .delete-notification,
+.fullscreen-mode .delete-notification,
+[data-fullscreen="true"] .delete-notification {
+  position: fixed !important;
+  z-index: 2147483647 !important;
 }
 
 /* Responsive Design */
