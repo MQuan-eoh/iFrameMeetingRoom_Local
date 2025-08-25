@@ -176,7 +176,42 @@ const corsOptions = {
 
     const allowedOrigins = getAllowedOrigins();
 
-    if (allowedOrigins.indexOf(origin) !== -1 || !currentConfig.strictCors) {
+    // Check if origin is explicitly allowed
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+      return;
+    }
+
+    // For production environment, also allow common private network ranges
+    if (NODE_ENV === "production") {
+      try {
+        const url = new URL(origin);
+        const hostname = url.hostname;
+
+        // Allow private IP ranges (RFC 1918)
+        const privateIPPatterns = [
+          /^192\.168\.\d{1,3}\.\d{1,3}$/, // 192.168.0.0/16
+          /^172\.(?:1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}$/, // 172.16.0.0/12
+          /^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$/, // 10.0.0.0/8
+          /^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$/, // 127.0.0.0/8 (loopback)
+        ];
+
+        const isPrivateIP = privateIPPatterns.some((pattern) =>
+          pattern.test(hostname)
+        );
+
+        if (isPrivateIP) {
+          console.log(`Allowing private network origin: ${origin}`);
+          callback(null, true);
+          return;
+        }
+      } catch (error) {
+        console.warn(`Error parsing origin URL: ${origin}`, error);
+      }
+    }
+
+    // Apply strict CORS only if not a private IP
+    if (!currentConfig.strictCors) {
       callback(null, true);
     } else {
       console.warn(`CORS blocked origin: ${origin}`);
@@ -257,7 +292,7 @@ if (NODE_ENV === "production") {
     res.set("X-XSS-Protection", "1; mode=block");
     res.set("Referrer-Policy", "strict-origin-when-cross-origin");
     res.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
-    res.set('Access-Control-Allow-Private-Network', 'true');
+    res.set("Access-Control-Allow-Private-Network", "true");
     next();
   });
 }

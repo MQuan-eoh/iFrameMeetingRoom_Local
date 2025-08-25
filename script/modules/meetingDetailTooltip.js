@@ -1094,6 +1094,10 @@ class MeetingDetailTooltipManager {
       } else if (error.message && error.message.includes("network")) {
         errorMessage =
           "Lỗi kết nối mạng. Vui lòng kiểm tra kết nối và thử lại.";
+      } else if (error.message && error.message.includes("cors:")) {
+        errorMessage =
+          "Lỗi cấu hình CORS server. Vui lòng kiểm tra cấu hình server hoặc liên hệ quản trị viên.";
+        console.error("CORS Error Details:", error.message);
       }
 
       this.showErrorMessage(errorMessage);
@@ -1210,22 +1214,28 @@ class MeetingDetailTooltipManager {
       const domain =
         localStorage.getItem("domain") ||
         window.location.origin ||
-        "http://localhost";
+        "http://localhost:3000";
 
-      const response = await fetch(
-        `${domain}/api/meetings/${meetingData.id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(meetingData),
-        }
-      );
+      const response = await fetch(`${domain}/api/meetings/${meetingData.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(meetingData),
+      });
 
       if (!response.ok) {
+        const responseText = await response.text();
+        console.error(`HTTP ${response.status}: ${responseText}`);
+
+        if (response.status === 0 || responseText.includes("CORS")) {
+          throw new Error(
+            "cors: CORS policy blocked the request. Please check server configuration."
+          );
+        }
+
         throw new Error(
-          `HTTP error! status: ${response.status}, message: ${response.statusText}`
+          `HTTP error! status: ${response.status}, message: ${responseText}`
         );
       }
 
@@ -1235,8 +1245,14 @@ class MeetingDetailTooltipManager {
     } catch (error) {
       console.error("Error updating meeting:", error);
 
-      // Re-throw with more specific error information
-      if (error.message.includes("HTTP error")) {
+      // Enhanced error handling for better user experience
+      if (error.name === "TypeError" && error.message.includes("fetch")) {
+        throw new Error(
+          "network: Unable to connect to server. Please check your network connection."
+        );
+      } else if (error.message.includes("cors:")) {
+        throw new Error("cors: " + error.message);
+      } else if (error.message.includes("HTTP error")) {
         throw new Error("network: " + error.message);
       } else if (error.message.includes("conflicts")) {
         throw new Error("conflicts: " + error.message);
