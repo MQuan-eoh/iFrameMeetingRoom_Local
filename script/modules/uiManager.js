@@ -360,11 +360,12 @@ export class UIManager {
       const month = months[vietnamDate.getMonth()];
       const year = vietnamDate.getFullYear();
 
-      const formattedDate = `${dayOfWeek}, ${day} ${month}, ${year}`;
+      // Format with two lines: Day of week on first line, date/month/year on second line
+      const formattedDate = `<span>${dayOfWeek}</span><span>${day} ${month} ${year}</span>`;
 
       dateElements.forEach((element) => {
         if (element) {
-          element.textContent = formattedDate;
+          element.innerHTML = formattedDate;
         }
       });
     };

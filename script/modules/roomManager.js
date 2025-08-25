@@ -362,7 +362,7 @@ export class RoomManager {
           
           <div class="time-and-date-display">
             <div class="current-time" id="currentTime-1"></div>
-            <div class="current-date" id="currentDate-1"></div>
+            <div class="room-current-date" id="currentDate-1"></div>
           </div>
         </div>
 
@@ -370,33 +370,6 @@ export class RoomManager {
         <div class="room-content-wrapper">
           <!-- Left Column - Room Info (Following Page 1 Left Column) -->
           <div class="room-left-column">
-            <!-- Room Information Panel -->
-            <div class="room-info-panel">
-              <div class="panel-header">
-                <i class="fas fa-info-circle"></i>
-                <h3>THÔNG TIN PHÒNG</h3>
-              </div>
-              <div class="room-info-content">
-                <div class="info-item">
-                  <i class="fas fa-users"></i>
-                  <span class="info-label-room">Sức chứa:</span>
-                  <span class="info-value-room">${
-                    roomName.includes("3") ? "10-15 người" : "8-12 người"
-                  }</span>
-                </div>
-                <div class="info-item">
-                  <i class="fas fa-tv"></i>
-                  <span class="info-label-room">Thiết bị:</span>
-                  <span class="info-value-room">Projector, TV, Wifi</span>
-                </div>
-                <div class="info-item">
-                  <i class="fas fa-map-marker-alt"></i>
-                  <span class="info-label-room">Vị trí:</span>
-                  <span class="info-value-room">${roomName}</span>
-                </div>
-              </div>
-            </div>
-
             <!-- Device Control Panel - New Panel for Light Control -->
             <div class="device-control-panel">
               <div class="panel-header">
@@ -741,8 +714,9 @@ export class RoomManager {
         const month = months[vietnamDate.getMonth()];
         const year = vietnamDate.getFullYear();
 
-        const dateString = `${dayOfWeek}<br>${day} ${month}, ${year}`;
-        currentDateElement.innerHTML = dateString;
+        // Format for room pages: All in one line (day of week, date, month, year)
+        const dateString = `${dayOfWeek}, ${day} ${month}, ${year}`;
+        currentDateElement.textContent = dateString;
       }
     }
 
