@@ -230,9 +230,6 @@ export class AuthenticationManager {
       if (password === this.config.password) {
         this.setAuthenticated(true);
         this.hidePasswordModal();
-        this.showSuccessNotification(
-          "Xác thực thành công! Phiên làm việc 1 phút đã được kích hoạt (test mode)."
-        );
       } else {
         this.handleFailedAttempt();
       }
@@ -425,14 +422,6 @@ export class AuthenticationManager {
       if (!sessionData) return;
 
       const timeLeft = sessionData.expiresAt - Date.now();
-
-      // Show warning 30 seconds before expiry for testing
-      if (timeLeft <= this.config.sessionWarningTime && timeLeft > 0) {
-        const secondsLeft = Math.round(timeLeft / 1000);
-        this.showSessionWarningNotification(
-          `Phiên làm việc sẽ hết hạn sau ${secondsLeft} giây (test mode).`
-        );
-      }
     }, 10 * 1000); // Check every 10 seconds for testing
     // }, 5 * 60 * 1000); // Check every 5 minutes (original)
   }
@@ -595,10 +584,6 @@ export class AuthenticationManager {
     sessionData.expiresAt = Date.now() + this.sessionDuration;
     localStorage.setItem(this.sessionKey, JSON.stringify(sessionData));
     this.setupSessionTimer(sessionData.expiresAt);
-
-    this.showSuccessNotification(
-      "Phiên làm việc đã được gia hạn thêm 1 phút (test mode)."
-    );
     return true;
   }
 

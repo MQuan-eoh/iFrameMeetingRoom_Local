@@ -554,9 +554,10 @@ export class MeetingDataManager {
   }
 
   /**
-   * Update an existing meeting
+   * Update an existing meeting by ID (legacy method)
+   * @deprecated Use updateMeeting(meetingData) instead
    */
-  async updateMeeting(meetingId, updatedData) {
+  async updateMeetingById(meetingId, updatedData) {
     const currentData = this.getCachedMeetingData();
     const meetingIndex = currentData.findIndex(
       (meeting) => meeting.id === meetingId
@@ -1156,18 +1157,26 @@ export class MeetingDataManager {
 
       // Check for conflicts (excluding the current meeting)
       const otherMeetings = currentData.filter((m) => m.id !== meetingData.id);
+      console.log("####################");
+      console.log("CONFLICT CHECK DEBUG:");
       console.log(
         `Checking conflicts: total meetings = ${currentData.length}, excluding current meeting = ${otherMeetings.length}`
       );
-      console.log(`Current meeting ID being updated: ${meetingData.id}`);
+      console.log(`Current meeting ID being updated: "${meetingData.id}"`);
+      console.log(`Current meeting type: ${typeof meetingData.id}`);
       console.log(
         `All meeting IDs in currentData:`,
-        currentData.map((m) => `${m.id} (${m.title || m.content})`)
+        currentData.map(
+          (m) => `"${m.id}" (type: ${typeof m.id}) - ${m.title || m.content}`
+        )
       );
       console.log(
         `Filtered otherMeetings IDs:`,
-        otherMeetings.map((m) => `${m.id} (${m.title || m.content})`)
+        otherMeetings.map(
+          (m) => `"${m.id}" (type: ${typeof m.id}) - ${m.title || m.content}`
+        )
       );
+      console.log("####################");
 
       const conflicts = this.checkMeetingConflicts(
         updatedMeeting,
