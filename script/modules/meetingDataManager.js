@@ -820,11 +820,34 @@ export class MeetingDataManager {
    * Check for meeting time conflicts
    */
   checkMeetingConflicts(meeting, existingMeetings) {
+    console.log(
+      `Checking conflicts for meeting: ${meeting.title || meeting.content} (${
+        meeting.date
+      }, ${meeting.room}, ${meeting.startTime}-${meeting.endTime})`
+    );
+
     const sameDay = existingMeetings.filter(
       (m) => m.date === meeting.date && m.room === meeting.room
     );
 
-    return sameDay.filter((m) => DateTimeUtils.checkTimeConflict(meeting, m));
+    console.log(
+      `Found ${sameDay.length} meetings on same day/room to check conflicts against`
+    );
+
+    const conflicts = sameDay.filter((m) => {
+      const hasConflict = DateTimeUtils.checkTimeConflict(meeting, m);
+      if (hasConflict) {
+        console.log(
+          `Time conflict detected with: ${m.title || m.content} (${
+            m.startTime
+          }-${m.endTime})`
+        );
+      }
+      return hasConflict;
+    });
+
+    console.log(`Total conflicts found: ${conflicts.length}`);
+    return conflicts;
   }
 
   /**
@@ -1133,11 +1156,20 @@ export class MeetingDataManager {
 
       // Check for conflicts (excluding the current meeting)
       const otherMeetings = currentData.filter((m) => m.id !== meetingData.id);
+      console.log(
+        `Checking conflicts: total meetings = ${currentData.length}, excluding current meeting = ${otherMeetings.length}`
+      );
+      console.log(`Current meeting ID being updated: ${meetingData.id}`);
+
       const conflicts = this.checkMeetingConflicts(
         updatedMeeting,
         otherMeetings
       );
       if (conflicts.length > 0) {
+        console.error(
+          `Found ${conflicts.length} conflicts for meeting update:`,
+          conflicts
+        );
         throw new Error(
           `Meeting conflicts with existing meeting(s): ${conflicts
             .map((m) => `${m.content} (${m.startTime}-${m.endTime})`)

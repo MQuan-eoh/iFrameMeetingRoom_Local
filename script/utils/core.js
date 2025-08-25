@@ -517,7 +517,8 @@ export class ValidationUtils {
   static isValidTime(timeStr) {
     if (!timeStr) return false;
 
-    const timeRegex = /^([0-1]?[0-9]|2[0-3]):([0-5][0-9])$/;
+    // Accept both HH:MM and HH:MM:SS formats
+    const timeRegex = /^([0-1]?[0-9]|2[0-3]):([0-5][0-9])(:([0-5][0-9]))?$/;
     return timeRegex.test(timeStr);
   }
 

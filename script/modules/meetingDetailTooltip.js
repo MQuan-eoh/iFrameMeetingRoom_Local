@@ -1139,7 +1139,7 @@ class MeetingDetailTooltipManager {
       !this.isValidTimeFormat(endTime)
     ) {
       this.showErrorMessage(
-        "Định dạng thời gian không hợp lệ. Vui lòng sử dụng định dạng HH:MM."
+        "Định dạng thời gian không hợp lệ. Vui lòng sử dụng định dạng HH:MM hoặc HH:MM:SS."
       );
       return null;
     }
@@ -1168,10 +1168,11 @@ class MeetingDetailTooltipManager {
   }
 
   /**
-   * Validate time format (HH:MM)
+   * Validate time format (HH:MM or HH:MM:SS)
    */
   isValidTimeFormat(time) {
-    const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+    // Accept both HH:MM and HH:MM:SS formats
+    const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/;
     return timeRegex.test(time);
   }
 
@@ -1179,7 +1180,14 @@ class MeetingDetailTooltipManager {
    * Convert time to minutes for comparison
    */
   timeToMinutes(time) {
-    const [hours, minutes] = time.split(":").map(Number);
+    if (!time) return 0;
+
+    // Handle both HH:MM and HH:MM:SS formats
+    const timeParts = time.split(":");
+    const hours = parseInt(timeParts[0], 10) || 0;
+    const minutes = parseInt(timeParts[1], 10) || 0;
+    // Ignore seconds for comparison purposes
+
     return hours * 60 + minutes;
   }
 
