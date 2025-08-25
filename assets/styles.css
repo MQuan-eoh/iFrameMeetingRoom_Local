@@ -466,7 +466,7 @@
   -webkit-overflow-scrolling: touch; /* Smooth scrolling trên iOS */
   display: flex;
   flex-direction: column;
-  gap: 20px; /* Khoảng cách đồng đều giữa các room sections */
+  gap: 10px; /* Giảm khoảng cách giữa các room sections để gần nhau hơn */
 }
 /* Điều chỉnh khi màn hình nhỏ hoặc các thiết bị di động */
 @media (max-width: 767px) {
