@@ -1160,6 +1160,14 @@ export class MeetingDataManager {
         `Checking conflicts: total meetings = ${currentData.length}, excluding current meeting = ${otherMeetings.length}`
       );
       console.log(`Current meeting ID being updated: ${meetingData.id}`);
+      console.log(
+        `All meeting IDs in currentData:`,
+        currentData.map((m) => `${m.id} (${m.title || m.content})`)
+      );
+      console.log(
+        `Filtered otherMeetings IDs:`,
+        otherMeetings.map((m) => `${m.id} (${m.title || m.content})`)
+      );
 
       const conflicts = this.checkMeetingConflicts(
         updatedMeeting,
@@ -1170,6 +1178,25 @@ export class MeetingDataManager {
           `Found ${conflicts.length} conflicts for meeting update:`,
           conflicts
         );
+        console.error(
+          `Conflicting meeting details:`,
+          conflicts.map((m) => ({
+            id: m.id,
+            content: m.content,
+            room: m.room,
+            date: m.date,
+            startTime: m.startTime,
+            endTime: m.endTime,
+          }))
+        );
+        console.error(`Updated meeting details:`, {
+          id: updatedMeeting.id,
+          content: updatedMeeting.content,
+          room: updatedMeeting.room,
+          date: updatedMeeting.date,
+          startTime: updatedMeeting.startTime,
+          endTime: updatedMeeting.endTime,
+        });
         throw new Error(
           `Meeting conflicts with existing meeting(s): ${conflicts
             .map((m) => `${m.content} (${m.startTime}-${m.endTime})`)

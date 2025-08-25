@@ -341,7 +341,24 @@ export class DateTimeUtils {
     const start2 = this.timeToMinutes(meeting2.startTime);
     const end2 = this.timeToMinutes(meeting2.endTime);
 
-    return !(end1 <= start2 || end2 <= start1);
+    console.log(`####################`);
+    console.log(`Checking time conflict between:`);
+    console.log(
+      `Meeting 1: ${meeting1.startTime} (${start1} mins) - ${meeting1.endTime} (${end1} mins)`
+    );
+    console.log(
+      `Meeting 2: ${meeting2.startTime} (${start2} mins) - ${meeting2.endTime} (${end2} mins)`
+    );
+
+    const hasConflict = !(end1 <= start2 || end2 <= start1);
+    console.log(
+      `Conflict result: ${hasConflict} (end1 <= start2: ${
+        end1 <= start2
+      }, end2 <= start1: ${end2 <= start1})`
+    );
+    console.log(`####################`);
+
+    return hasConflict;
   }
 
   static calculateEndTime(startTime) {
